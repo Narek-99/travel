@@ -18,6 +18,7 @@ import firestore from '@react-native-firebase/firestore';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { ActivityIndicator, Image } from 'react-native'
+import FastImage from 'react-native-fast-image';
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -185,7 +186,13 @@ const TripsScreen = ({ navigation }) => {
                   <ActivityIndicator style={styles.imageLoader} />
                 ) : (
                   tripImages[item.id] && (
-                    <Image source={{ uri: tripImages[item.id] }} style={styles.tripImage} />
+                    <FastImage
+                      source={{
+                        uri: tripImages[item.id],
+                        priority: FastImage.priority.high
+                      }}
+                      style={styles.tripImage}
+                    />
                   )
                 )}
                 <View style={styles.infoContent}>

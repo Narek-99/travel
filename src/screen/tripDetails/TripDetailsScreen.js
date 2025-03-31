@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, View, ScrollView, Share, Pressable, Image, Text, Linking, TextInput, TouchableOpacity, Keyboard, Animated, ActivityIndicator } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Markdown from 'react-native-markdown-display';
@@ -18,6 +18,7 @@ import { useRef } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import * as Animatable from 'react-native-animatable';
+import FastImage from 'react-native-fast-image';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -127,6 +128,33 @@ const TripDetailsScreen = ({ navigation }) => {
     ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
     Toast.show({ type: 'success', text1: 'Copied!', position: 'bottom' });
   };
+
+  // Inside TripDetailsScreen component
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchTripDetails = async () => {
+        try {
+          const snapshot = await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .collection('trips')
+            .doc(tripId)
+            .get();
+
+          const data = snapshot.data();
+          if (data) {
+            setTrip(data);  // Update the state with the new trip data
+          }
+        } catch (error) {
+          console.error('❌ Fehler beim Laden des Trips:', error);
+        }
+      };
+
+      if (user?.uid && tripId) {
+        fetchTripDetails();  // Fetch trip details when the screen is focused
+      }
+    }, [user?.uid, tripId])
+  );
 
   useEffect(() => {
     if (trip?.destination) {
@@ -529,15 +557,16 @@ const TripDetailsScreen = ({ navigation }) => {
                 >
                   {place.photos?.[0]?.photo_reference ? (
                     <View style={{ position: 'relative' }}>
-                      <Image
+                      <FastImage
                         source={{
                           uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=AIzaSyCNJjMnjX6DYOlog0w0HsHxWTrigKqlCM8`,
+                          priority: FastImage.priority.normal,
                         }}
                         style={[
                           styles.attractionImage,
                           { opacity: loadedImages[place.place_id] ? 1 : 0.3 },
                         ]}
-                        resizeMode="cover"
+                        resizeMode={FastImage.resizeMode.cover}
                         onLoadStart={() =>
                           setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))
                         }
