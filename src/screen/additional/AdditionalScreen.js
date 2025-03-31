@@ -162,11 +162,21 @@ const AdditionalScreen = ({ navigation }) => {
       await firestore().collection('users').doc(user.uid).collection('trips').doc(effectiveTripId).set(tripToSave, { merge: true });
       console.log("Trip saved successfully:", tripToSave);
       resetTrip();
-      Alert.alert("Success", isNewTrip ? "Your trip has been saved!" : "Your trip has been updated!");
+      Toast.show({
+        type: 'success',
+        text1: isNewTrip ? "Your trip has been saved!" : "Your trip has been updated!",
+        position: 'top',
+        visibilityTime: 2000,
+      });
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId: effectiveTripId });
     } catch (error) {
       console.error("Error saving trip:", error);
-      Alert.alert("Error", "Failed to save the trip.");
+      Toast.show({
+        type: 'error',
+        text1: "Failed to save the trip.",
+        position: 'top',
+        visibilityTime: 2000,
+      });
     } finally {
       setLoading(false);
     }

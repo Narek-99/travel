@@ -1,5 +1,5 @@
 import { SafeAreaView, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, wp, TEXT_STYLE } from '../../enums/StyleGuide';
@@ -9,7 +9,7 @@ import axios from 'axios';
 import ProgressBar from 'react-native-progress/Bar';
 import { SVG } from '../../assets/svgs';
 import { useTripStore } from '../../store/tripStore';
-import { useRoute, useFocusEffect } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
@@ -32,38 +32,29 @@ const DestinationScreen = ({ navigation }) => {
   const totalSteps = 8;
   const progress = currentStep / totalSteps;
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const tripId = route.params?.tripId;
-      if (!tripId) {
-        setDestination('');
-      } else {
-        loadTripData(tripId);
+  useEffect(() => {
+    const loadTripData = async () => {
+      if (!tripId) return;
+
+      try {
+        const tripDetails = await firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('trips')
+          .doc(tripId)
+          .get();
+
+        if (tripDetails.exists) {
+          const data = tripDetails.data();
+          setDestination(data.destination);
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Trip-Daten:', error);
       }
+    };
 
-      return () => {
-        setTripData({ ...tripData, tripId: null, destination: '' });
-      };
-    }, [])
-  );
-
-  const loadTripData = async (tripId) => {
-    try {
-      const tripDetails = await firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('trips')
-        .doc(tripId)
-        .get();
-
-      if (tripDetails.exists) {
-        const data = tripDetails.data();
-        setDestination(data.destination);
-      }
-    } catch (error) {
-      console.error('Fehler beim Laden der Trip-Daten:', error);
-    }
-  };
+    loadTripData();
+  }, [tripId]);
 
   const getCities = async (searchQuery) => {
     try {
@@ -156,13 +147,25 @@ const DestinationScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.headlineContainer}>
-          <Pressable onPress={() => navigation.navigate(SCREEN.TRIPS)}>
+          <Pressable onPress={() => {
+            navigation.navigate(SCREEN.TRIPS);
+            setDestination('');
+          }}>
             <SVG.BackIcon fill="black" />
           </Pressable>
           <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
 
           <View style={{ flex: 1 }} />
-          <Pressable onPress={() => tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId }) : navigation.navigate(SCREEN.TRIPS)}>
+          <Pressable onPress={() => {
+            if (tripId) {
+              navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId });
+            } else {
+              navigation.navigate(SCREEN.TRIPS)
+            }
+            setDestination('');
+          }
+          }
+          >
             <SVG.Close fill="black" />
           </Pressable>
         </View>
