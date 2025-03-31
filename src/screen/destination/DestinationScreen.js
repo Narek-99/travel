@@ -19,43 +19,41 @@ const hapticOptions = {
 };
 
 const DestinationScreen = ({ navigation }) => {
-  const { tripData, setTripData } = useTripStore();
+  const { tripData, setTripData, resetTrip } = useTripStore();
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
 
   const [isValidDestination, setIsValidDestination] = useState(false);
-  const [destination, setDestination] = useState(tripData.destination || '');
   const [debounceTimer, setDebounceTimer] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [localDestination, setLocalDestination] = useState(tripData.destination || '');
 
   const currentStep = 1;
   const totalSteps = 8;
   const progress = currentStep / totalSteps;
 
   useEffect(() => {
-    const loadTripData = async () => {
-      if (!tripId) return;
-
-      try {
-        const tripDetails = await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('trips')
-          .doc(tripId)
-          .get();
-
-        if (tripDetails.exists) {
-          const data = tripDetails.data();
-          setDestination(data.destination);
-        }
-      } catch (error) {
-        console.error('Fehler beim Laden der Trip-Daten:', error);
-      }
-    };
-
-    loadTripData();
+    if (tripId) {
+      firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .get()
+        .then(doc => {
+          if (doc.exists) {
+            const destination = doc.data().destination;
+            setLocalDestination(destination);
+            setIsValidDestination(!!destination); // ✅ HIER: Aktiviert den Button
+          }
+        });
+    } else {
+      setLocalDestination('');
+      setIsValidDestination(false); // Sicherstellen, dass Button deaktiviert ist bei neuem Trip
+    }
   }, [tripId]);
+
 
   const getCities = async (searchQuery) => {
     try {
@@ -68,24 +66,31 @@ const DestinationScreen = ({ navigation }) => {
     }
   };
 
+  const handleClose = () => {
+    if (tripId) {
+      navigation.navigate(SCREEN.TRIPDETAILS, { tripId }); // zurück zum Detail
+    } else {
+      resetTrip(); // Trip-Daten löschen
+      navigation.navigate(SCREEN.TRIPS); // zurück zur Übersicht
+    }
+  };
+
   const handleCitySelect = (city) => {
-    setDestination(city.city);
-    setTripData({ destination: city.city });
+    setLocalDestination(city.city);
     setIsValidDestination(true);
     setSuggestions([]);
   };
 
   const handleSaveDestination = async () => {
-    if (!destination) return;
+    if (!localDestination) return;
 
-    // Update destination in Firestore
     try {
       await firestore()
         .collection('users')
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({ destination });
+        .update({ destination: localDestination }); // ✅ nutze localDestination
 
       Toast.show({
         visibilityTime: 2000,
@@ -93,7 +98,6 @@ const DestinationScreen = ({ navigation }) => {
         text1: 'Destination Updated',
         position: 'top',
       });
-
     } catch (error) {
       console.error('Error updating destination:', error);
       Toast.show({
@@ -106,29 +110,27 @@ const DestinationScreen = ({ navigation }) => {
   };
 
   const handleNext = () => {
-    if (!destination) return;
-    setTripData({ destination });
+    if (!isValidDestination) return;
+    setTripData({ destination: localDestination }); // jetzt wird’s in den Store übernommen
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    navigation.navigate(SCREEN.DATES, { tripId })
+    navigation.navigate(SCREEN.DATES, { tripId });
   };
 
   const handleInputChange = (text) => {
-    setDestination(text);
-    setIsValidDestination(false); // Reset to false when input changes
+    setLocalDestination(text);
+    setIsValidDestination(false);
 
-    // Clear previous timer if it exists
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
 
-    // Set new timer to debounce the API call
     const timer = setTimeout(() => {
       if (text.length >= 2) {
         getCities(text);
       } else {
         setSuggestions([]);
       }
-    }, 300); // Delay in ms
+    }, 300);
 
     setDebounceTimer(timer);
   };
@@ -152,7 +154,7 @@ const DestinationScreen = ({ navigation }) => {
         <View style={styles.headlineContainer}>
           <Pressable onPress={() => {
             navigation.navigate(SCREEN.TRIPS);
-            setDestination('');
+            resetTrip();
             setIsValidDestination(false);
           }}>
             <SVG.BackIcon fill="black" />
@@ -160,17 +162,7 @@ const DestinationScreen = ({ navigation }) => {
           <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
 
           <View style={{ flex: 1 }} />
-          <Pressable onPress={() => {
-            if (tripId) {
-              navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId });
-            } else {
-              navigation.navigate(SCREEN.TRIPS)
-            }
-            setDestination('');
-            setIsValidDestination(false);
-          }
-          }
-          >
+          <Pressable onPress={handleClose}>
             <SVG.Close fill="black" />
           </Pressable>
         </View>
@@ -181,7 +173,7 @@ const DestinationScreen = ({ navigation }) => {
           style={styles.input}
           placeholder="Example: Barcelona"
           placeholderTextColor={COLOR.black}
-          value={destination}
+          value={localDestination}
           onChangeText={handleInputChange}
         />
 
@@ -206,7 +198,7 @@ const DestinationScreen = ({ navigation }) => {
             style={styles.saveButton}
             text={En.save}
             onPress={handleSaveDestination}
-            disabled={!destination}
+            disabled={!tripData.destination}
           />
         )}
         <Button
