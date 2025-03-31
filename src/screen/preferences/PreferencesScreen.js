@@ -194,7 +194,6 @@ const PreferencesScreen = ({ navigation }) => {
           <Button
             style={styles.saveButton}
             text={En.save}
-            textStyle={styles.saveButtonText}
             onPress={handleSavePreferences}
             disabled={selectedAccommodation.length === 0 || selectedLocation.length === 0}
           />

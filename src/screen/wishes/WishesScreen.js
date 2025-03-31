@@ -173,7 +173,6 @@ const WishesScreen = ({ navigation }) => {
           <Button
             style={styles.saveButton}
             text={En.save}
-            textStyle={styles.saveButtonText}
             onPress={handleSaveWishes}
           />
         )}

@@ -107,7 +107,7 @@ const AdditionalScreen = ({ navigation }) => {
     3. Use this precise daily structure for each day (provide the response in Markdown):
     
     ---
-
+    
     📅 Day [X]
     - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
     - 🕒 Suggested defined time range (e.g., 9:00–12:00)
@@ -115,7 +115,7 @@ const AdditionalScreen = ({ navigation }) => {
     - 🥘 Recommended dining spots relevant to user's preferences.
     - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
     - 🚶 Travel tips or local insights relevant to the itinerary.
-
+    
     ----
     Repeat exactly this structured format for every single day of the trip.
     
@@ -135,6 +135,7 @@ const AdditionalScreen = ({ navigation }) => {
     Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
     `;
 
+    console.log('tripPrompt :', tripPrompt);
     let aiTravelPlan = '';
     try {
       aiTravelPlan = await callChatGptForResponse(tripPrompt);
@@ -215,19 +216,11 @@ const AdditionalScreen = ({ navigation }) => {
           />
 
           <View style={styles.submitContainer}>
-            {tripId && (
-              <Button
-                style={styles.saveButton}
-                text="Save Information"
-                textStyle={styles.saveButtonText}
-                onPress={handleSaveAdditionalInformation}
-              />
-            )}
             <Button
               style={styles.nextButton}
               text={loading ? "Saving..." : "Save Trip"}
               textStyle={styles.buttonText}
-              onPress={handleSaveTrip}
+              onPress={tripId ? handleSaveAdditionalInformation : handleSaveTrip}
               disabled={loading}
             >
               {loading && (
@@ -304,13 +297,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
   },
-  saveButton: {
-    backgroundColor: 'transparent',
-    marginHorizontal: wp(2),
-    borderWidth: 1,
-    borderColor: COLOR.lightBlue
-  },
-
   submitContainer: {
     justifyContent: 'flex-end',
     marginTop: 'auto',

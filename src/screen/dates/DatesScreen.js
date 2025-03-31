@@ -173,7 +173,6 @@ const DatesScreen = ({ navigation }) => {
           <Button
             style={styles.saveButton}
             text={En.save}
-            textStyle={styles.saveButtonText}
             onPress={handleSaveDates}
           />
         )}

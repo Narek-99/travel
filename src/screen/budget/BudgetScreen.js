@@ -171,8 +171,7 @@ const BudgetScreen = ({ navigation }) => {
             <Button
               style={styles.saveButton}
               text={En.save}
-              textStyle={styles.saveButtonText}
-              onPress={handleSaveBudget}  // Use the new handleSaveBudget function
+              onPress={handleSaveBudget}
             />
           )}
           <Button
