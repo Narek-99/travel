@@ -1,5 +1,5 @@
 import { SafeAreaView, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Pressable } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, wp, TEXT_STYLE } from '../../enums/StyleGuide';
@@ -9,7 +9,7 @@ import axios from 'axios';
 import ProgressBar from 'react-native-progress/Bar';
 import { SVG } from '../../assets/svgs';
 import { useTripStore } from '../../store/tripStore';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
@@ -27,37 +27,43 @@ const DestinationScreen = ({ navigation }) => {
   const [destination, setDestination] = useState(tripData.destination || '');
   const [debounceTimer, setDebounceTimer] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const [isCitySelected, setIsCitySelected] = useState(false); // Zustand für die Auswahl einer Stadt
 
   const currentStep = 1;
   const totalSteps = 8;
   const progress = currentStep / totalSteps;
 
-  useEffect(() => {
-    const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
-
-      try {
-        const tripDetails = await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('trips')
-          .doc(tripId)
-          .get();
-
-        if (tripDetails.exists) {
-          const data = tripDetails.data();
-          setDestination(data.destination);
-        }
-      } catch (error) {
-        console.error('Fehler beim Laden der Trip-Daten:', error);
+  useFocusEffect(
+    React.useCallback(() => {
+      const tripId = route.params?.tripId;
+      if (!tripId) {
+        setDestination('');
+      } else {
+        loadTripData(tripId);
       }
-    };
 
-    loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
+      return () => {
+        setTripData({ ...tripData, tripId: null, destination: '' });
+      };
+    }, [])
+  );
 
+  const loadTripData = async (tripId) => {
+    try {
+      const tripDetails = await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .get();
 
+      if (tripDetails.exists) {
+        const data = tripDetails.data();
+        setDestination(data.destination);
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Trip-Daten:', error);
+    }
+  };
 
   const getCities = async (searchQuery) => {
     try {
@@ -74,7 +80,6 @@ const DestinationScreen = ({ navigation }) => {
     setDestination(city.city);
     setTripData({ destination: city.city });
     setSuggestions([]);
-    setIsCitySelected(true); // Setze, dass eine Stadt ausgewählt wurde
   };
 
   const handleSaveDestination = async () => {
@@ -116,7 +121,6 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleInputChange = (text) => {
     setDestination(text);
-    setIsCitySelected(false); // Reset city selection
 
     // Clear previous timer if it exists
     if (debounceTimer) {
