@@ -1,0 +1,16 @@
+current directory: /Users/nsargsyan/recipeAi/vendor/bundle/ruby/3.3.0/gems/json-2.7.2/ext/json
+/Users/nsargsyan/.rvm/rubies/ruby-3.3.5/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/nsargsyan/recipeAi/vendor/bundle/ruby/3.3.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240905-72601-gxir8 sitelibdir\=./.gem.20240905-72601-gxir8 clean
+
+current directory: /Users/nsargsyan/recipeAi/vendor/bundle/ruby/3.3.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240905-72601-gxir8 sitelibdir\=./.gem.20240905-72601-gxir8
+make: Nothing to be done for `all'.
+
+current directory: /Users/nsargsyan/recipeAi/vendor/bundle/ruby/3.3.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240905-72601-gxir8 sitelibdir\=./.gem.20240905-72601-gxir8 install
+
+current directory: /Users/nsargsyan/recipeAi/vendor/bundle/ruby/3.3.0/gems/json-2.7.2/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20240905-72601-gxir8 sitelibdir\=./.gem.20240905-72601-gxir8 clean

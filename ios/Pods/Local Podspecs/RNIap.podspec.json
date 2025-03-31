@@ -1,0 +1,24 @@
+{
+  "name": "RNIap",
+  "version": "12.15.5",
+  "summary": "React Native In App Purchase Module.",
+  "homepage": "https://github.com/hyochan/react-native-iap#readme",
+  "license": "MIT",
+  "authors": "hyochan <hyochan.dev@gmail.com> (https://github.com/hyochan)",
+  "platforms": {
+    "ios": "10.0",
+    "tvos": "10.0",
+    "visionos": "1.0"
+  },
+  "source": {
+    "git": "https://github.com/hyochan/react-native-iap.git",
+    "tag": "12.15.5"
+  },
+  "source_files": "ios/*.{h,m,mm,swift}",
+  "requires_arc": true,
+  "dependencies": {
+    "React-Core": [
+
+    ]
+  }
+}

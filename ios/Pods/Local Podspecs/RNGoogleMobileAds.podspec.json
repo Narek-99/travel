@@ -1,0 +1,43 @@
+{
+  "name": "RNGoogleMobileAds",
+  "version": "14.2.5",
+  "description": "React Native Google Mobile Ads is an easy way to monetize mobile apps with targeted, in-app advertising.",
+  "summary": "React Native Google Mobile Ads is an easy way to monetize mobile apps with targeted, in-app advertising.",
+  "homepage": "http://invertase.io/oss/react-native-google-mobile-ads",
+  "license": "Apache-2.0",
+  "authors": "Invertase Limited",
+  "source": {
+    "git": "https://github.com/invertase/react-native-google-mobile-ads.git",
+    "tag": "v14.2.5"
+  },
+  "social_media_url": "http://twitter.com/invertaseio",
+  "platforms": {
+    "ios": "12.0"
+  },
+  "cocoapods_version": ">= 1.12.0",
+  "source_files": "ios/**/*.{h,m,mm,swift}",
+  "weak_frameworks": "AppTrackingTransparency",
+  "compiler_flags": "$(inherited) -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -Wno-comma -Wno-shorten-64-to-32",
+  "dependencies": {
+    "React-Core": [
+
+    ],
+    "RCT-Folly": [
+      "2022.05.16.00"
+    ],
+    "glog": [
+
+    ],
+    "GoogleUserMessagingPlatform": [
+      "2.5.0"
+    ],
+    "Google-Mobile-Ads-SDK": [
+      "11.7.0"
+    ]
+  },
+  "pod_target_xcconfig": {
+    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/Headers/Private/Yoga\" \"$(PODS_ROOT)/DoubleConversion\" \"$(PODS_ROOT)/fmt/include\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-FabricImage/React_FabricImage.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTFabric/RCTFabric.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-utils/React_utils.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-ImageManager/React_ImageManager.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-rendererdebug/React_rendererdebug.framework/Headers\"",
+    "CLANG_CXX_LANGUAGE_STANDARD": "c++20"
+  },
+  "static_framework": false
+}

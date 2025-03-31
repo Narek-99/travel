@@ -1,0 +1,192 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "485C60AE",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.0",
+      "familyShareable" : false,
+      "internalID" : "6738663193",
+      "localizations" : [
+        {
+          "description" : "Life Time Access",
+          "displayName" : "Life Time Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "lifetimeoffer",
+      "referenceName" : "Life Time Offer",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6737259052",
+    "_developerTeamID" : "BMZCWCDGYJ",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 756055173.19305503,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21566839",
+      "localizations" : [
+
+      ],
+      "name" : "Subscriptions",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "6739183566",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly Access",
+              "displayName" : "Monthly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.chatbot.ai.monthly.1",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "monthly_1",
+          "subscriptionGroupID" : "21566839",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "6.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6737258951",
+          "introductoryOffer" : {
+            "internalID" : "F742103D",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Weekly Access",
+              "displayName" : "Weekly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.chatbot.ai.weekly.1",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "weekly_1",
+          "subscriptionGroupID" : "21566839",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "44.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6737259076",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Yearly Access",
+              "displayName" : "Yearly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.chatbot.ai.yearly.1",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "yearly_1",
+          "subscriptionGroupID" : "21566839",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
