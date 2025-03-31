@@ -19,15 +19,13 @@ const hapticOptions = {
 };
 
 const DatesScreen = ({ navigation }) => {
-  const { tripData, setTripData } = useTripStore(); // Access Zustand store
+  const { setTripData } = useTripStore(); // Access Zustand store
 
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
-
-  // Load saved dates if they exist, otherwise set to today
-  const [startDate, setStartDate] = useState(tripData.startDate || new Date());
-  const [endDate, setEndDate] = useState(tripData.endDate || new Date());
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   useEffect(() => {
     const loadTripData = async () => {
@@ -56,15 +54,12 @@ const DatesScreen = ({ navigation }) => {
     };
 
     loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
+  }, [tripId]);
 
   const currentStep = 2;
   const totalSteps = 8;
   const progress = currentStep / totalSteps;
 
-  useEffect(() => {
-    setTripData({ startDate, endDate });
-  }, [startDate, endDate]);
 
   const onChangeStartDate = (event, selectedDate) => {
     if (selectedDate) {
@@ -79,7 +74,7 @@ const DatesScreen = ({ navigation }) => {
   };
 
   const handleSaveDates = async () => {
-    if (!startDate || !endDate) return;  // Ensure dates are selected
+    if (!startDate || !endDate) return;
 
     try {
       await firestore()
@@ -89,13 +84,13 @@ const DatesScreen = ({ navigation }) => {
         .doc(tripId)
         .update({ startDate, endDate });
 
+      setTripData({ startDate, endDate });
       Toast.show({
         visibilityTime: 2000,
         type: 'success',
         text1: 'Dates Updated Successfully',
-        position: 'Top',
+        position: 'top',
       });
-
     } catch (error) {
       console.error('Error updating dates:', error);
       Toast.show({
@@ -108,9 +103,9 @@ const DatesScreen = ({ navigation }) => {
   };
 
   const handleNext = () => {
-    setTripData({ startDate, endDate }); // Save the selected dates
+    setTripData({ startDate, endDate }); // ✅ gezielte Speicherung
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    navigation.navigate(SCREEN.COMPANION, { tripId })
+    navigation.navigate(SCREEN.COMPANION, { tripId });
   };
 
   return (
@@ -177,7 +172,10 @@ const DatesScreen = ({ navigation }) => {
           />
         )}
         <Button
-          style={styles.nextButton}
+          style={[
+            styles.nextButton,
+            { backgroundColor: '#002953' },
+          ]}
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}

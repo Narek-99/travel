@@ -30,19 +30,16 @@ const totalSteps = 8;
 const progress = currentStep / totalSteps;
 
 const CompanionScreen = ({ navigation }) => {
-  const { tripData, setTripData } = useTripStore(); // Access Zustand store
+  const { setTripData } = useTripStore(); // Access Zustand store
 
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
 
   // Load saved values if they exist
-  const [selectedOption, setSelectedOption] = useState(tripData.companion || null);
-  const [numberOfPersons, setNumberOfPersons] = useState(tripData.numberOfPersons || '');
+  const [selectedOption, setSelectedOption] = useState('');
+  const [numberOfPersons, setNumberOfPersons] = useState('');
 
-  useEffect(() => {
-    setTripData({ companion: selectedOption, numberOfPersons });
-  }, [selectedOption, numberOfPersons]);
 
   const handleSelect = (value) => {
     setSelectedOption(value);
@@ -84,7 +81,6 @@ const CompanionScreen = ({ navigation }) => {
 
   const handleNext = () => {
     if (!selectedOption || (shouldShowInput && !numberOfPersons)) return;
-
     setTripData({ companion: selectedOption, numberOfPersons });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.BUDGET, { tripId })
@@ -190,7 +186,6 @@ const CompanionScreen = ({ navigation }) => {
             disabled={!selectedOption || (shouldShowInput && !numberOfPersons)} // Disable if input is required but empty
           />
         </View>
-
       </View>
     </TouchableWithoutFeedback>
   );
@@ -277,7 +272,6 @@ const styles = StyleSheet.create({
     color: COLOR.lightBlue,
     marginBottom: hp(1),
   },
-
   submitContainer: {
     justifyContent: 'flex-end',
     marginTop: 'auto',

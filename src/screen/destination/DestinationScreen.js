@@ -198,7 +198,7 @@ const DestinationScreen = ({ navigation }) => {
             style={styles.saveButton}
             text={En.save}
             onPress={handleSaveDestination}
-            disabled={!tripData.destination}
+            disabled={!localDestination}
           />
         )}
         <Button

@@ -29,15 +29,14 @@ const totalSteps = 8;
 const progress = currentStep / totalSteps;
 
 const BudgetScreen = ({ navigation }) => {
-  const { tripData, setTripData } = useTripStore(); // Access Zustand store
+  const { setTripData } = useTripStore(); // Access Zustand store
 
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
 
-  // Load saved values if they exist
-  const [selectedBudget, setSelectedBudget] = useState(tripData.budget || null);
-  const [customAmount, setCustomAmount] = useState(tripData.customAmount || '');
+  const [selectedBudget, setSelectedBudget] = useState('');
+  const [customAmount, setCustomAmount] = useState('');
 
   useEffect(() => {
     const loadTripData = async () => {
@@ -64,9 +63,6 @@ const BudgetScreen = ({ navigation }) => {
     loadTripData();
   }, [tripId]); // Abhängigkeit von tripId
 
-  useEffect(() => {
-    setTripData({ budget: selectedBudget, customAmount });
-  }, [selectedBudget, customAmount]);
 
   const handleSaveBudget = async () => {
     if (!selectedBudget || (selectedBudget === 'custom' && !customAmount)) return;
@@ -268,7 +264,6 @@ const styles = StyleSheet.create({
     color: COLOR.lightBlue,
     marginBottom: hp(1),
   },
-
   submitContainer: {
     justifyContent: 'flex-end',
     marginTop: 'auto',

@@ -7,12 +7,11 @@ import { SCREEN } from '../../enums/AppEnums';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { SVG } from '../../assets/svgs';
 import ProgressBar from 'react-native-progress/Bar';
-import { useTripStore } from '../../store/tripStore'; // Import Zustand store
+import { useTripStore } from '../../store/tripStore';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
-
 
 const hapticOptions = {
   enableVibrateFallback: true,
@@ -34,18 +33,15 @@ const activityOptions = [
 ];
 
 const ActivitiesScreen = ({ navigation }) => {
-  const { tripData, setTripData } = useTripStore(); // Access Zustand store
-
-  // Load saved values if they exist
-  const [selectedActivities, setSelectedActivities] = useState(tripData.activities || []);
-
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
+  const [selectedActivities, setSelectedActivities] = useState([]);
+  const { setTripData } = useTripStore();
 
   useEffect(() => {
     const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
+      if (!tripId) return;
 
       try {
         const tripDetails = await firestore()
@@ -67,10 +63,6 @@ const ActivitiesScreen = ({ navigation }) => {
     loadTripData();
   }, [tripId]); // Abhängigkeit von tripId
 
-  useEffect(() => {
-    setTripData({ activities: selectedActivities });
-  }, [selectedActivities]);
-
   const handleActivitySelect = (activityValue) => {
     setSelectedActivities((prev) => {
       if (prev.includes(activityValue)) {
@@ -83,7 +75,6 @@ const ActivitiesScreen = ({ navigation }) => {
 
   const handleSaveActivities = async () => {
     if (selectedActivities.length === 0) return;
-
     try {
       await firestore()
         .collection('users')
@@ -111,7 +102,6 @@ const ActivitiesScreen = ({ navigation }) => {
       });
     }
   };
-
 
   const handleNext = () => {
     if (selectedActivities.length === 0) return;
@@ -191,9 +181,9 @@ const styles = StyleSheet.create({
   headlineContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align items on both ends
-    width: '100%', // Ensure the container takes full width
-    paddingHorizontal: 10, // Optional: for inner spacing
+    justifyContent: "space-between",
+    width: '100%',
+    paddingHorizontal: 10,
     gap: wp(2),
     marginTop: hp(2)
   },
@@ -259,7 +249,6 @@ const styles = StyleSheet.create({
     color: COLOR.lightBlue,
     marginBottom: hp(1),
   },
-
   submitContainer: {
     justifyContent: 'flex-end',
     marginTop: 'auto',
