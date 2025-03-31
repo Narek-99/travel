@@ -169,27 +169,33 @@ const DestinationScreen = ({ navigation }) => {
 
         <Label style={styles.subtitleText}>{En.DestinationScreenSubtitle}</Label>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Example: Barcelona"
-          placeholderTextColor={COLOR.black}
-          value={localDestination}
-          onChangeText={handleInputChange}
-        />
-
-        {suggestions.length > 0 && (
-          <FlatList
-            data={suggestions}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleCitySelect(item)}>
-                <View style={styles.suggestionItem}>
-                  <Label style={styles.suggestionText}>{item.city}</Label>
-                </View>
-              </TouchableOpacity>
-            )}
+        <View style={styles.dropdownWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Search for a city..."
+            placeholderTextColor="#999"
+            value={localDestination}
+            onChangeText={handleInputChange}
           />
-        )}
+
+          {suggestions.length > 0 && (
+            <View style={styles.dropdown}>
+              <FlatList
+                data={suggestions}
+                keyExtractor={(item) => item.id}
+                keyboardShouldPersistTaps="handled"
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => handleCitySelect(item)}
+                  >
+                    <Label style={styles.dropdownItemText}>{item.city}</Label>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          )}
+        </View>
       </View>
 
       <View style={styles.submitContainer}>
@@ -300,5 +306,25 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(2),
     marginBottom: hp(2),
-  }
+  },
+  dropdownWrapper: {
+    position: 'relative',
+    zIndex: 10,
+  },
+  dropdown: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowOffset: { width: 4, height: 2 },
+    shadowOpacity: 0.1,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: wp(2),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownItemText: {
+    color: '#222',
+    fontSize: 16,
+  },
 });
