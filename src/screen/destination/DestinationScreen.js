@@ -24,6 +24,7 @@ const DestinationScreen = ({ navigation }) => {
   const route = useRoute();
   const tripId = route.params?.tripId;
 
+  const [isValidDestination, setIsValidDestination] = useState(false);
   const [destination, setDestination] = useState(tripData.destination || '');
   const [debounceTimer, setDebounceTimer] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
@@ -70,6 +71,7 @@ const DestinationScreen = ({ navigation }) => {
   const handleCitySelect = (city) => {
     setDestination(city.city);
     setTripData({ destination: city.city });
+    setIsValidDestination(true);
     setSuggestions([]);
   };
 
@@ -112,6 +114,7 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleInputChange = (text) => {
     setDestination(text);
+    setIsValidDestination(false); // Reset to false when input changes
 
     // Clear previous timer if it exists
     if (debounceTimer) {
@@ -120,7 +123,7 @@ const DestinationScreen = ({ navigation }) => {
 
     // Set new timer to debounce the API call
     const timer = setTimeout(() => {
-      if (text.length >= 3) {
+      if (text.length >= 2) {
         getCities(text);
       } else {
         setSuggestions([]);
@@ -150,6 +153,7 @@ const DestinationScreen = ({ navigation }) => {
           <Pressable onPress={() => {
             navigation.navigate(SCREEN.TRIPS);
             setDestination('');
+            setIsValidDestination(false);
           }}>
             <SVG.BackIcon fill="black" />
           </Pressable>
@@ -163,6 +167,7 @@ const DestinationScreen = ({ navigation }) => {
               navigation.navigate(SCREEN.TRIPS)
             }
             setDestination('');
+            setIsValidDestination(false);
           }
           }
           >
@@ -205,12 +210,15 @@ const DestinationScreen = ({ navigation }) => {
           />
         )}
         <Button
-          style={styles.nextButton}
+          style={[
+            styles.nextButton,
+            { backgroundColor: isValidDestination ? '#002953' : '#CCCCCC' } // Use isValidDestination to determine button color
+          ]}
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}
-          disabled={!destination}>
-        </Button>
+          disabled={!isValidDestination} // Use isValidDestination to enable/disable button
+        />
       </View>
     </View>
   );
@@ -261,7 +269,6 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   nextButton: {
-    backgroundColor: '#002953',
     marginHorizontal: wp(2),
   },
   saveButton: {
