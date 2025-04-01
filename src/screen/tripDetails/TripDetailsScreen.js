@@ -57,6 +57,10 @@ const TripDetailsScreen = ({ navigation }) => {
   const mapFadeAnim = useFadeIn();
   const attractionsFadeAnim = useFadeIn();
   const [loadedImages, setLoadedImages] = useState({});
+  const [showFullPlan, setShowFullPlan] = useState(false);
+  const planHeight = useRef(new Animated.Value(0)).current;
+  const [contentHeight, setContentHeight] = useState(0);
+  const maxCollapsedHeight = 500; // px – anpassbar
 
   const handleAskAIPress = () => {
     scrollViewRef.current.scrollToEnd({ animated: true })
@@ -66,6 +70,18 @@ const TripDetailsScreen = ({ navigation }) => {
         inputRef.current.focus();
       }
     }, 500);
+  };
+
+  const togglePlanHeight = () => {
+    const finalHeight = showFullPlan ? maxCollapsedHeight : contentHeight;
+
+    Animated.timing(planHeight, {
+      toValue: finalHeight,
+      duration: 300,
+      useNativeDriver: false,
+    }).start(() => {
+      setShowFullPlan(!showFullPlan);
+    });
   };
 
   const handleQuestionSubmit = async () => {
@@ -676,21 +692,41 @@ User’s Trip Details to Strictly Follow:
               <View style={{ height: 14, width: '60%' }} />
             </View>
           </SkeletonPlaceholder>
-        ) : (
+        ) : trip?.aiPlan ? (
           <Animatable.View animation="fadeInUp" duration={600} style={styles.card}>
-            <Pressable onLongPress={copyToClipboard}>
-              <Markdown style={markdownStyles}>
-                {trip.aiPlan || 'No AI plan available.'}
-              </Markdown>
-            </Pressable>
+            <Animated.View
+              style={{
+                height: contentHeight > maxCollapsedHeight && !showFullPlan ? planHeight : 'auto',
+                overflow: 'hidden',
+              }}
+            >
+              <View
+                onLayout={(event) => {
+                  const height = event.nativeEvent.layout.height;
+                  setContentHeight(height);
+                  if (!showFullPlan) {
+                    planHeight.setValue(Math.min(height, maxCollapsedHeight));
+                  }
+                }}
+              >
+                <Pressable onLongPress={copyToClipboard}>
+                  <Markdown style={markdownStyles}>
+                    {trip.aiPlan}
+                  </Markdown>
+                </Pressable>
+              </View>
+            </Animated.View>
+
+            {contentHeight > maxCollapsedHeight && (
+              <TouchableOpacity onPress={togglePlanHeight} style={{ marginTop: 12 }}>
+                <Text style={{ textAlign: 'center', color: COLOR.lightBlue, fontWeight: 'bold' }}>
+                  {showFullPlan ? 'Show Less ▲' : 'Show More ▼'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </Animatable.View>
-        )}
+        ) : null}
 
-        <Text style={styles.tripPlanTitle}>Ask AI Any Question About Your Trip</Text>
-
-        {messages.map((item, index) => (
-          <MessageBubble key={item.id ?? index} item={item} />
-        ))}
 
         <View style={styles.questionContainer}>
           <TextInput
