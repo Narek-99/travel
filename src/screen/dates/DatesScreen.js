@@ -158,7 +158,7 @@ const DatesScreen = ({ navigation }) => {
             mode="date"
             onChange={onChangeEndDate}
             themeVariant="light"
-            minimumDate={!tripId ? new Date() : undefined}
+            minimumDate={startDate ? startDate : !tripId ? new Date() : undefined}
           />
         </View>
       </View>

@@ -97,43 +97,79 @@ const AdditionalScreen = ({ navigation }) => {
       return;
     }
 
+    const { from, to } = getLimitedDateRange(tripData.startDate, tripData.endDate);
+
+    const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+      if (duration <= maxDays) {
+        return { from: getDateString({ toDate: () => new Date(start) }), to: getDateString({ toDate: () => new Date(end) }) };
+      }
+
+      const limitedEnd = new Date(start);
+      limitedEnd.setDate(start.getDate() + maxDays - 1);
+
+      return { from: getDateString({ toDate: () => start }), to: getDateString({ toDate: () => limitedEnd }) };
+    };
+
+
     const tripPrompt = `
-    Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
-    
-    Follow these instructions carefully:
-    
-    1. Begin with a concise, enthusiastic summary (one single sentence) emphasizing exactly why this itinerary is perfect for the user's specified preferences.
-    2. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from the start date (${getDateString(tripData.startDate)} ) through to and including the end date (${getDateString(tripData.endDate)}). Do not skip any days.
-    3. Use this precise daily structure for each day (provide the response in Markdown):
-    
-    ---
-    
-    📅 Day [X]
-    - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
-    - 🕒 Suggested defined time range (e.g., 9:00–12:00)
-    - 💰 Budget-friendly tips (where applicable, based on user's selected budget).
-    - 🥘 Recommended dining spots relevant to user's preferences.
-    - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
-    - 🚶 Travel tips or local insights relevant to the itinerary.
-    
-    ----
-    Repeat exactly this structured format for every single day of the trip.
-    
-    
-    User’s Trip Details to Strictly Follow:
-    
-    - **Destination:** ${tripData.destination}
-    - **Travel Dates:** ${tripData.startDate} to ${tripData.endDate} (Provide itinerary for every day!)
-    - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
-    - **Budget:** ${tripData.budget || 'medium'}
-    - **Preferred Activities:** ${tripData.activities?.join(', ') || 'no specific activities'}
-    - **Special Wishes:** ${tripData.wishes?.join(', ') || 'none'}
-    - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}
-    - **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}
-    - **Additional Information:** ${tripData.additionalInfo || 'none'}
-    
-    Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
-    `;
+Create a clearly structured, highly personalized **day-by-day travel plan** for the user's trip, strictly based on the trip details below.
+
+🎯 Instructions:
+
+1. **Do NOT include any introduction or explanation.**
+2. **Do NOT summarize or explain the format at the end.**
+3. Jump **directly into the Day 1 itinerary**.
+4. Provide an **itinerary for every single day** from **${from}** to **${to}**.
+5. Use the exact structure and Markdown formatting below — no extra text, just clean output for the app:
+
+---
+
+### 📅 Day [X]: [YYYY-MM-DD]
+
+**🕗 Morning (08:00–12:00)**  
+- ✨ Activity & Location: [Personalized, relevant to user’s interests]  
+- 💡 Local Tip: [Hidden gem, timing tip, local culture]
+
+**🍽️ Lunch (12:00–14:00)**  
+- 🥘 Food Spot: [Dining suggestion based on user’s taste & budget]
+
+**🏞️ Afternoon (14:00–18:00)**  
+- 🧭 Activity: [Local sight, district, cultural or outdoor experience]  
+- 💰 Budget Tip: [Free entry days, discounts, practical info]
+
+**🌇 Evening (18:00–22:00)**  
+- 🌃 Suggestion: [Dinner, bar, sunset point, cinema, local vibe]
+
+**🛏️ Accommodation**  
+- [Optional – only if user hasn’t specified or is looking for tips]
+
+**🚶 Travel Insight**  
+- [Helpful local tip: transport, walking route, etiquette, etc.]
+
+---
+
+📌 Repeat this format exactly for each day — clean, useful, tailored to the user.  
+Avoid generic text. Make every suggestion feel like a local planned it with love.
+
+---
+
+User’s Trip Details to Strictly Follow:
+
+- **Destination:** ${tripData.destination}  
+- **Travel Dates:** ${tripData.startDate} to ${tripData.endDate} (Provide itinerary for every day!)  
+- **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)  
+- **Budget:** ${tripData.budget || 'medium'}  
+- **Preferred Activities:** ${tripData.activities?.join(', ') || 'no specific activities'}  
+- **Special Wishes:** ${tripData.wishes?.join(', ') || 'none'}  
+- **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}  
+- **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}  
+- **Additional Information:** ${tripData.additionalInfo || 'none'}
+`;
+
 
     console.log('tripPrompt :', tripPrompt);
     let aiTravelPlan = '';
