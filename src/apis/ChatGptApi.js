@@ -1,8 +1,8 @@
 import Toast from 'react-native-toast-message';
 
-export const callChatGptForResponse = async (prompt) => {
+export const callChatGptForResponse = async (prompt, model) => {
   try {
-    const response = await fetch("https://openai-proxy-gilt-three.vercel.app/api/chat", {
+    const response = await fetch("https://openai-proxy-gilt-three.vercel.app/api/chat" + model, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

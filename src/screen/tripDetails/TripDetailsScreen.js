@@ -92,7 +92,7 @@ const TripDetailsScreen = ({ navigation }) => {
     `;
 
     try {
-      const response = await callChatGptForResponse(enrichedPrompt);
+      const response = await callChatGptForResponse(enrichedPrompt, "35");
       let index = 0;
 
       const addCharacter = () => {
@@ -268,6 +268,21 @@ const TripDetailsScreen = ({ navigation }) => {
     return date.toISOString().split('T')[0]; // YYYY-MM-DD
   };
 
+  const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
+    const start = startDate.toDate();
+    const end = endDate.toDate();
+    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (duration <= maxDays) {
+      return { from: getDateString(startDate), to: getDateString(endDate) };
+    }
+
+    const limitedEnd = new Date(start);
+    limitedEnd.setDate(start.getDate() + maxDays - 1);
+
+    return { from: getDateString(startDate), to: getDateString({ toDate: () => limitedEnd }) };
+  };
+
   useEffect(() => {
     if (region && trip?.startDate) {
       const dateStr = getDateString(trip.startDate);
@@ -277,47 +292,72 @@ const TripDetailsScreen = ({ navigation }) => {
 
   const regenerateAiPlan = async () => {
     if (!trip) return;
+    const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
+
+    Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
+    setTrip(prev => ({ ...prev, aiPlan: '⏳ Generating your unique travel plan... Please wait.' }));
 
     const tripPrompt = `
-    Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
-    
-    Follow these instructions carefully:
-    
-    1. Begin with a concise, enthusiastic summary (one single sentence) emphasizing exactly why this itinerary is perfect for the user's specified preferences.
-    2. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from the start date (${getDateString(trip.startDate)} ) through to and including the end date (${getDateString(trip.endDate)}). Do not skip any days.
-    3. Use this precise daily structure for each day (provide the response in Markdown):
-    
-    ---
+Create a clearly structured, highly personalized **day-by-day travel plan** for the user's trip, strictly based on the trip details below.
 
-    📅 Day [X]
-    - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
-    - 🕒 Suggested defined time range (e.g., 9:00–12:00)
-    - 💰 Budget-friendly tips (where applicable, based on user's selected budget).
-    - 🥘 Recommended dining spots relevant to user's preferences.
-    - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
-    - 🚶 Travel tips or local insights relevant to the itinerary.
+🎯 Instructions:
 
-    ----
-    Repeat exactly this structured format for every single day of the trip.
-    
-    
-    User’s Trip Details to Strictly Follow:
-    
-    - **Destination:** ${trip.destination}
-    - **Travel Dates:** ${trip.startDate} to ${trip.endDate} (Provide itinerary for every day!)
-    - **Traveling with:** ${trip.companion}, ${trip.persons || '1'} person(s)
-    - **Budget:** ${trip.budget || 'medium'}
-    - **Preferred Activities:** ${trip.activities?.join(', ') || 'no specific activities'}
-    - **Special Wishes:** ${trip.wishes?.join(', ') || 'none'}
-    - **Accommodation Preferences:** ${trip.accommodation?.join(', ') || 'no specific preferences'}
-    - **Preferred Location within Destination:** ${trip.location?.join(', ') || 'no specific location'}
-    - **Additional Information:** ${trip.additionalInfo || 'none'}
-    
-    Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
-    `;
+1. **Do NOT include any introduction or explanation.**
+2. **Do NOT summarize or explain the format at the end.**
+3. Jump **directly into the Day 1 itinerary**.
+4. Provide an **itinerary for every single day** from **${from}** to **${to}**.
+5. Use the exact structure and Markdown formatting below — no extra text, just clean output for the app:
+
+---
+
+
+### 📅 Day [X]: [YYYY-MM-DD]
+
+**🕗 Morning (08:00–12:00)**  
+- ✨ Activity & Location: [Personalized, relevant to user’s interests]  
+- 💡 Local Tip: [Hidden gem, timing tip, local culture]
+
+**🍽️ Lunch (12:00–14:00)**  
+- 🥘 Food Spot: [Dining suggestion based on user’s taste & budget]
+
+**🏞️ Afternoon (14:00–18:00)**  
+- 🧭 Activity: [Local sight, district, cultural or outdoor experience]  
+- 💰 Budget Tip: [Free entry days, discounts, practical info]
+
+**🌇 Evening (18:00–22:00)**  
+- 🌃 Suggestion: [Dinner, bar, sunset point, cinema, local vibe]
+
+**🛏️ Accommodation**  
+- [Optional – only if user hasn’t specified or is looking for tips]
+
+**🚶 Travel Insight**  
+- [Helpful local tip: transport, walking route, etiquette, etc.]
+
+---
+
+📌 Repeat this format exactly for each day — clean, useful, tailored to the user.  
+Avoid generic text. Make every suggestion feel like a local planned it with love.
+
+
+---
+
+User’s Trip Details to Strictly Follow:
+
+- **Destination:** ${trip.destination}  
+- **Travel Dates:** ${trip.startDate} to ${trip.endDate} (Provide itinerary for every day!)  
+- **Traveling with:** ${trip.companion}, ${trip.persons || '1'} person(s)  
+- **Budget:** ${trip.budget || 'medium'}  
+- **Preferred Activities:** ${trip.activities?.join(', ') || 'no specific activities'}  
+- **Special Wishes:** ${trip.wishes?.join(', ') || 'none'}  
+- **Accommodation Preferences:** ${trip.accommodation?.join(', ') || 'no specific preferences'}  
+- **Preferred Location within Destination:** ${trip.location?.join(', ') || 'no specific location'}  
+- **Additional Information:** ${trip.additionalInfo || 'none'}
+`;
+
+
 
     try {
-      const newPlan = await callChatGptForResponse(tripPrompt);
+      const newPlan = await callChatGptForResponse(tripPrompt, "");
       await firestore()
         .collection('users')
         .doc(user.uid)

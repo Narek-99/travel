@@ -138,7 +138,7 @@ const AdditionalScreen = ({ navigation }) => {
     console.log('tripPrompt :', tripPrompt);
     let aiTravelPlan = '';
     try {
-      aiTravelPlan = await callChatGptForResponse(tripPrompt);
+      aiTravelPlan = await callChatGptForResponse(tripPrompt, "35");
     } catch (error) {
       console.warn('Could not generate AI travel plan:', error);
       aiTravelPlan = 'We couldn’t generate a plan right now. Please try again later.';
