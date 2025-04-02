@@ -15,8 +15,8 @@
 		4836F10E6C0048EE9536BFCA /* Poppins-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0658B3DF14954C9B8DB4BA1D /* Poppins-SemiBold.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8325B2972C78C610003B16DA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8325B2962C78C610003B16DA /* GoogleService-Info.plist */; };
-		8820A0562D107C810096A854 /* Revolution AI - Write Smarter.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 8820A0552D107C810096A854 /* Revolution AI - Write Smarter.storekit */; };
 		882A5A1E2CA31FD5000C95F0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 882A5A1D2CA31FD5000C95F0 /* StoreKit.framework */; };
+		884376982D9DD426008086FF /* TravelGPT - travel with AI.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 884376972D9DD426008086FF /* TravelGPT - travel with AI.storekit */; };
 		8E9DFB92912745BEB00F9690 /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BAE4B46427444503A5FFA89C /* Poppins-Bold.ttf */; };
 		B439B048011A46B4944D47E2 /* Poppins-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5FD203D5E2E04CDAA99091F5 /* Poppins-Medium.ttf */; };
 		CBBE07ADE114403FF995DE31 /* Pods_Travel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D3F224B36ADD989801E7EC6 /* Pods_Travel.framework */; };
@@ -57,8 +57,8 @@
 		6E1222E97C0EFDA6C603E80C /* Pods-Travel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Travel.debug.xcconfig"; path = "Target Support Files/Pods-Travel/Pods-Travel.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Travel/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8325B2962C78C610003B16DA /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		8820A0552D107C810096A854 /* Revolution AI - Write Smarter.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Revolution AI - Write Smarter.storekit"; sourceTree = "<group>"; };
 		882A5A1D2CA31FD5000C95F0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		884376972D9DD426008086FF /* TravelGPT - travel with AI.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "TravelGPT - travel with AI.storekit"; sourceTree = "<group>"; };
 		8BCF79FFA300BE1ADF8B878C /* Pods_Travel_TravelTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Travel_TravelTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D3F224B36ADD989801E7EC6 /* Pods_Travel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Travel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAE4B46427444503A5FFA89C /* Poppins-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Bold.ttf"; path = "../src/assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
@@ -154,7 +154,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				8820A0552D107C810096A854 /* Revolution AI - Write Smarter.storekit */,
+				884376972D9DD426008086FF /* TravelGPT - travel with AI.storekit */,
 				8325B2962C78C610003B16DA /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* Travel */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -285,11 +285,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				884376982D9DD426008086FF /* TravelGPT - travel with AI.storekit in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				8E9DFB92912745BEB00F9690 /* Poppins-Bold.ttf in Resources */,
 				B439B048011A46B4944D47E2 /* Poppins-Medium.ttf in Resources */,
 				1506770D685545908715EC2E /* Poppins-Regular.ttf in Resources */,
-				8820A0562D107C810096A854 /* Revolution AI - Write Smarter.storekit in Resources */,
 				4836F10E6C0048EE9536BFCA /* Poppins-SemiBold.ttf in Resources */,
 				D65FE87F61034203A5C78CE3 /* BootSplash.storyboard in Resources */,
 				8325B2972C78C610003B16DA /* GoogleService-Info.plist in Resources */,

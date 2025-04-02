@@ -9,32 +9,18 @@
       }
     ]
   },
-  "identifier" : "485C60AE",
+  "identifier" : "951A1AAE",
   "nonRenewingSubscriptions" : [
 
   ],
   "products" : [
-    {
-      "displayPrice" : "0.0",
-      "familyShareable" : false,
-      "internalID" : "6738663193",
-      "localizations" : [
-        {
-          "description" : "Life Time Access",
-          "displayName" : "Life Time Access",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "lifetimeoffer",
-      "referenceName" : "Life Time Offer",
-      "type" : "NonConsumable"
-    }
+
   ],
   "settings" : {
-    "_applicationInternalID" : "6737259052",
+    "_applicationInternalID" : "6743438080",
     "_developerTeamID" : "BMZCWCDGYJ",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 756055173.19305503,
+    "_lastSynchronizedDate" : 765318187.00664604,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [
@@ -87,7 +73,7 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "21566839",
+      "id" : "21661027",
       "localizations" : [
 
       ],
@@ -100,40 +86,12 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "29.99",
-          "familyShareable" : false,
-          "groupNumber" : 3,
-          "internalID" : "6739183566",
-          "introductoryOffer" : null,
-          "localizations" : [
-            {
-              "description" : "Monthly Access",
-              "displayName" : "Monthly Subscription",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "com.chatbot.ai.monthly.1",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "monthly_1",
-          "subscriptionGroupID" : "21566839",
-          "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
-        },
-        {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "6.99",
+          "displayPrice" : "12.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "6737258951",
+          "internalID" : "6744124471",
           "introductoryOffer" : {
-            "internalID" : "F742103D",
+            "internalID" : "65CE1A10",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P3D"
@@ -141,14 +99,14 @@
           "localizations" : [
             {
               "description" : "Weekly Access",
-              "displayName" : "Weekly Subscription",
+              "displayName" : " Weekly Subscription",
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.chatbot.ai.weekly.1",
+          "productID" : "com.travel.ai.weekly.1",
           "recurringSubscriptionPeriod" : "P1W",
-          "referenceName" : "weekly_1",
-          "subscriptionGroupID" : "21566839",
+          "referenceName" : "Weekly_1",
+          "subscriptionGroupID" : "21661027",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 
@@ -161,10 +119,10 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "44.99",
+          "displayPrice" : "79.99",
           "familyShareable" : false,
           "groupNumber" : 2,
-          "internalID" : "6737259076",
+          "internalID" : "6744124355",
           "introductoryOffer" : null,
           "localizations" : [
             {
@@ -173,10 +131,10 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.chatbot.ai.yearly.1",
+          "productID" : "com.travel.ai.yearly.1",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "yearly_1",
-          "subscriptionGroupID" : "21566839",
+          "referenceName" : "Yearly_1",
+          "subscriptionGroupID" : "21661027",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 

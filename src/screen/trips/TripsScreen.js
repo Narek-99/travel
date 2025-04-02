@@ -17,9 +17,9 @@ import { SVG } from '../../assets/svgs';
 import firestore from '@react-native-firebase/firestore';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { ActivityIndicator, Image } from 'react-native'
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 
 const TripsScreen = ({ navigation }) => {
@@ -80,6 +80,12 @@ const TripsScreen = ({ navigation }) => {
   useEffect(() => {
     trips.forEach(trip => fetchTripImage(trip.destination, trip.id));
   }, [trips]);
+
+  const ImageSkeleton = () => (
+    <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width="100%" height={200} />
+    </SkeletonPlaceholder>
+  );
 
   const getCompanionEmoji = (companion) => {
     switch ((companion || '').toLowerCase()) {
@@ -155,6 +161,7 @@ const TripsScreen = ({ navigation }) => {
           <View style={styles.headerActions}>
             <Pressable style={styles.gptPlusButton} onPress={() => {
               if (!user?.subscription) {
+                navigation.navigate(SCREEN.SUBSCRIPTION);
                 ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               }
             }}>
@@ -193,15 +200,13 @@ const TripsScreen = ({ navigation }) => {
                 }
               >
                 <View style={styles.cardImageContainer}>
-                  {loadingImages[item.id] ? (
-                    <ActivityIndicator style={styles.imageLoader} />
+                  {loadingImages[item.id] || !tripImages[item.id] ? (
+                    <ImageSkeleton />
                   ) : (
-                    tripImages[item.id] && (
-                      <FastImage
-                        source={{ uri: tripImages[item.id], priority: FastImage.priority.high }}
-                        style={styles.cardImage}
-                      />
-                    )
+                    <FastImage
+                      source={{ uri: tripImages[item.id], priority: FastImage.priority.high }}
+                      style={styles.cardImage}
+                    />
                   )}
 
                   <LinearGradient

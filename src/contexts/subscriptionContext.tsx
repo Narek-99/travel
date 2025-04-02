@@ -13,10 +13,10 @@ import {
 
 export const SubscriptionContext = createContext({
     isSubscribed: false,
-    SUB_IDS: ['com.chatbot.ai.yearly.1', 'com.chatbot.ai.weekly.1'],
+    SUB_IDS: ['com.travel.ai.yearly.1', 'com.travel.ai.weekly.1'],
     setisSubscribed: (val: boolean) => { },
     subsciptionList: [],
-    handlePurchase: (val: 'com.chatbot.ai.yearly.1' | 'com.chatbot.ai.weekly.1'  ) => { },
+    handlePurchase: (val: 'com.travel.ai.yearly.1' | 'com.travel.ai.weekly.1'  ) => { },
     getAvailablePurchase: () => { }
 })
 
@@ -26,7 +26,7 @@ export const SubscriptionProvider = ({ children }: any) => {
     const [isSubscribed, setisSubscribed] = useState<any>(false)
     const [subsciptionList, setsubsciptionList] = useState<any>([])
     const [loading, setLoading] = useState(false)
-    const SUB_IDS = ['com.chatbot.ai.yearly.1', 'com.chatbot.ai.weekly.1']
+    const SUB_IDS = ['com.travel.ai.yearly.1', 'com.travel.ai.weekly.1']
 
     const getSubs = async () => {
         try {
@@ -71,7 +71,7 @@ export const SubscriptionProvider = ({ children }: any) => {
         }
     };
 
-    const handlePurchase = async (id: 'com.chatbot.ai.yearly.1' | 'com.chatbot.ai.weekly.1'  ) => {
+    const handlePurchase = async (id: 'com.travel.ai.yearly.1' | 'com.travel.ai.weekly.1'  ) => {
         console.log('Purchasing...');
         setLoading(true);
         try {
