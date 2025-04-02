@@ -145,32 +145,26 @@ const TripDetailsScreen = ({ navigation }) => {
     Toast.show({ type: 'success', text1: 'Copied!', position: 'bottom' });
   };
 
-  // Inside TripDetailsScreen component
-  useFocusEffect(
-    React.useCallback(() => {
-      const fetchTripDetails = async () => {
-        try {
-          const snapshot = await firestore()
-            .collection('users')
-            .doc(user.uid)
-            .collection('trips')
-            .doc(tripId)
-            .get();
+  useEffect(() => {
+    if (!user?.uid || !tripId) return;
 
-          const data = snapshot.data();
-          if (data) {
-            setTrip(data);  // Update the state with the new trip data
-          }
-        } catch (error) {
-          console.error('❌ Fehler beim Laden des Trips:', error);
+    const unsubscribe = firestore()
+      .collection('users')
+      .doc(user.uid)
+      .collection('trips')
+      .doc(tripId)
+      .onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          setTrip(data);
+          setLoadingTripPlan(!data.aiPlan);
         }
-      };
+      }, (error) => {
+        console.error('❌ Fehler beim Live-Update des Trips:', error);
+      });
 
-      if (user?.uid && tripId) {
-        fetchTripDetails();  // Fetch trip details when the screen is focused
-      }
-    }, [user?.uid, tripId])
-  );
+    return () => unsubscribe();
+  }, [user?.uid, tripId]);
 
   useEffect(() => {
     if (trip?.destination) {
@@ -708,6 +702,7 @@ const TripDetailsScreen = ({ navigation }) => {
         {messages.map((item, index) => (
           <MessageBubble key={item.id ?? index} item={item} />
         ))}
+
         <View style={styles.questionContainer}>
           <TextInput
             style={styles.textInput}
