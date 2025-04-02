@@ -19,6 +19,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { ActivityIndicator, Image } from 'react-native'
 import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
+
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -125,14 +127,16 @@ const TripsScreen = ({ navigation }) => {
     ]);
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp?.toDate) return '';
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+  const formatDateRange = (start, end) => {
+    const startDate = start?.toDate();
+    const endDate = end?.toDate();
+
+    if (!startDate || !endDate) return '';
+
+    const options = { day: '2-digit', month: 'short' }; // e.g., "Mar 21"
+    const startStr = startDate.toLocaleDateString('en-US', options);
+    const endStr = endDate.toLocaleDateString('en-US', options);
+    return `${startStr} – ${endStr}`;
   };
 
   return (
@@ -162,7 +166,9 @@ const TripsScreen = ({ navigation }) => {
           </View>
         }
         rightComp={
-          <Pressable onPress={() => navigation.navigate(SCREEN.DESTINATION)}>
+          <Pressable onPress={() => {
+            navigation.navigate(SCREEN.DESTINATION); ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+          }}>
             <SVG.Plus fill="black" />
           </Pressable>
         }
@@ -179,34 +185,54 @@ const TripsScreen = ({ navigation }) => {
             renderItem={({ item }) => (
               <TouchableOpacity
                 activeOpacity={1}
-                style={styles.infoCard}
-                onPress={() => navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id })}
+                style={styles.card}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                  navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id })
+                }
+                }
               >
-                {loadingImages[item.id] ? (
-                  <ActivityIndicator style={styles.imageLoader} />
-                ) : (
-                  tripImages[item.id] && (
-                    <FastImage
-                      source={{
-                        uri: tripImages[item.id],
-                        priority: FastImage.priority.high
-                      }}
-                      style={styles.tripImage}
-                    />
-                  )
-                )}
-                <View style={styles.infoContent}>
-                  <Label style={styles.infoDestination}>{item.destination}</Label>
-                  <Label style={styles.infoDate}>
-                    {formatDate(item.startDate)} – {formatDate(item.endDate)}
-                  </Label>
-                  <View style={styles.infoRow}>
-                    <Label style={styles.weatherIcon}>{getCompanionEmoji(item.companion)}</Label>
-                    <Label style={styles.infoText}>
-                      {item.companion} · {item.numberOfPersons || '1'} person
-                    </Label>
-                  </View>
+                <View style={styles.cardImageContainer}>
+                  {loadingImages[item.id] ? (
+                    <ActivityIndicator style={styles.imageLoader} />
+                  ) : (
+                    tripImages[item.id] && (
+                      <FastImage
+                        source={{ uri: tripImages[item.id], priority: FastImage.priority.high }}
+                        style={styles.cardImage}
+                      />
+                    )
+                  )}
+
+                  <LinearGradient
+                    colors={['rgba(0, 0, 0, 0.7)', 'transparent']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.overlay}
+                  >
+                    <View style={styles.companionRow}>
+                      <Text style={styles.destinationText}>{item.destination}</Text>
+                      <Text style={styles.dateText}>{formatDateRange(item.startDate, item.endDate)}</Text>
+                      <View style={styles.infoRow}>
+                        <Label style={styles.dateText}>{getCompanionEmoji(item.companion)}</Label>
+                        <Label style={styles.dateText}>
+                          {item.companion} · {item.numberOfPersons || '1'} person
+                        </Label>
+                      </View>
+                    </View>
+                  </LinearGradient>
+
+                  <TouchableOpacity
+                    style={styles.detailButton}
+                    onPress={() => {
+                      ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
+                      navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
+                    }}
+                  >
+                    <Text style={styles.detailButtonText}>Details →</Text>
+                  </TouchableOpacity>
                 </View>
+
               </TouchableOpacity>
             )}
             renderHiddenItem={({ item }) => (
@@ -221,7 +247,6 @@ const TripsScreen = ({ navigation }) => {
             )}
             rightOpenValue={-100}
             previewRowKey={'0'}
-            // previewOpenValue={-40}
             previewOpenDelay={3000}
           />
         )}
@@ -294,26 +319,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: wp(2),
   },
-  infoText: {
-    ...TEXT_STYLE.textSmall,
-    color: COLOR.dark,
-  },
-  weatherIcon: {
-    fontSize: 18,
-  },
   hiddenRow: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'flex-end',
-    paddingRight: wp(1),
-    marginHorizontal: wp(1),
-    backgroundColor: 'transparent',
+    marginHorizontal: wp(2),
   },
   deleteButton: {
     width: 80,
     height: '90%',
     backgroundColor: 'red',
-    borderRadius: 10,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -329,16 +344,55 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  infoCard: {
-    backgroundColor: "white",
-    borderRadius: 10,
-    flexDirection: 'row',
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 20,
     overflow: 'hidden',
-    marginVertical: 6,
+    shadowColor: '#000',
   },
-  infoContent: {
-    flex: 1,
+  cardImageContainer: {
+    height: 200,
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    justifyContent: "flex-start",
+    top: 0,
+    left: 0,
+    bottom: 0,
     padding: wp(4),
+  },
+  dateText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: "500"
+  },
+  destinationText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: 'white',
+    marginBottom: hp(0.5)
+  },
+  companionRow: {
+    flexDirection: 'column',
+  },
+  detailButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+  },
+  detailButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 
