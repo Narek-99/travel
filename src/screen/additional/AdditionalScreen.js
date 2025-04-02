@@ -55,12 +55,6 @@ const AdditionalScreen = ({ navigation }) => {
     setTripData({ additionalInfo });
   }, [additionalInfo]);
 
-  const getDateString = (timestamp) => {
-    if (!timestamp?.toDate) return '';
-    const date = timestamp.toDate();
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD
-  };
-
   const handleSaveAdditionalInformation = async () => {
     try {
       await firestore()
@@ -98,44 +92,34 @@ const AdditionalScreen = ({ navigation }) => {
     }
 
     const tripPrompt = `
-    Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
+    Create a personalized, day-by-day travel itinerary in Markdown based on the details below.
     
-    Follow these instructions carefully:
-    
-    1. Begin with a concise, enthusiastic summary (one single sentence) emphasizing exactly why this itinerary is perfect for the user's specified preferences.
-    2. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from the start date (${getDateString(tripData.startDate)} ) through to and including the end date (${getDateString(tripData.endDate)}). Do not skip any days.
-    3. Use this precise daily structure for each day (provide the response in Markdown):
+ Instructions:
+    1. Cover each day from **${from}** to **${to}**
+    2. Do not include any intro or summary.
+    3. Use this structure for every day:
     
     ---
+    📅 **Day [X]**
+    - 📍 **Activity & Location:** Specific place + short description based on user preferences
+    - 🕒 **Time:** e.g. 9:00–12:00
+    - 💰 **Budget Tip:** If applicable
+    - 🥘 **Dining:** Restaurant or local food recommendation
+    - 🏨 **Accommodation:** If relevant
+    - 🚶 **Local Insight:** Tip or travel advice for the day
+    ---
     
-    📅 Day [X]
-    - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
-    - 🕒 Suggested defined time range (e.g., 9:00–12:00)
-    - 💰 Budget-friendly tips (where applicable, based on user's selected budget).
-    - 🥘 Recommended dining spots relevant to user's preferences.
-    - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
-    - 🚶 Travel tips or local insights relevant to the itinerary.
-    
-    ----
-    Repeat exactly this structured format for every single day of the trip.
-    
-    
-    User’s Trip Details to Strictly Follow:
-    
+    Trip Details:
     - **Destination:** ${tripData.destination}
-    - **Travel Dates:** ${tripData.startDate} to ${tripData.endDate} (Provide itinerary for every day!)
+    - **Dates:** ${tripData.startDate} to ${tripData.endDate}
     - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
     - **Budget:** ${tripData.budget || 'medium'}
-    - **Preferred Activities:** ${tripData.activities?.join(', ') || 'no specific activities'}
-    - **Special Wishes:** ${tripData.wishes?.join(', ') || 'none'}
-    - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}
-    - **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}
-    - **Additional Information:** ${tripData.additionalInfo || 'none'}
-    
-    Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
-    `;
+    - **Activities:** ${tripData.activities?.join(', ') || 'none'}
+    - **Wishes:** ${tripData.wishes?.join(', ') || 'none'}
+    - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'none'}
+    - **Preferred Area:** ${tripData.location?.join(', ') || 'none'}
+    - **Additional Info:** ${tripData.additionalInfo || 'none'}`;
 
-    console.log('tripPrompt :', tripPrompt);
     let aiTravelPlan = '';
     try {
       aiTravelPlan = await callChatGptForResponse(tripPrompt, "35");
@@ -181,7 +165,6 @@ const AdditionalScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
-
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
