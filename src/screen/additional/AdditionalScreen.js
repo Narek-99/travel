@@ -114,7 +114,7 @@ const AdditionalScreen = ({ navigation }) => {
     1. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
     2. Use this precise daily structure for each day (provide the response in Markdown):
     
-    ---
+    -----
     
     📅 Day [X]
     - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
@@ -125,7 +125,6 @@ const AdditionalScreen = ({ navigation }) => {
     - 🚶 Travel tips or local insights relevant to the itinerary.
     
     ----
-    
     Repeat exactly this structured format for every single day of the trip.
     
     

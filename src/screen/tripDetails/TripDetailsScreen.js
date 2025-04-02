@@ -305,7 +305,7 @@ const TripDetailsScreen = ({ navigation }) => {
     const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
 
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
-    setTrip(prev => ({ ...prev, aiPlan: '⏳ Generating your unique travel plan... Please wait.' }));
+    setTrip(prev => ({ ...prev, aiPlan: '🧠 Creating your perfect travel plan based on your preferences...  This may take a moment ⏳' }));
 
     const tripPrompt = `
     Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
@@ -315,8 +315,8 @@ const TripDetailsScreen = ({ navigation }) => {
     1. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
     2. Use this precise daily structure for each day (provide the response in Markdown):
     
-    ---
-    
+    -----
+
     📅 Day [X]
     - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
     - 🕒 Suggested defined time range (e.g., 9:00–12:00)
@@ -654,6 +654,12 @@ const TripDetailsScreen = ({ navigation }) => {
         )}
 
         <Text style={styles.tripPlanTitle}>Your Personalized Day-by-Day Travel Plan</Text>
+
+        {loadingTripPlan && (
+          <Text style={{ fontSize: 16, padding: wp(5), fontStyle: 'italic', textAlign: 'center', color: COLOR.mediumGray }}>
+            🧠 Creating your perfect travel plan based on your preferences...
+            This may take a moment – it's worth the wait! ✨
+          </Text>)}
 
         {loadingTripPlan ? (
           <SkeletonPlaceholder borderRadius={10}>
