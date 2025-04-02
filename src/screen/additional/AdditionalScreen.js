@@ -27,6 +27,27 @@ const AdditionalScreen = ({ navigation }) => {
   const route = useRoute();
   const tripId = route.params?.tripId;
 
+  const getDateString = (timestamp) => {
+    if (!timestamp?.toDate) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); // Support für Timestamp und ISO
+    return date.toISOString().split('T')[0];
+  };
+
+  const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (duration <= maxDays) {
+      return { from: getDateString(start), to: getDateString(end) };
+    }
+
+    const limitedEnd = new Date(start);
+    limitedEnd.setDate(start.getDate() + maxDays - 1);
+
+    return { from: getDateString(start), to: getDateString(limitedEnd) };
+  };
+
   useEffect(() => {
     const loadTripData = async () => {
       if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
@@ -82,6 +103,62 @@ const AdditionalScreen = ({ navigation }) => {
     };
   }
 
+  const generateAiPlanInBackground = async (tripData, tripId) => {
+    const { from, to } = getLimitedDateRange(tripData.startDate, tripData.endDate);
+
+    const tripPrompt = `
+    Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
+    
+    Follow these instructions carefully:
+    
+    1. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
+    2. Use this precise daily structure for each day (provide the response in Markdown):
+    
+    ---
+    
+    📅 Day [X]
+    - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
+    - 🕒 Suggested defined time range (e.g., 9:00–12:00)
+    - 💰 Budget-friendly tips (where applicable, based on user's selected budget).
+    - 🥘 Recommended dining spots relevant to user's preferences.
+    - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
+    - 🚶 Travel tips or local insights relevant to the itinerary.
+    
+    ----
+    
+    Repeat exactly this structured format for every single day of the trip.
+    
+    
+    User’s Trip Details to Strictly Follow:
+    
+    - **Destination:** ${tripData.destination}
+    - **Travel Dates:** ${tripData.startDate} to ${tripData.endDate} (Provide itinerary for every day!)
+    - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
+    - **Budget:** ${tripData.budget || 'medium'}
+    - **Preferred Activities:** ${tripData.activities?.join(', ') || 'no specific activities'}
+    - **Special Wishes:** ${tripData.wishes?.join(', ') || 'none'}
+    - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}
+    - **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}
+    - **Additional Information:** ${tripData.additionalInfo || 'none'}
+    
+    Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
+    `;
+
+    try {
+      const aiPlan = await callChatGptForResponse(tripPrompt, "35");
+
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .update({ aiPlan });
+
+      console.log("✅ AI plan generated and saved");
+    } catch (error) {
+      console.error("❌ Fehler beim Generieren des AI-Plans:", error);
+    }
+  };
 
   const handleSaveTrip = async () => {
     setLoading(true);
@@ -91,50 +168,12 @@ const AdditionalScreen = ({ navigation }) => {
       return;
     }
 
-    const tripPrompt = `
-    Create a personalized, day-by-day travel itinerary in Markdown based on the details below.
-    
- Instructions:
-    1. Cover each day from **${from}** to **${to}**
-    2. Do not include any intro or summary.
-    3. Use this structure for every day:
-    
-    ---
-    📅 **Day [X]**
-    - 📍 **Activity & Location:** Specific place + short description based on user preferences
-    - 🕒 **Time:** e.g. 9:00–12:00
-    - 💰 **Budget Tip:** If applicable
-    - 🥘 **Dining:** Restaurant or local food recommendation
-    - 🏨 **Accommodation:** If relevant
-    - 🚶 **Local Insight:** Tip or travel advice for the day
-    ---
-    
-    Trip Details:
-    - **Destination:** ${tripData.destination}
-    - **Dates:** ${tripData.startDate} to ${tripData.endDate}
-    - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
-    - **Budget:** ${tripData.budget || 'medium'}
-    - **Activities:** ${tripData.activities?.join(', ') || 'none'}
-    - **Wishes:** ${tripData.wishes?.join(', ') || 'none'}
-    - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'none'}
-    - **Preferred Area:** ${tripData.location?.join(', ') || 'none'}
-    - **Additional Info:** ${tripData.additionalInfo || 'none'}`;
-
-    let aiTravelPlan = '';
-    try {
-      aiTravelPlan = await callChatGptForResponse(tripPrompt, "35");
-    } catch (error) {
-      console.warn('Could not generate AI travel plan:', error);
-      aiTravelPlan = 'We couldn’t generate a plan right now. Please try again later.';
-    }
-
-    // Decide whether to create a new trip or update an existing one
     const isNewTrip = !tripId;
     const effectiveTripId = isNewTrip ? `${tripData.destination}-${Date.now()}` : tripId;
     const tripToSave = {
       ...tripData,
       additionalInfo,
-      aiPlan: aiTravelPlan,
+      aiPlan: '',
       updatedAt: new Date().toISOString(),
     };
 
@@ -143,16 +182,19 @@ const AdditionalScreen = ({ navigation }) => {
     }
 
     try {
-      await firestore().collection('users').doc(user.uid).collection('trips').doc(effectiveTripId).set(tripToSave, { merge: true });
-      console.log("Trip saved successfully:", tripToSave);
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(effectiveTripId)
+        .set(tripToSave, { merge: true });
+
       resetTrip();
-      Toast.show({
-        type: 'success',
-        text1: isNewTrip ? "Your trip has been saved!" : "Your trip has been updated!",
-        position: 'top',
-        visibilityTime: 2000,
-      });
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId: effectiveTripId });
+
+      // 🧠 Starte AI-Plan-Erstellung im Hintergrund
+      generateAiPlanInBackground(tripToSave, effectiveTripId);
+
     } catch (error) {
       console.error("Error saving trip:", error);
       Toast.show({
