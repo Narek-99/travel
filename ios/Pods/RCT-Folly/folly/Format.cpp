@@ -20,6 +20,7 @@
 
 #include <folly/ConstexprMath.h>
 #include <folly/CppAttributes.h>
+#include <folly/Portability.h>
 #include <folly/container/Array.h>
 
 #include <double-conversion/double-conversion.h>
@@ -49,7 +50,6 @@ struct format_table_conv_make_item {
   static_assert(Base <= 36, "Base is unrepresentable");
   struct make_item {
     std::size_t index{};
-    constexpr explicit make_item(std::size_t index_) : index(index_) {} // gcc49
     constexpr char alpha(std::size_t ord) const {
       return static_cast<char>(
           ord < 10 ? '0' + ord : (Upper ? 'A' : 'a') + (ord - 10));
@@ -138,7 +138,7 @@ void FormatValue<double>::formatHelper(
     default:
       plusSign = '\0';
       break;
-  };
+  }
 
   auto flags = DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN |
       (arg.trailingDot ? DoubleToStringConverter::EMIT_TRAILING_DECIMAL_POINT
@@ -148,7 +148,7 @@ void FormatValue<double>::formatHelper(
   switch (arg.presentation) {
     case '%':
       val *= 100;
-      FOLLY_FALLTHROUGH;
+      [[fallthrough]];
     case 'f':
     case 'F': {
       if (arg.precision > DoubleToStringConverter::kMaxFixedDigitsAfterPoint) {
@@ -425,7 +425,5 @@ void insertThousandsGroupingUnsafe(char* start_buffer, char** end_buffer) {
 
 FormatKeyNotFoundException::FormatKeyNotFoundException(StringPiece key)
     : std::out_of_range(kMessagePrefix.str() + key.str()) {}
-
-constexpr StringPiece const FormatKeyNotFoundException::kMessagePrefix;
 
 } // namespace folly

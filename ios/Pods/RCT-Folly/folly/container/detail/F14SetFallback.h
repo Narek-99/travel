@@ -290,7 +290,6 @@ class F14BasicSet
 
   //// PUBLIC - F14 Extensions
 
-#if FOLLY_F14_ERASE_INTO_AVAILABLE
  private:
   // converts const_iterator to iterator when they are different types
   // such as in libstdc++
@@ -352,7 +351,6 @@ class F14BasicSet
       K const& key, BeforeDestroy&& beforeDestroy) {
     return eraseIntoImpl(key, beforeDestroy);
   }
-#endif
 
   bool containsEqualValue(value_type const& value) const {
     // bucket is only valid if bucket_count is non-zero
@@ -396,6 +394,58 @@ class F14BasicSet
       value_type const* b = std::addressof(entry);
       visitor(b, b + 1);
     }
+  }
+
+  /// F14HashToken interface
+  template <class... Args>
+  std::pair<iterator, bool> emplace_token(F14HashToken const&, Args&&... args) {
+    return emplace(std::forward<Args>(args)...);
+  }
+
+  F14HashToken prehash(key_type const& /*key*/) const {
+    return {}; // Ignored.
+  }
+  F14HashToken prehash(key_type const& /*key*/, std::size_t /*hash*/) const {
+    return {}; // Ignored.
+  }
+
+  template <typename K>
+  EnableHeterogeneousFind<K, F14HashToken> prehash(K const& /*key*/) const {
+    return {};
+  }
+  template <typename K>
+  EnableHeterogeneousFind<K, F14HashToken> prehash(
+      K const& /*key*/, std::size_t /*hash*/) const {
+    return {};
+  }
+
+  void prefetch(F14HashToken const& /*token*/) const {}
+
+  iterator find(F14HashToken const&, key_type const& key) { return find(key); }
+
+  const_iterator find(F14HashToken const&, key_type const& key) const {
+    return find(key);
+  }
+
+  template <typename K>
+  EnableHeterogeneousFind<K, iterator> find(F14HashToken const&, K const& key) {
+    return find(key);
+  }
+
+  template <typename K>
+  EnableHeterogeneousFind<K, const_iterator> find(
+      F14HashToken const&, K const& key) const {
+    return find(key);
+  }
+
+  bool contains(F14HashToken const&, key_type const& key) const {
+    return find(key) != this->end();
+  }
+
+  template <typename K>
+  EnableHeterogeneousFind<K, bool> contains(
+      F14HashToken const&, K const& key) const {
+    return find(key) != this->end();
   }
 };
 } // namespace detail

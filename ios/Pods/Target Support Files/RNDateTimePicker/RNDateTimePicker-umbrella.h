@@ -10,6 +10,10 @@
 #endif
 #endif
 
+#import "ComponentDescriptors.h"
+#import "RNDateTimePickerState.h"
+#import "ShadowNodes.h"
+#import "RNDateTimePickerComponentView.h"
 #import "RNDateTimePicker.h"
 #import "RNDateTimePickerManager.h"
 #import "RNDateTimePickerShadowView.h"

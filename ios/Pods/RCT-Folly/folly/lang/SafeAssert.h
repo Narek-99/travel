@@ -33,7 +33,7 @@
           __folly_detail_safe_assert_arg{                                 \
               u ? nullptr : #expr,                                        \
               __FILE__,                                                   \
-              __LINE__,                                                   \
+              FOLLY_PP_CONSTINIT_LINE_UNSIGNED,                           \
               __folly_detail_safe_assert_fun,                             \
               ::folly::detail::safe_assert_msg_types<                     \
                   decltype(::folly::detail::safe_assert_msg_types_seq_of( \
@@ -126,11 +126,11 @@ struct safe_assert_msg_types_one_fn {
   c<safe_assert_msg_type::cstr> operator()(char const*) const;
   c<safe_assert_msg_type::ui64> operator()(uint64_t) const;
 };
-FOLLY_INLINE_VARIABLE constexpr safe_assert_msg_types_one_fn
+inline constexpr safe_assert_msg_types_one_fn
     safe_assert_msg_types_one{}; // a function object to prevent extensions
 
 template <typename... A>
-safe_assert_msg_type_s<decltype(safe_assert_msg_types_one(A{}))::value...>
+safe_assert_msg_type_s<decltype(safe_assert_msg_types_one((A)A{}))::value...>
 safe_assert_msg_types_seq_of(A...); // only used in unevaluated contexts
 
 template <typename>
@@ -140,10 +140,6 @@ struct safe_assert_msg_types<safe_assert_msg_type_s<A...>> {
   using value_type = c_array<safe_assert_msg_type, sizeof...(A) + 1>;
   static constexpr value_type value = {{A..., safe_assert_msg_type::term}};
 };
-template <safe_assert_msg_type... A>
-constexpr
-    typename safe_assert_msg_types<safe_assert_msg_type_s<A...>>::value_type
-        safe_assert_msg_types<safe_assert_msg_type_s<A...>>::value;
 
 struct safe_assert_arg {
   char const* expr;
@@ -157,11 +153,11 @@ struct safe_assert_msg_cast_one_fn {
   FOLLY_ERASE auto operator()(char const* const a) const { return a; }
   FOLLY_ERASE auto operator()(uint64_t const a) const { return a; }
 };
-FOLLY_INLINE_VARIABLE constexpr safe_assert_msg_cast_one_fn
+inline constexpr safe_assert_msg_cast_one_fn
     safe_assert_msg_cast_one{}; // a function object to prevent extensions
 
 template <bool P>
-[[noreturn]] FOLLY_COLD FOLLY_NOINLINE void safe_assert_terminate(
+[[noreturn, FOLLY_ATTR_GNU_COLD]] FOLLY_NOINLINE void safe_assert_terminate(
     safe_assert_arg const* arg, ...) noexcept; // the true backing function
 
 template <bool P>

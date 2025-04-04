@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// @author: Xin Liu <xliux@fb.com>
-//
 // A concurrent skip list (CSL) implementation.
 // Ref: http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/OPODIS2006-BA.pdf
 
@@ -320,7 +318,7 @@ class ConcurrentSkipList {
           continue; // if it's getting deleted retry finding node.
         }
         // wait until fully linked.
-        while (UNLIKELY(!nodeFound->fullyLinked())) {
+        while (FOLLY_UNLIKELY(!nodeFound->fullyLinked())) {
         }
         return std::make_pair(nodeFound, 0);
       }

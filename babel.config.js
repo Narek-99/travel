@@ -1,9 +1,10 @@
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    'react-native-reanimated/plugin', // Keep this line
+    'react-native-reanimated/plugin',
+    '@babel/plugin-transform-flow-strip-types',
     [
-      'module:react-native-dotenv', // Add this block for react-native-dotenv
+      'module:react-native-dotenv',
       {
         moduleName: '@env',
         path: '.env',

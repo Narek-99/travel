@@ -142,8 +142,6 @@ struct to_ascii_powers {
   static data_type_ const data;
 };
 template <uint64_t Base, typename Int>
-constexpr size_t const to_ascii_powers<Base, Int>::size;
-template <uint64_t Base, typename Int>
 alignas(hardware_constructive_interference_size)
     typename to_ascii_powers<Base, Int>::data_type_ const
     to_ascii_powers<Base, Int>::data = to_ascii_powers<Base, Int>::data_();
@@ -181,7 +179,7 @@ template <uint64_t Base>
 FOLLY_ALWAYS_INLINE size_t to_ascii_size_array(uint64_t v) {
   using powers = to_ascii_powers<Base, uint64_t>;
   for (size_t i = 0u; i < powers::size; ++i) {
-    if (FOLLY_LIKELY(v < powers::data.data[i])) {
+    if (FOLLY_UNLIKELY(v < powers::data.data[i])) {
       return i + size_t(i == 0);
     }
   }
@@ -277,18 +275,19 @@ template <uint64_t Base, typename Alphabet>
 FOLLY_ALWAYS_INLINE void to_ascii_with_table(
     char* out, size_t size, uint64_t v) {
   using table = to_ascii_table<Base, Alphabet>;
-  auto pos = size - 2;
-  while (FOLLY_UNLIKELY(v >= Base * Base)) {
+  auto pos = size;
+  while (FOLLY_UNLIKELY(pos > 2)) {
+    pos -= 2;
     //  keep /, % together so a peephole optimization computes them together
     auto const q = v / (Base * Base);
     auto const r = v % (Base * Base);
     auto const val = table::data.data[size_t(r)];
     std::memcpy(out + pos, &val, 2);
-    pos -= 2;
     v = q;
   }
+
   auto const val = table::data.data[size_t(v)];
-  if (FOLLY_UNLIKELY(size % 2 == 0)) {
+  if (FOLLY_UNLIKELY(pos == 2)) {
     std::memcpy(out, &val, 2);
   } else {
     *out = val >> (kIsLittleEndian ? 8 : 0);
@@ -301,6 +300,15 @@ FOLLY_ALWAYS_INLINE size_t to_ascii_with_table(char* out, uint64_t v) {
   return size;
 }
 
+// Assumes that size >= number of digits in v. If >, the result is left-padded
+// with 0s.
+template <uint64_t Base, typename Alphabet>
+FOLLY_ALWAYS_INLINE void to_ascii_with_route(
+    char* outb, size_t size, uint64_t v) {
+  kIsMobile //
+      ? to_ascii_with_array<Base, Alphabet>(outb, size, v)
+      : to_ascii_with_table<Base, Alphabet>(outb, size, v);
+}
 template <uint64_t Base, typename Alphabet>
 FOLLY_ALWAYS_INLINE size_t
 to_ascii_with_route(char* outb, char const* oute, uint64_t v) {
@@ -308,9 +316,7 @@ to_ascii_with_route(char* outb, char const* oute, uint64_t v) {
   if (FOLLY_UNLIKELY(oute < outb || size_t(oute - outb) < size)) {
     return 0;
   }
-  kIsMobile //
-      ? to_ascii_with_array<Base, Alphabet>(outb, size, v)
-      : to_ascii_with_table<Base, Alphabet>(outb, size, v);
+  to_ascii_with_route<Base, Alphabet>(outb, size, v);
   return size;
 }
 template <uint64_t Base, typename Alphabet, size_t N>
@@ -329,15 +335,14 @@ FOLLY_ALWAYS_INLINE size_t to_ascii_with_route(char (&out)[N], uint64_t v) {
 //  In base 10, u64 requires at most 20 bytes, u32 at most 10, u16 at most 5,
 //  and u8 at most 3.
 template <uint64_t Base, typename Int>
-FOLLY_INLINE_VARIABLE constexpr size_t to_ascii_size_max =
+inline constexpr size_t to_ascii_size_max =
     detail::to_ascii_powers<Base, Int>::size;
 
 //  to_ascii_size_max_decimal
 //
 //  An alias to to_ascii_size_max<10>.
 template <typename Int>
-FOLLY_INLINE_VARIABLE constexpr size_t to_ascii_size_max_decimal =
-    to_ascii_size_max<10, Int>;
+inline constexpr size_t to_ascii_size_max_decimal = to_ascii_size_max<10, Int>;
 
 //  to_ascii_size
 //

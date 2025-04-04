@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <new>
 #include <type_traits>
 #include <utility>
 
@@ -107,7 +108,7 @@ template <
     typename KeyEqualOrVoid,
     typename AllocOrVoid,
     typename ItemType>
-struct BasePolicy
+struct FOLLY_MSVC_DECLSPEC(empty_bases) BasePolicy
     : private ObjectHolder<
           'H',
           Defaulted<HasherOrVoid, DefaultHasher<KeyType>>>,
@@ -163,10 +164,15 @@ struct BasePolicy
       std::is_nothrow_default_constructible<Alloc>::value;
 
   static constexpr bool kSwapIsNoexcept = kAllocIsAlwaysEqual &&
-      IsNothrowSwappable<Hasher>{} && IsNothrowSwappable<KeyEqual>{};
+      std::is_nothrow_swappable_v<Hasher> &&
+      std::is_nothrow_swappable_v<KeyEqual>;
 
   static constexpr bool isAvalanchingHasher() {
     return IsAvalanchingHasher<Hasher, Key>::value;
+  }
+
+  static constexpr bool shouldAssume32BitHash() {
+    return ShouldAssume32BitHash<Hasher>::value;
   }
 
   //////// internal types and constants
@@ -621,7 +627,7 @@ class ValueContainerPolicy : public BasePolicy<
         // location), but it seems highly likely that it will also cause
         // the compiler to drop such assumptions that are violated due
         // to our UB const_cast in moveValue.
-        destroyItem(*launder(std::addressof(src)));
+        destroyItem(*std::launder(std::addressof(src)));
       } else {
         destroyItem(src);
       }
@@ -937,7 +943,7 @@ class VectorContainerIterator : public BaseIter<ValuePtr, uint32_t> {
   pointer operator->() const { return current_; }
 
   VectorContainerIterator& operator++() {
-    if (UNLIKELY(current_ == lowest_)) {
+    if (FOLLY_UNLIKELY(current_ == lowest_)) {
       current_ = nullptr;
     } else {
       --current_;
@@ -1057,7 +1063,7 @@ class VectorContainerPolicy : public BasePolicy<
   static constexpr bool valueIsTriviallyCopyable() {
     return AllocatorHasDefaultObjectConstruct<Alloc, Value, Value>::value &&
         AllocatorHasDefaultObjectDestroy<Alloc, Value>::value &&
-        is_trivially_copyable<Value>::value;
+        std::is_trivially_copyable<Value>::value;
   }
 
  public:
@@ -1242,7 +1248,7 @@ class VectorContainerPolicy : public BasePolicy<
         assume(dst != nullptr);
         AllocTraits::construct(a, dst, Super::moveValue(*src));
         if (kIsMap) {
-          AllocTraits::destroy(a, launder(src));
+          AllocTraits::destroy(a, std::launder(src));
         } else {
           AllocTraits::destroy(a, src);
         }
@@ -1436,7 +1442,8 @@ class VectorContainerPolicy : public BasePolicy<
   // Iterator stuff
 
   Iter linearBegin(std::size_t size) const {
-    return Iter{(size > 0 ? values_ + size - 1 : nullptr), values_};
+    return size > 0 ? Iter{values_ + size - 1, values_}
+                    : Iter{nullptr, nullptr};
   }
 
   Iter linearEnd() const { return Iter{nullptr, nullptr}; }

@@ -11,6 +11,7 @@
 #endif
 
 #import "RCTActivityIndicatorViewComponentView.h"
+#import "RCTDebuggingOverlayComponentView.h"
 #import "RCTImageComponentView.h"
 #import "RCTInputAccessoryComponentView.h"
 #import "RCTInputAccessoryContentView.h"
@@ -60,6 +61,8 @@
 #import "RCTTouchableComponentViewProtocol.h"
 #import "RCTFabricSurface.h"
 #import "PlatformRunLoopObserver.h"
+#import "RCTBoxShadow.h"
+#import "RCTColorSpaceUtils.h"
 #import "RCTGenericDelegateSplitter.h"
 #import "RCTIdentifierPool.h"
 #import "RCTReactTaggedView.h"

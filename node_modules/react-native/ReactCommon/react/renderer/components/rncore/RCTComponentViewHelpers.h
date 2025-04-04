@@ -13,87 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol RCTSafeAreaViewViewProtocol <NSObject>
-
-@end
-
-@protocol RCTAndroidHorizontalScrollContentViewViewProtocol <NSObject>
-
-@end
-
-@protocol RCTAndroidProgressBarViewProtocol <NSObject>
-
-@end
-
-@protocol RCTAndroidSwipeRefreshLayoutViewProtocol <NSObject>
-- (void)setNativeRefreshing:(BOOL)value;
-@end
-
-RCT_EXTERN inline void RCTAndroidSwipeRefreshLayoutHandleCommand(
-  id<RCTAndroidSwipeRefreshLayoutViewProtocol> componentView,
-  NSString const *commandName,
-  NSArray const *args)
-{
-  if ([commandName isEqualToString:@"setNativeRefreshing"]) {
-#if RCT_DEBUG
-  if ([args count] != 1) {
-    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"AndroidSwipeRefreshLayout", commandName, (int)[args count], 1);
-    return;
-  }
-#endif
-
-  NSObject *arg0 = args[0];
-#if RCT_DEBUG
-  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"boolean", @"AndroidSwipeRefreshLayout", commandName, @"1st")) {
-    return;
-  }
-#endif
-  BOOL value = [(NSNumber *)arg0 boolValue];
-
-  [componentView setNativeRefreshing:value];
-  return;
-}
-
-#if RCT_DEBUG
-  RCTLogError(@"%@ received command %@, which is not a supported command.", @"AndroidSwipeRefreshLayout", commandName);
-#endif
-}
-
-@protocol RCTPullToRefreshViewViewProtocol <NSObject>
-- (void)setNativeRefreshing:(BOOL)refreshing;
-@end
-
-RCT_EXTERN inline void RCTPullToRefreshViewHandleCommand(
-  id<RCTPullToRefreshViewViewProtocol> componentView,
-  NSString const *commandName,
-  NSArray const *args)
-{
-  if ([commandName isEqualToString:@"setNativeRefreshing"]) {
-#if RCT_DEBUG
-  if ([args count] != 1) {
-    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"PullToRefreshView", commandName, (int)[args count], 1);
-    return;
-  }
-#endif
-
-  NSObject *arg0 = args[0];
-#if RCT_DEBUG
-  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"boolean", @"PullToRefreshView", commandName, @"1st")) {
-    return;
-  }
-#endif
-  BOOL refreshing = [(NSNumber *)arg0 boolValue];
-
-  [componentView setNativeRefreshing:refreshing];
-  return;
-}
-
-#if RCT_DEBUG
-  RCTLogError(@"%@ received command %@, which is not a supported command.", @"PullToRefreshView", commandName);
-#endif
-}
-
-@protocol RCTInputAccessoryViewProtocol <NSObject>
+@protocol RCTActivityIndicatorViewViewProtocol <NSObject>
 
 @end
 
@@ -140,45 +60,41 @@ if ([commandName isEqualToString:@"closeDrawer"]) {
 #endif
 }
 
-@protocol RCTActivityIndicatorViewViewProtocol <NSObject>
+@protocol RCTAndroidHorizontalScrollContentViewViewProtocol <NSObject>
 
 @end
 
-@protocol RCTUnimplementedNativeViewViewProtocol <NSObject>
-
+@protocol RCTAndroidSwipeRefreshLayoutViewProtocol <NSObject>
+- (void)setNativeRefreshing:(BOOL)value;
 @end
 
-@protocol RCTSwitchViewProtocol <NSObject>
-- (void)setValue:(BOOL)value;
-@end
-
-RCT_EXTERN inline void RCTSwitchHandleCommand(
-  id<RCTSwitchViewProtocol> componentView,
+RCT_EXTERN inline void RCTAndroidSwipeRefreshLayoutHandleCommand(
+  id<RCTAndroidSwipeRefreshLayoutViewProtocol> componentView,
   NSString const *commandName,
   NSArray const *args)
 {
-  if ([commandName isEqualToString:@"setValue"]) {
+  if ([commandName isEqualToString:@"setNativeRefreshing"]) {
 #if RCT_DEBUG
   if ([args count] != 1) {
-    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"Switch", commandName, (int)[args count], 1);
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"AndroidSwipeRefreshLayout", commandName, (int)[args count], 1);
     return;
   }
 #endif
 
   NSObject *arg0 = args[0];
 #if RCT_DEBUG
-  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"boolean", @"Switch", commandName, @"1st")) {
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"boolean", @"AndroidSwipeRefreshLayout", commandName, @"1st")) {
     return;
   }
 #endif
   BOOL value = [(NSNumber *)arg0 boolValue];
 
-  [componentView setValue:value];
+  [componentView setNativeRefreshing:value];
   return;
 }
 
 #if RCT_DEBUG
-  RCTLogError(@"%@ received command %@, which is not a supported command.", @"Switch", commandName);
+  RCTLogError(@"%@ received command %@, which is not a supported command.", @"AndroidSwipeRefreshLayout", commandName);
 #endif
 }
 
@@ -216,41 +132,161 @@ RCT_EXTERN inline void RCTAndroidSwitchHandleCommand(
 #endif
 }
 
-@protocol RCTTraceUpdateOverlayViewProtocol <NSObject>
-- (void)draw:(NSString *)overlays;
+@protocol RCTDebuggingOverlayViewProtocol <NSObject>
+- (void)highlightTraceUpdates:(const NSArray *)updates;
+- (void)highlightElements:(const NSArray *)elements;
+- (void)clearElementsHighlights;
 @end
 
-RCT_EXTERN inline void RCTTraceUpdateOverlayHandleCommand(
-  id<RCTTraceUpdateOverlayViewProtocol> componentView,
+RCT_EXTERN inline void RCTDebuggingOverlayHandleCommand(
+  id<RCTDebuggingOverlayViewProtocol> componentView,
   NSString const *commandName,
   NSArray const *args)
 {
-  if ([commandName isEqualToString:@"draw"]) {
+  if ([commandName isEqualToString:@"highlightTraceUpdates"]) {
 #if RCT_DEBUG
   if ([args count] != 1) {
-    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"TraceUpdateOverlay", commandName, (int)[args count], 1);
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"DebuggingOverlay", commandName, (int)[args count], 1);
     return;
   }
 #endif
 
   NSObject *arg0 = args[0];
 #if RCT_DEBUG
-  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"TraceUpdateOverlay", commandName, @"1st")) {
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSArray class], @"array", @"DebuggingOverlay", commandName, @"1st")) {
     return;
   }
 #endif
-  NSString * overlays = (NSString *)arg0;
+  const NSArray * updates = (NSArray *)arg0;
 
-  [componentView draw:overlays];
+  [componentView highlightTraceUpdates:updates];
+  return;
+}
+
+if ([commandName isEqualToString:@"highlightElements"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"DebuggingOverlay", commandName, (int)[args count], 1);
+    return;
+  }
+#endif
+
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSArray class], @"array", @"DebuggingOverlay", commandName, @"1st")) {
+    return;
+  }
+#endif
+  const NSArray * elements = (NSArray *)arg0;
+
+  [componentView highlightElements:elements];
+  return;
+}
+
+if ([commandName isEqualToString:@"clearElementsHighlights"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"DebuggingOverlay", commandName, (int)[args count], 0);
+    return;
+  }
+#endif
+
+  
+
+  [componentView clearElementsHighlights];
   return;
 }
 
 #if RCT_DEBUG
-  RCTLogError(@"%@ received command %@, which is not a supported command.", @"TraceUpdateOverlay", commandName);
+  RCTLogError(@"%@ received command %@, which is not a supported command.", @"DebuggingOverlay", commandName);
 #endif
 }
 
+@protocol RCTAndroidProgressBarViewProtocol <NSObject>
+
+@end
+
+@protocol RCTPullToRefreshViewViewProtocol <NSObject>
+- (void)setNativeRefreshing:(BOOL)refreshing;
+@end
+
+RCT_EXTERN inline void RCTPullToRefreshViewHandleCommand(
+  id<RCTPullToRefreshViewViewProtocol> componentView,
+  NSString const *commandName,
+  NSArray const *args)
+{
+  if ([commandName isEqualToString:@"setNativeRefreshing"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"PullToRefreshView", commandName, (int)[args count], 1);
+    return;
+  }
+#endif
+
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"boolean", @"PullToRefreshView", commandName, @"1st")) {
+    return;
+  }
+#endif
+  BOOL refreshing = [(NSNumber *)arg0 boolValue];
+
+  [componentView setNativeRefreshing:refreshing];
+  return;
+}
+
+#if RCT_DEBUG
+  RCTLogError(@"%@ received command %@, which is not a supported command.", @"PullToRefreshView", commandName);
+#endif
+}
+
+@protocol RCTInputAccessoryViewProtocol <NSObject>
+
+@end
+
 @protocol RCTModalHostViewViewProtocol <NSObject>
+
+@end
+
+@protocol RCTSafeAreaViewViewProtocol <NSObject>
+
+@end
+
+@protocol RCTSwitchViewProtocol <NSObject>
+- (void)setValue:(BOOL)value;
+@end
+
+RCT_EXTERN inline void RCTSwitchHandleCommand(
+  id<RCTSwitchViewProtocol> componentView,
+  NSString const *commandName,
+  NSArray const *args)
+{
+  if ([commandName isEqualToString:@"setValue"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"Switch", commandName, (int)[args count], 1);
+    return;
+  }
+#endif
+
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"boolean", @"Switch", commandName, @"1st")) {
+    return;
+  }
+#endif
+  BOOL value = [(NSNumber *)arg0 boolValue];
+
+  [componentView setValue:value];
+  return;
+}
+
+#if RCT_DEBUG
+  RCTLogError(@"%@ received command %@, which is not a supported command.", @"Switch", commandName);
+#endif
+}
+
+@protocol RCTUnimplementedNativeViewViewProtocol <NSObject>
 
 @end
 

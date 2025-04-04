@@ -10,54 +10,18 @@
 
 #ifdef ANDROID
 #include <folly/dynamic.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
-class AndroidHorizontalScrollContentViewState {
+class ActivityIndicatorViewState {
 public:
-  AndroidHorizontalScrollContentViewState() = default;
+  ActivityIndicatorViewState() = default;
 
 #ifdef ANDROID
-  AndroidHorizontalScrollContentViewState(AndroidHorizontalScrollContentViewState const &previousState, folly::dynamic data){};
+  ActivityIndicatorViewState(ActivityIndicatorViewState const &previousState, folly::dynamic data){};
   folly::dynamic getDynamic() const {
     return {};
-  };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
-  };
-#endif
-};
-
-class AndroidSwipeRefreshLayoutState {
-public:
-  AndroidSwipeRefreshLayoutState() = default;
-
-#ifdef ANDROID
-  AndroidSwipeRefreshLayoutState(AndroidSwipeRefreshLayoutState const &previousState, folly::dynamic data){};
-  folly::dynamic getDynamic() const {
-    return {};
-  };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
-  };
-#endif
-};
-
-class PullToRefreshViewState {
-public:
-  PullToRefreshViewState() = default;
-
-#ifdef ANDROID
-  PullToRefreshViewState(PullToRefreshViewState const &previousState, folly::dynamic data){};
-  folly::dynamic getDynamic() const {
-    return {};
-  };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
   };
 #endif
 };
@@ -71,38 +35,53 @@ public:
   folly::dynamic getDynamic() const {
     return {};
   };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
+#endif
+};
+
+class AndroidHorizontalScrollContentViewState {
+public:
+  AndroidHorizontalScrollContentViewState() = default;
+
+#ifdef ANDROID
+  AndroidHorizontalScrollContentViewState(AndroidHorizontalScrollContentViewState const &previousState, folly::dynamic data){};
+  folly::dynamic getDynamic() const {
+    return {};
   };
 #endif
 };
 
-class ActivityIndicatorViewState {
+class AndroidSwipeRefreshLayoutState {
 public:
-  ActivityIndicatorViewState() = default;
+  AndroidSwipeRefreshLayoutState() = default;
 
 #ifdef ANDROID
-  ActivityIndicatorViewState(ActivityIndicatorViewState const &previousState, folly::dynamic data){};
+  AndroidSwipeRefreshLayoutState(AndroidSwipeRefreshLayoutState const &previousState, folly::dynamic data){};
   folly::dynamic getDynamic() const {
     return {};
-  };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
   };
 #endif
 };
 
-class UnimplementedNativeViewState {
+class DebuggingOverlayState {
 public:
-  UnimplementedNativeViewState() = default;
+  DebuggingOverlayState() = default;
 
 #ifdef ANDROID
-  UnimplementedNativeViewState(UnimplementedNativeViewState const &previousState, folly::dynamic data){};
+  DebuggingOverlayState(DebuggingOverlayState const &previousState, folly::dynamic data){};
   folly::dynamic getDynamic() const {
     return {};
   };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
+#endif
+};
+
+class PullToRefreshViewState {
+public:
+  PullToRefreshViewState() = default;
+
+#ifdef ANDROID
+  PullToRefreshViewState(PullToRefreshViewState const &previousState, folly::dynamic data){};
+  folly::dynamic getDynamic() const {
+    return {};
   };
 #endif
 };
@@ -116,26 +95,19 @@ public:
   folly::dynamic getDynamic() const {
     return {};
   };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
-  };
 #endif
 };
 
-class TraceUpdateOverlayState {
+class UnimplementedNativeViewState {
 public:
-  TraceUpdateOverlayState() = default;
+  UnimplementedNativeViewState() = default;
 
 #ifdef ANDROID
-  TraceUpdateOverlayState(TraceUpdateOverlayState const &previousState, folly::dynamic data){};
+  UnimplementedNativeViewState(UnimplementedNativeViewState const &previousState, folly::dynamic data){};
   folly::dynamic getDynamic() const {
     return {};
   };
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
-  };
 #endif
 };
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

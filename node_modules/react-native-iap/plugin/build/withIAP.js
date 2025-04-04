@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.modifyProjectBuildGradle = exports.modifyAppBuildGradle = void 0;
+exports.modifyAppBuildGradle = void 0;
 const config_plugins_1 = require("expo/config-plugins");
 const config_plugins_2 = require("expo/config-plugins");
 const pkg = require('../../package.json');
@@ -45,23 +45,10 @@ const modifyAppBuildGradle = (buildGradle, paymentProvider) => {
     return addToBuildGradle(missingDimensionStrategy, 'defaultConfig', 1, buildGradle);
 };
 exports.modifyAppBuildGradle = modifyAppBuildGradle;
-const modifyProjectBuildGradle = (buildGradle) => {
-    const supportLibVersion = `supportLibVersion = "28.0.0"`;
-    if (buildGradle.includes(supportLibVersion)) {
-        return buildGradle;
-    }
-    return addToBuildGradle(supportLibVersion, 'ext', 1, buildGradle);
-};
-exports.modifyProjectBuildGradle = modifyProjectBuildGradle;
 const withIAPAndroid = (config, { paymentProvider }) => {
     // eslint-disable-next-line @typescript-eslint/no-shadow
     config = (0, config_plugins_1.withAppBuildGradle)(config, (config) => {
         config.modResults.contents = (0, exports.modifyAppBuildGradle)(config.modResults.contents, paymentProvider);
-        return config;
-    });
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    config = (0, config_plugins_1.withProjectBuildGradle)(config, (config) => {
-        config.modResults.contents = (0, exports.modifyProjectBuildGradle)(config.modResults.contents);
         return config;
     });
     return config;

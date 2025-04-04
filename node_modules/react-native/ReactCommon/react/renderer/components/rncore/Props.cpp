@@ -12,15 +12,29 @@
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
-SafeAreaViewProps::SafeAreaViewProps(
+ActivityIndicatorViewProps::ActivityIndicatorViewProps(
     const PropsParserContext &context,
-    const SafeAreaViewProps &sourceProps,
-    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
+    const ActivityIndicatorViewProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
 
-    
+    hidesWhenStopped(convertRawProp(context, rawProps, "hidesWhenStopped", sourceProps.hidesWhenStopped, {true})),
+    animating(convertRawProp(context, rawProps, "animating", sourceProps.animating, {true})),
+    color(convertRawProp(context, rawProps, "color", sourceProps.color, {})),
+    size(convertRawProp(context, rawProps, "size", sourceProps.size, {ActivityIndicatorViewSize::Small}))
+      {}
+AndroidDrawerLayoutProps::AndroidDrawerLayoutProps(
+    const PropsParserContext &context,
+    const AndroidDrawerLayoutProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+
+    keyboardDismissMode(convertRawProp(context, rawProps, "keyboardDismissMode", sourceProps.keyboardDismissMode, {AndroidDrawerLayoutKeyboardDismissMode::None})),
+    drawerBackgroundColor(convertRawProp(context, rawProps, "drawerBackgroundColor", sourceProps.drawerBackgroundColor, {})),
+    drawerPosition(convertRawProp(context, rawProps, "drawerPosition", sourceProps.drawerPosition, {AndroidDrawerLayoutDrawerPosition::Left})),
+    drawerWidth(convertRawProp(context, rawProps, "drawerWidth", sourceProps.drawerWidth, {})),
+    drawerLockMode(convertRawProp(context, rawProps, "drawerLockMode", sourceProps.drawerLockMode, {AndroidDrawerLayoutDrawerLockMode::Unlocked})),
+    statusBarBackgroundColor(convertRawProp(context, rawProps, "statusBarBackgroundColor", sourceProps.statusBarBackgroundColor, {}))
       {}
 AndroidHorizontalScrollContentViewProps::AndroidHorizontalScrollContentViewProps(
     const PropsParserContext &context,
@@ -28,6 +42,40 @@ AndroidHorizontalScrollContentViewProps::AndroidHorizontalScrollContentViewProps
     const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
 
     removeClippedSubviews(convertRawProp(context, rawProps, "removeClippedSubviews", sourceProps.removeClippedSubviews, {false}))
+      {}
+AndroidSwipeRefreshLayoutProps::AndroidSwipeRefreshLayoutProps(
+    const PropsParserContext &context,
+    const AndroidSwipeRefreshLayoutProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+
+    enabled(convertRawProp(context, rawProps, "enabled", sourceProps.enabled, {true})),
+    colors(convertRawProp(context, rawProps, "colors", sourceProps.colors, {})),
+    progressBackgroundColor(convertRawProp(context, rawProps, "progressBackgroundColor", sourceProps.progressBackgroundColor, {})),
+    size(convertRawProp(context, rawProps, "size", sourceProps.size, {AndroidSwipeRefreshLayoutSize::Default})),
+    progressViewOffset(convertRawProp(context, rawProps, "progressViewOffset", sourceProps.progressViewOffset, {0.0})),
+    refreshing(convertRawProp(context, rawProps, "refreshing", sourceProps.refreshing, {false}))
+      {}
+AndroidSwitchProps::AndroidSwitchProps(
+    const PropsParserContext &context,
+    const AndroidSwitchProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+
+    disabled(convertRawProp(context, rawProps, "disabled", sourceProps.disabled, {false})),
+    enabled(convertRawProp(context, rawProps, "enabled", sourceProps.enabled, {true})),
+    thumbColor(convertRawProp(context, rawProps, "thumbColor", sourceProps.thumbColor, {})),
+    trackColorForFalse(convertRawProp(context, rawProps, "trackColorForFalse", sourceProps.trackColorForFalse, {})),
+    trackColorForTrue(convertRawProp(context, rawProps, "trackColorForTrue", sourceProps.trackColorForTrue, {})),
+    value(convertRawProp(context, rawProps, "value", sourceProps.value, {false})),
+    on(convertRawProp(context, rawProps, "on", sourceProps.on, {false})),
+    thumbTintColor(convertRawProp(context, rawProps, "thumbTintColor", sourceProps.thumbTintColor, {})),
+    trackTintColor(convertRawProp(context, rawProps, "trackTintColor", sourceProps.trackTintColor, {}))
+      {}
+DebuggingOverlayProps::DebuggingOverlayProps(
+    const PropsParserContext &context,
+    const DebuggingOverlayProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
+
+    
       {}
 AndroidProgressBarProps::AndroidProgressBarProps(
     const PropsParserContext &context,
@@ -41,18 +89,6 @@ AndroidProgressBarProps::AndroidProgressBarProps(
     animating(convertRawProp(context, rawProps, "animating", sourceProps.animating, {true})),
     color(convertRawProp(context, rawProps, "color", sourceProps.color, {})),
     testID(convertRawProp(context, rawProps, "testID", sourceProps.testID, {""}))
-      {}
-AndroidSwipeRefreshLayoutProps::AndroidSwipeRefreshLayoutProps(
-    const PropsParserContext &context,
-    const AndroidSwipeRefreshLayoutProps &sourceProps,
-    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
-
-    enabled(convertRawProp(context, rawProps, "enabled", sourceProps.enabled, {true})),
-    colors(convertRawProp(context, rawProps, "colors", sourceProps.colors, {})),
-    progressBackgroundColor(convertRawProp(context, rawProps, "progressBackgroundColor", sourceProps.progressBackgroundColor, {})),
-    size(convertRawProp(context, rawProps, "size", sourceProps.size, {AndroidSwipeRefreshLayoutSize::Default})),
-    progressViewOffset(convertRawProp(context, rawProps, "progressViewOffset", sourceProps.progressViewOffset, {0.0})),
-    refreshing(convertRawProp(context, rawProps, "refreshing", sourceProps.refreshing, {false}))
       {}
 PullToRefreshViewProps::PullToRefreshViewProps(
     const PropsParserContext &context,
@@ -72,34 +108,27 @@ InputAccessoryProps::InputAccessoryProps(
 
     backgroundColor(convertRawProp(context, rawProps, "backgroundColor", sourceProps.backgroundColor, {}))
       {}
-AndroidDrawerLayoutProps::AndroidDrawerLayoutProps(
+ModalHostViewProps::ModalHostViewProps(
     const PropsParserContext &context,
-    const AndroidDrawerLayoutProps &sourceProps,
+    const ModalHostViewProps &sourceProps,
     const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
 
-    keyboardDismissMode(convertRawProp(context, rawProps, "keyboardDismissMode", sourceProps.keyboardDismissMode, {AndroidDrawerLayoutKeyboardDismissMode::None})),
-    drawerBackgroundColor(convertRawProp(context, rawProps, "drawerBackgroundColor", sourceProps.drawerBackgroundColor, {})),
-    drawerPosition(convertRawProp(context, rawProps, "drawerPosition", sourceProps.drawerPosition, {AndroidDrawerLayoutDrawerPosition::Left})),
-    drawerWidth(convertRawProp(context, rawProps, "drawerWidth", sourceProps.drawerWidth, {})),
-    drawerLockMode(convertRawProp(context, rawProps, "drawerLockMode", sourceProps.drawerLockMode, {AndroidDrawerLayoutDrawerLockMode::Unlocked})),
-    statusBarBackgroundColor(convertRawProp(context, rawProps, "statusBarBackgroundColor", sourceProps.statusBarBackgroundColor, {}))
+    animationType(convertRawProp(context, rawProps, "animationType", sourceProps.animationType, {ModalHostViewAnimationType::None})),
+    presentationStyle(convertRawProp(context, rawProps, "presentationStyle", sourceProps.presentationStyle, {ModalHostViewPresentationStyle::FullScreen})),
+    transparent(convertRawProp(context, rawProps, "transparent", sourceProps.transparent, {false})),
+    statusBarTranslucent(convertRawProp(context, rawProps, "statusBarTranslucent", sourceProps.statusBarTranslucent, {false})),
+    hardwareAccelerated(convertRawProp(context, rawProps, "hardwareAccelerated", sourceProps.hardwareAccelerated, {false})),
+    visible(convertRawProp(context, rawProps, "visible", sourceProps.visible, {false})),
+    animated(convertRawProp(context, rawProps, "animated", sourceProps.animated, {false})),
+    supportedOrientations(convertRawProp(context, rawProps, "supportedOrientations", ModalHostViewSupportedOrientationsMaskWrapped{ .value = sourceProps.supportedOrientations }, {static_cast<ModalHostViewSupportedOrientationsMask>(ModalHostViewSupportedOrientations::Portrait)}).value),
+    identifier(convertRawProp(context, rawProps, "identifier", sourceProps.identifier, {0}))
       {}
-ActivityIndicatorViewProps::ActivityIndicatorViewProps(
+SafeAreaViewProps::SafeAreaViewProps(
     const PropsParserContext &context,
-    const ActivityIndicatorViewProps &sourceProps,
-    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+    const SafeAreaViewProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
 
-    hidesWhenStopped(convertRawProp(context, rawProps, "hidesWhenStopped", sourceProps.hidesWhenStopped, {false})),
-    animating(convertRawProp(context, rawProps, "animating", sourceProps.animating, {false})),
-    color(convertRawProp(context, rawProps, "color", sourceProps.color, {})),
-    size(convertRawProp(context, rawProps, "size", sourceProps.size, {ActivityIndicatorViewSize::Small}))
-      {}
-UnimplementedNativeViewProps::UnimplementedNativeViewProps(
-    const PropsParserContext &context,
-    const UnimplementedNativeViewProps &sourceProps,
-    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
-
-    name(convertRawProp(context, rawProps, "name", sourceProps.name, {""}))
+    
       {}
 SwitchProps::SwitchProps(
     const PropsParserContext &context,
@@ -115,43 +144,12 @@ SwitchProps::SwitchProps(
     trackColorForFalse(convertRawProp(context, rawProps, "trackColorForFalse", sourceProps.trackColorForFalse, {})),
     trackColorForTrue(convertRawProp(context, rawProps, "trackColorForTrue", sourceProps.trackColorForTrue, {}))
       {}
-AndroidSwitchProps::AndroidSwitchProps(
+UnimplementedNativeViewProps::UnimplementedNativeViewProps(
     const PropsParserContext &context,
-    const AndroidSwitchProps &sourceProps,
+    const UnimplementedNativeViewProps &sourceProps,
     const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
 
-    disabled(convertRawProp(context, rawProps, "disabled", sourceProps.disabled, {false})),
-    enabled(convertRawProp(context, rawProps, "enabled", sourceProps.enabled, {true})),
-    thumbColor(convertRawProp(context, rawProps, "thumbColor", sourceProps.thumbColor, {})),
-    trackColorForFalse(convertRawProp(context, rawProps, "trackColorForFalse", sourceProps.trackColorForFalse, {})),
-    trackColorForTrue(convertRawProp(context, rawProps, "trackColorForTrue", sourceProps.trackColorForTrue, {})),
-    value(convertRawProp(context, rawProps, "value", sourceProps.value, {false})),
-    on(convertRawProp(context, rawProps, "on", sourceProps.on, {false})),
-    thumbTintColor(convertRawProp(context, rawProps, "thumbTintColor", sourceProps.thumbTintColor, {})),
-    trackTintColor(convertRawProp(context, rawProps, "trackTintColor", sourceProps.trackTintColor, {}))
-      {}
-TraceUpdateOverlayProps::TraceUpdateOverlayProps(
-    const PropsParserContext &context,
-    const TraceUpdateOverlayProps &sourceProps,
-    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
-
-    
-      {}
-ModalHostViewProps::ModalHostViewProps(
-    const PropsParserContext &context,
-    const ModalHostViewProps &sourceProps,
-    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
-
-    animationType(convertRawProp(context, rawProps, "animationType", sourceProps.animationType, {ModalHostViewAnimationType::None})),
-    presentationStyle(convertRawProp(context, rawProps, "presentationStyle", sourceProps.presentationStyle, {ModalHostViewPresentationStyle::FullScreen})),
-    transparent(convertRawProp(context, rawProps, "transparent", sourceProps.transparent, {false})),
-    statusBarTranslucent(convertRawProp(context, rawProps, "statusBarTranslucent", sourceProps.statusBarTranslucent, {false})),
-    hardwareAccelerated(convertRawProp(context, rawProps, "hardwareAccelerated", sourceProps.hardwareAccelerated, {false})),
-    visible(convertRawProp(context, rawProps, "visible", sourceProps.visible, {false})),
-    animated(convertRawProp(context, rawProps, "animated", sourceProps.animated, {false})),
-    supportedOrientations(convertRawProp(context, rawProps, "supportedOrientations", sourceProps.supportedOrientations, {static_cast<ModalHostViewSupportedOrientationsMask>(ModalHostViewSupportedOrientations::Portrait)})),
-    identifier(convertRawProp(context, rawProps, "identifier", sourceProps.identifier, {0}))
+    name(convertRawProp(context, rawProps, "name", sourceProps.name, {""}))
       {}
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

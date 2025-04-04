@@ -11,29 +11,7 @@
 #include <react/renderer/components/rncore/EventEmitters.h>
 
 
-namespace facebook {
-namespace react {
-
-
-
-
-void AndroidSwipeRefreshLayoutEventEmitter::onRefresh(OnRefresh $event) const {
-  dispatchEvent("refresh", [](jsi::Runtime &runtime) {
-    auto $payload = jsi::Object(runtime);
-    
-    return $payload;
-  });
-}
-
-
-void PullToRefreshViewEventEmitter::onRefresh(OnRefresh $event) const {
-  dispatchEvent("refresh", [](jsi::Runtime &runtime) {
-    auto $payload = jsi::Object(runtime);
-    
-    return $payload;
-  });
-}
-
+namespace facebook::react {
 
 
 void AndroidDrawerLayoutEventEmitter::onDrawerSlide(OnDrawerSlide $event) const {
@@ -73,12 +51,10 @@ void AndroidDrawerLayoutEventEmitter::onDrawerClose(OnDrawerClose $event) const 
 
 
 
-
-void SwitchEventEmitter::onChange(OnChange $event) const {
-  dispatchEvent("change", [$event=std::move($event)](jsi::Runtime &runtime) {
+void AndroidSwipeRefreshLayoutEventEmitter::onRefresh(OnRefresh $event) const {
+  dispatchEvent("refresh", [](jsi::Runtime &runtime) {
     auto $payload = jsi::Object(runtime);
-    $payload.setProperty(runtime, "value", $event.value);
-$payload.setProperty(runtime, "target", $event.target);
+    
     return $payload;
   });
 }
@@ -89,6 +65,17 @@ void AndroidSwitchEventEmitter::onChange(OnChange $event) const {
     auto $payload = jsi::Object(runtime);
     $payload.setProperty(runtime, "value", $event.value);
 $payload.setProperty(runtime, "target", $event.target);
+    return $payload;
+  });
+}
+
+
+
+
+void PullToRefreshViewEventEmitter::onRefresh(OnRefresh $event) const {
+  dispatchEvent("refresh", [](jsi::Runtime &runtime) {
+    auto $payload = jsi::Object(runtime);
+    
     return $payload;
   });
 }
@@ -130,5 +117,16 @@ void ModalHostViewEventEmitter::onOrientationChange(OnOrientationChange $event) 
   });
 }
 
-} // namespace react
-} // namespace facebook
+
+
+void SwitchEventEmitter::onChange(OnChange $event) const {
+  dispatchEvent("change", [$event=std::move($event)](jsi::Runtime &runtime) {
+    auto $payload = jsi::Object(runtime);
+    $payload.setProperty(runtime, "value", $event.value);
+$payload.setProperty(runtime, "target", $event.target);
+    return $payload;
+  });
+}
+
+
+} // namespace facebook::react

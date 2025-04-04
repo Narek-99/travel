@@ -17,11 +17,9 @@
 /**
  * Discriminated pointer: Type-safe pointer to one of several types.
  *
- * Similar to boost::variant, but has no space overhead over a raw pointer, as
+ * Similar to std::variant, but has no space overhead over a raw pointer, as
  * it relies on the fact that (on x86_64) there are 16 unused bits in a
  * pointer.
- *
- * @author Tudor Bosman (tudorb@fb.com)
  */
 
 #pragma once
@@ -35,8 +33,8 @@
 #include <folly/Portability.h>
 #include <folly/detail/DiscriminatedPtrDetail.h>
 
-#if !FOLLY_X64 && !FOLLY_AARCH64 && !FOLLY_PPC64
-#error "DiscriminatedPtr is x64, arm64 and ppc64 specific code."
+#if !FOLLY_X64 && !FOLLY_AARCH64 && !FOLLY_PPC64 && !FOLLY_RISCV64
+#error "DiscriminatedPtr is x64, arm64, ppc64 and riscv64 specific code."
 #endif
 
 namespace folly {
@@ -92,13 +90,13 @@ class DiscriminatedPtr {
    */
   template <typename T>
   T* get_nothrow() noexcept {
-    void* p = LIKELY(hasType<T>()) ? ptr() : nullptr;
+    void* p = FOLLY_LIKELY(hasType<T>()) ? ptr() : nullptr;
     return static_cast<T*>(p);
   }
 
   template <typename T>
   const T* get_nothrow() const noexcept {
-    const void* p = LIKELY(hasType<T>()) ? ptr() : nullptr;
+    const void* p = FOLLY_LIKELY(hasType<T>()) ? ptr() : nullptr;
     return static_cast<const T*>(p);
   }
 
@@ -110,7 +108,7 @@ class DiscriminatedPtr {
    */
   template <typename T>
   T* get() {
-    if (UNLIKELY(!hasType<T>())) {
+    if (FOLLY_UNLIKELY(!hasType<T>())) {
       throw std::invalid_argument("Invalid type");
     }
     return static_cast<T*>(ptr());
@@ -118,7 +116,7 @@ class DiscriminatedPtr {
 
   template <typename T>
   const T* get() const {
-    if (UNLIKELY(!hasType<T>())) {
+    if (FOLLY_UNLIKELY(!hasType<T>())) {
       throw std::invalid_argument("Invalid type");
     }
     return static_cast<const T*>(ptr());

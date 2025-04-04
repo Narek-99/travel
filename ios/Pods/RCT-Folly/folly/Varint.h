@@ -90,7 +90,7 @@ Expected<uint64_t, DecodeVarintError> tryDecodeVarint(Range<T*>& data);
  * encoding negative values using Varint would use up 9 or 10 bytes.
  *
  * if x >= 0, encodeZigZag(x) == 2*x
- * if x <  0, encodeZigZag(x) == -2*x + 1
+ * if x <  0, encodeZigZag(x) == -2*x - 1
  */
 
 inline uint64_t encodeZigZag(int64_t val) {
@@ -156,7 +156,7 @@ inline Expected<uint64_t, DecodeVarintError> tryDecodeVarint(Range<T*>& data) {
   uint64_t val = 0;
 
   // end is always greater than or equal to begin, so this subtraction is safe
-  if (LIKELY(size_t(end - begin) >= kMaxVarintLength64)) { // fast path
+  if (FOLLY_LIKELY(size_t(end - begin) >= kMaxVarintLength64)) { // fast path
     int64_t b;
     do {
       b = *p++;

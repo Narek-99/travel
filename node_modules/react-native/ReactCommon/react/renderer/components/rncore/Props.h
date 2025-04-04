@@ -15,98 +15,35 @@
 #include <react/renderer/graphics/Color.h>
 #include <vector>
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
-class SafeAreaViewProps final : public ViewProps {
- public:
-  SafeAreaViewProps() = default;
-  SafeAreaViewProps(const PropsParserContext& context, const SafeAreaViewProps &sourceProps, const RawProps &rawProps);
+enum class ActivityIndicatorViewSize { Small, Large };
 
-#pragma mark - Props
-
-  
-};
-
-class AndroidHorizontalScrollContentViewProps final : public ViewProps {
- public:
-  AndroidHorizontalScrollContentViewProps() = default;
-  AndroidHorizontalScrollContentViewProps(const PropsParserContext& context, const AndroidHorizontalScrollContentViewProps &sourceProps, const RawProps &rawProps);
-
-#pragma mark - Props
-
-  bool removeClippedSubviews{false};
-};
-
-class AndroidProgressBarProps final : public ViewProps {
- public:
-  AndroidProgressBarProps() = default;
-  AndroidProgressBarProps(const PropsParserContext& context, const AndroidProgressBarProps &sourceProps, const RawProps &rawProps);
-
-#pragma mark - Props
-
-  std::string styleAttr{};
-  std::string typeAttr{};
-  bool indeterminate{false};
-  double progress{0.0};
-  bool animating{true};
-  SharedColor color{};
-  std::string testID{""};
-};
-
-enum class AndroidSwipeRefreshLayoutSize { Default, Large };
-
-static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, AndroidSwipeRefreshLayoutSize &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ActivityIndicatorViewSize &result) {
   auto string = (std::string)value;
-  if (string == "default") { result = AndroidSwipeRefreshLayoutSize::Default; return; }
-  if (string == "large") { result = AndroidSwipeRefreshLayoutSize::Large; return; }
+  if (string == "small") { result = ActivityIndicatorViewSize::Small; return; }
+  if (string == "large") { result = ActivityIndicatorViewSize::Large; return; }
   abort();
 }
 
-static inline std::string toString(const AndroidSwipeRefreshLayoutSize &value) {
+static inline std::string toString(const ActivityIndicatorViewSize &value) {
   switch (value) {
-    case AndroidSwipeRefreshLayoutSize::Default: return "default";
-    case AndroidSwipeRefreshLayoutSize::Large: return "large";
+    case ActivityIndicatorViewSize::Small: return "small";
+    case ActivityIndicatorViewSize::Large: return "large";
   }
 }
 
-class AndroidSwipeRefreshLayoutProps final : public ViewProps {
+class ActivityIndicatorViewProps final : public ViewProps {
  public:
-  AndroidSwipeRefreshLayoutProps() = default;
-  AndroidSwipeRefreshLayoutProps(const PropsParserContext& context, const AndroidSwipeRefreshLayoutProps &sourceProps, const RawProps &rawProps);
+  ActivityIndicatorViewProps() = default;
+  ActivityIndicatorViewProps(const PropsParserContext& context, const ActivityIndicatorViewProps &sourceProps, const RawProps &rawProps);
 
 #pragma mark - Props
 
-  bool enabled{true};
-  std::vector<SharedColor> colors{};
-  SharedColor progressBackgroundColor{};
-  AndroidSwipeRefreshLayoutSize size{AndroidSwipeRefreshLayoutSize::Default};
-  Float progressViewOffset{0.0};
-  bool refreshing{false};
-};
-
-class PullToRefreshViewProps final : public ViewProps {
- public:
-  PullToRefreshViewProps() = default;
-  PullToRefreshViewProps(const PropsParserContext& context, const PullToRefreshViewProps &sourceProps, const RawProps &rawProps);
-
-#pragma mark - Props
-
-  SharedColor tintColor{};
-  SharedColor titleColor{};
-  std::string title{};
-  Float progressViewOffset{0.0};
-  bool refreshing{false};
-};
-
-class InputAccessoryProps final : public ViewProps {
- public:
-  InputAccessoryProps() = default;
-  InputAccessoryProps(const PropsParserContext& context, const InputAccessoryProps &sourceProps, const RawProps &rawProps);
-
-#pragma mark - Props
-
-  SharedColor backgroundColor{};
+  bool hidesWhenStopped{true};
+  bool animating{true};
+  SharedColor color{};
+  ActivityIndicatorViewSize size{ActivityIndicatorViewSize::Small};
 };
 
 enum class AndroidDrawerLayoutKeyboardDismissMode { None, OnDrag };
@@ -172,60 +109,45 @@ class AndroidDrawerLayoutProps final : public ViewProps {
   SharedColor statusBarBackgroundColor{};
 };
 
-enum class ActivityIndicatorViewSize { Small, Large };
+class AndroidHorizontalScrollContentViewProps final : public ViewProps {
+ public:
+  AndroidHorizontalScrollContentViewProps() = default;
+  AndroidHorizontalScrollContentViewProps(const PropsParserContext& context, const AndroidHorizontalScrollContentViewProps &sourceProps, const RawProps &rawProps);
 
-static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ActivityIndicatorViewSize &result) {
+#pragma mark - Props
+
+  bool removeClippedSubviews{false};
+};
+
+enum class AndroidSwipeRefreshLayoutSize { Default, Large };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, AndroidSwipeRefreshLayoutSize &result) {
   auto string = (std::string)value;
-  if (string == "small") { result = ActivityIndicatorViewSize::Small; return; }
-  if (string == "large") { result = ActivityIndicatorViewSize::Large; return; }
+  if (string == "default") { result = AndroidSwipeRefreshLayoutSize::Default; return; }
+  if (string == "large") { result = AndroidSwipeRefreshLayoutSize::Large; return; }
   abort();
 }
 
-static inline std::string toString(const ActivityIndicatorViewSize &value) {
+static inline std::string toString(const AndroidSwipeRefreshLayoutSize &value) {
   switch (value) {
-    case ActivityIndicatorViewSize::Small: return "small";
-    case ActivityIndicatorViewSize::Large: return "large";
+    case AndroidSwipeRefreshLayoutSize::Default: return "default";
+    case AndroidSwipeRefreshLayoutSize::Large: return "large";
   }
 }
 
-class ActivityIndicatorViewProps final : public ViewProps {
+class AndroidSwipeRefreshLayoutProps final : public ViewProps {
  public:
-  ActivityIndicatorViewProps() = default;
-  ActivityIndicatorViewProps(const PropsParserContext& context, const ActivityIndicatorViewProps &sourceProps, const RawProps &rawProps);
+  AndroidSwipeRefreshLayoutProps() = default;
+  AndroidSwipeRefreshLayoutProps(const PropsParserContext& context, const AndroidSwipeRefreshLayoutProps &sourceProps, const RawProps &rawProps);
 
 #pragma mark - Props
 
-  bool hidesWhenStopped{false};
-  bool animating{false};
-  SharedColor color{};
-  ActivityIndicatorViewSize size{ActivityIndicatorViewSize::Small};
-};
-
-class UnimplementedNativeViewProps final : public ViewProps {
- public:
-  UnimplementedNativeViewProps() = default;
-  UnimplementedNativeViewProps(const PropsParserContext& context, const UnimplementedNativeViewProps &sourceProps, const RawProps &rawProps);
-
-#pragma mark - Props
-
-  std::string name{""};
-};
-
-class SwitchProps final : public ViewProps {
- public:
-  SwitchProps() = default;
-  SwitchProps(const PropsParserContext& context, const SwitchProps &sourceProps, const RawProps &rawProps);
-
-#pragma mark - Props
-
-  bool disabled{false};
-  bool value{false};
-  SharedColor tintColor{};
-  SharedColor onTintColor{};
-  SharedColor thumbTintColor{};
-  SharedColor thumbColor{};
-  SharedColor trackColorForFalse{};
-  SharedColor trackColorForTrue{};
+  bool enabled{true};
+  std::vector<SharedColor> colors{};
+  SharedColor progressBackgroundColor{};
+  AndroidSwipeRefreshLayoutSize size{AndroidSwipeRefreshLayoutSize::Default};
+  Float progressViewOffset{0.0};
+  bool refreshing{false};
 };
 
 class AndroidSwitchProps final : public ViewProps {
@@ -246,14 +168,54 @@ class AndroidSwitchProps final : public ViewProps {
   SharedColor trackTintColor{};
 };
 
-class TraceUpdateOverlayProps final : public ViewProps {
+class DebuggingOverlayProps final : public ViewProps {
  public:
-  TraceUpdateOverlayProps() = default;
-  TraceUpdateOverlayProps(const PropsParserContext& context, const TraceUpdateOverlayProps &sourceProps, const RawProps &rawProps);
+  DebuggingOverlayProps() = default;
+  DebuggingOverlayProps(const PropsParserContext& context, const DebuggingOverlayProps &sourceProps, const RawProps &rawProps);
 
 #pragma mark - Props
 
   
+};
+
+class AndroidProgressBarProps final : public ViewProps {
+ public:
+  AndroidProgressBarProps() = default;
+  AndroidProgressBarProps(const PropsParserContext& context, const AndroidProgressBarProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  std::string styleAttr{};
+  std::string typeAttr{};
+  bool indeterminate{false};
+  double progress{0.0};
+  bool animating{true};
+  SharedColor color{};
+  std::string testID{""};
+};
+
+class PullToRefreshViewProps final : public ViewProps {
+ public:
+  PullToRefreshViewProps() = default;
+  PullToRefreshViewProps(const PropsParserContext& context, const PullToRefreshViewProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  SharedColor tintColor{};
+  SharedColor titleColor{};
+  std::string title{};
+  Float progressViewOffset{0.0};
+  bool refreshing{false};
+};
+
+class InputAccessoryProps final : public ViewProps {
+ public:
+  InputAccessoryProps() = default;
+  InputAccessoryProps(const PropsParserContext& context, const InputAccessoryProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  SharedColor backgroundColor{};
 };
 
 enum class ModalHostViewAnimationType { None, Slide, Fade };
@@ -294,6 +256,10 @@ static inline std::string toString(const ModalHostViewPresentationStyle &value) 
 }
 using ModalHostViewSupportedOrientationsMask = uint32_t;
 
+struct ModalHostViewSupportedOrientationsMaskWrapped {
+  ModalHostViewSupportedOrientationsMask value;
+};
+
 enum class ModalHostViewSupportedOrientations: ModalHostViewSupportedOrientationsMask {
   Portrait = 1 << 0,
   PortraitUpsideDown = 1 << 1,
@@ -320,50 +286,50 @@ constexpr void operator|=(
   lhs = lhs | static_cast<ModalHostViewSupportedOrientationsMask>(rhs);
 }
 
-static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ModalHostViewSupportedOrientationsMask &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ModalHostViewSupportedOrientationsMaskWrapped &wrapped) {
   auto items = std::vector<std::string>{value};
   for (const auto &item : items) {
     if (item == "portrait") {
-      result |= ModalHostViewSupportedOrientations::Portrait;
+      wrapped.value |= ModalHostViewSupportedOrientations::Portrait;
       continue;
     }
     if (item == "portrait-upside-down") {
-      result |= ModalHostViewSupportedOrientations::PortraitUpsideDown;
+      wrapped.value |= ModalHostViewSupportedOrientations::PortraitUpsideDown;
       continue;
     }
     if (item == "landscape") {
-      result |= ModalHostViewSupportedOrientations::Landscape;
+      wrapped.value |= ModalHostViewSupportedOrientations::Landscape;
       continue;
     }
     if (item == "landscape-left") {
-      result |= ModalHostViewSupportedOrientations::LandscapeLeft;
+      wrapped.value |= ModalHostViewSupportedOrientations::LandscapeLeft;
       continue;
     }
     if (item == "landscape-right") {
-      result |= ModalHostViewSupportedOrientations::LandscapeRight;
+      wrapped.value |= ModalHostViewSupportedOrientations::LandscapeRight;
       continue;
     }
     abort();
   }
 }
 
-static inline std::string toString(const ModalHostViewSupportedOrientationsMask &value) {
+static inline std::string toString(const ModalHostViewSupportedOrientationsMaskWrapped &wrapped) {
     auto result = std::string{};
     auto separator = std::string{", "};
 
-    if (value & ModalHostViewSupportedOrientations::Portrait) {
+    if (wrapped.value & ModalHostViewSupportedOrientations::Portrait) {
       result += "portrait" + separator;
     }
-    if (value & ModalHostViewSupportedOrientations::PortraitUpsideDown) {
+    if (wrapped.value & ModalHostViewSupportedOrientations::PortraitUpsideDown) {
       result += "portrait-upside-down" + separator;
     }
-    if (value & ModalHostViewSupportedOrientations::Landscape) {
+    if (wrapped.value & ModalHostViewSupportedOrientations::Landscape) {
       result += "landscape" + separator;
     }
-    if (value & ModalHostViewSupportedOrientations::LandscapeLeft) {
+    if (wrapped.value & ModalHostViewSupportedOrientations::LandscapeLeft) {
       result += "landscape-left" + separator;
     }
-    if (value & ModalHostViewSupportedOrientations::LandscapeRight) {
+    if (wrapped.value & ModalHostViewSupportedOrientations::LandscapeRight) {
       result += "landscape-right" + separator;
     }
     if (!result.empty()) {
@@ -390,5 +356,41 @@ class ModalHostViewProps final : public ViewProps {
   int identifier{0};
 };
 
-} // namespace react
-} // namespace facebook
+class SafeAreaViewProps final : public ViewProps {
+ public:
+  SafeAreaViewProps() = default;
+  SafeAreaViewProps(const PropsParserContext& context, const SafeAreaViewProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  
+};
+
+class SwitchProps final : public ViewProps {
+ public:
+  SwitchProps() = default;
+  SwitchProps(const PropsParserContext& context, const SwitchProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  bool disabled{false};
+  bool value{false};
+  SharedColor tintColor{};
+  SharedColor onTintColor{};
+  SharedColor thumbTintColor{};
+  SharedColor thumbColor{};
+  SharedColor trackColorForFalse{};
+  SharedColor trackColorForTrue{};
+};
+
+class UnimplementedNativeViewProps final : public ViewProps {
+ public:
+  UnimplementedNativeViewProps() = default;
+  UnimplementedNativeViewProps(const PropsParserContext& context, const UnimplementedNativeViewProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  std::string name{""};
+};
+
+} // namespace facebook::react

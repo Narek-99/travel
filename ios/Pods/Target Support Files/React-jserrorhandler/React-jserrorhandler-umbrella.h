@@ -10,7 +10,7 @@
 #endif
 #endif
 
-#import "JsErrorHandler.h"
+#import "jserrorhandler/JsErrorHandler.h"
 
 FOUNDATION_EXPORT double React_jserrorhandlerVersionNumber;
 FOUNDATION_EXPORT const unsigned char React_jserrorhandlerVersionString[];

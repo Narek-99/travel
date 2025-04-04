@@ -31,8 +31,18 @@
 #import "UIWindow+RNScreens.h"
 #import "RCTSurfaceTouchHandler+RNSUtility.h"
 #import "RCTTouchHandler+RNSUtility.h"
+#import "RNSDefines.h"
 #import "RNSUIBarButtonItem.h"
 #import "UIView+RNSUtility.h"
+#import "FrameCorrectionModes.h"
+#import "RNSModalScreenComponentDescriptor.h"
+#import "RNSModalScreenShadowNode.h"
+#import "RNSScreenComponentDescriptor.h"
+#import "RNSScreenShadowNode.h"
+#import "RNSScreenState.h"
+#import "RectUtil.h"
+#import "RNScreensTurboModule.h"
+#import "RNSScreenRemovalListener.h"
 
 FOUNDATION_EXPORT double RNScreensVersionNumber;
 FOUNDATION_EXPORT const unsigned char RNScreensVersionString[];

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// @author: Andrei Alexandrescu
-
 #pragma once
 
 #include <folly/CPortability.h>
@@ -102,6 +100,10 @@
 #else
 #define FB_ANONYMOUS_VARIABLE(str) FB_CONCATENATE(str, __LINE__)
 #endif
+// FB_ANONYMOUS_VARIABLE_ODR_SAFE doesn't rely on __COUNTER__ and is safe to use
+// in headers that should not violate the one-definition rule (ODR). It is
+// especially useful for C++ modules that check for ODR violations.
+#define FB_ANONYMOUS_VARIABLE_ODR_SAFE(str) FB_CONCATENATE(str, __LINE__)
 #endif
 
 /**
@@ -211,3 +213,24 @@
 #define FOLLY_PP_FOR_EACH(fn, ...) \
   FOLLY_PP_DETAIL_FOR_EACH_1(      \
       fn, FOLLY_PP_DETAIL_NARGS(__VA_ARGS__), __VA_ARGS__)
+
+#if defined(U)
+#error defined(U) // literal U is used below
+#endif
+
+//  FOLLY_PP_CONSTINIT_LINE_UNSIGNED
+//
+//  MSVC with /ZI has a special backing variable for __LINE__ which is not a
+//  literal - but token-pasting __LINE__ suppresses this backing variable. This
+//  is done in MSVC to support its edit-and-continue feature.
+//
+//  This macro evaluates to:
+//    __LINE__ ## U
+//
+//  So this macro may be ill-suited to cases which need exactly __LINE__.
+//
+//  Documentation:
+//    https://docs.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170#zi-1
+//  Workaround:
+//    https://stackoverflow.com/questions/57137351/line-is-not-constexpr-in-msvc
+#define FOLLY_PP_CONSTINIT_LINE_UNSIGNED FB_CONCATENATE(__LINE__, U)

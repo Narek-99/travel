@@ -25,8 +25,6 @@
  *  Check out AtomicHashMap.h for more thorough documentation on perf and
  *  general pros and cons relative to other hash maps.
  *
- *  @author Spencer Ahrens <sahrens@fb.com>
- *  @author Jordan DeLong <delong.j@fb.com>
  */
 
 #pragma once
@@ -46,7 +44,7 @@ struct AtomicHashArrayLinearProbeFcn {
     idx += 1; // linear probing
 
     // Avoid modulus because it's slow
-    return LIKELY(idx < capacity) ? idx : (idx - capacity);
+    return FOLLY_LIKELY(idx < capacity) ? idx : (idx - capacity);
   }
 };
 
@@ -56,7 +54,7 @@ struct AtomicHashArrayQuadraticProbeFcn {
     idx += numProbes; // quadratic probing
 
     // Avoid modulus because it's slow
-    return LIKELY(idx < capacity) ? idx : (idx - capacity);
+    return FOLLY_LIKELY(idx < capacity) ? idx : (idx - capacity);
   }
 };
 
@@ -423,7 +421,7 @@ class AtomicHashArray {
   inline size_t keyToAnchorIdx(const LookupKeyT k) const {
     const size_t hashVal = LookupHashFcn()(k);
     const size_t probe = hashVal & kAnchorMask_;
-    return LIKELY(probe < capacity_) ? probe : hashVal % capacity_;
+    return FOLLY_LIKELY(probe < capacity_) ? probe : hashVal % capacity_;
   }
 
 }; // AtomicHashArray

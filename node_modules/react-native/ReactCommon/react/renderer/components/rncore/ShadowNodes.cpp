@@ -10,17 +10,15 @@
 
 #include <react/renderer/components/rncore/ShadowNodes.h>
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
+extern const char ActivityIndicatorViewComponentName[] = "ActivityIndicatorView";
+extern const char AndroidDrawerLayoutComponentName[] = "AndroidDrawerLayout";
 extern const char AndroidHorizontalScrollContentViewComponentName[] = "AndroidHorizontalScrollContentView";
 extern const char AndroidSwipeRefreshLayoutComponentName[] = "AndroidSwipeRefreshLayout";
+extern const char DebuggingOverlayComponentName[] = "DebuggingOverlay";
 extern const char PullToRefreshViewComponentName[] = "PullToRefreshView";
-extern const char AndroidDrawerLayoutComponentName[] = "AndroidDrawerLayout";
-extern const char ActivityIndicatorViewComponentName[] = "ActivityIndicatorView";
-extern const char UnimplementedNativeViewComponentName[] = "UnimplementedNativeView";
 extern const char SwitchComponentName[] = "Switch";
-extern const char TraceUpdateOverlayComponentName[] = "TraceUpdateOverlay";
+extern const char UnimplementedNativeViewComponentName[] = "UnimplementedNativeView";
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

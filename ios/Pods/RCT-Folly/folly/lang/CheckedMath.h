@@ -32,20 +32,34 @@
 namespace folly {
 namespace detail {
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 bool generic_checked_add(T* result, T a, T b) {
-  if (FOLLY_LIKELY(a < std::numeric_limits<T>::max() - b)) {
+  if constexpr (std::is_signed_v<T>) {
+    if (a >= 0) {
+      if (FOLLY_UNLIKELY(std::numeric_limits<T>::max() - a < b)) {
+        *result = {};
+        return false;
+      }
+    } else if (FOLLY_UNLIKELY(b < std::numeric_limits<T>::min() - a)) {
+      *result = {};
+      return false;
+    }
     *result = a + b;
     return true;
   } else {
-    *result = {};
-    return false;
+    if (FOLLY_LIKELY(a <= std::numeric_limits<T>::max() - b)) {
+      *result = a + b;
+      return true;
+    } else {
+      *result = {};
+      return false;
+    }
   }
 }
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
 bool generic_checked_small_mul(T* result, T a, T b) {
-  static_assert(sizeof(T) < sizeof(uint64_t), "too large");
+  static_assert(sizeof(T) < sizeof(uint64_t), "Too large");
   uint64_t res = static_cast<uint64_t>(a) * static_cast<uint64_t>(b);
   constexpr uint64_t overflowMask = ~((1ULL << (sizeof(T) * 8)) - 1);
   if (FOLLY_UNLIKELY((res & overflowMask) != 0)) {
@@ -110,7 +124,7 @@ std::enable_if_t<sizeof(T) == sizeof(uint64_t), bool> generic_checked_mul(
 }
 } // namespace detail
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 bool checked_add(T* result, T a, T b) {
 #if FOLLY_HAS_BUILTIN(__builtin_add_overflow)
   if (FOLLY_LIKELY(!__builtin_add_overflow(a, b, result))) {
@@ -157,6 +171,26 @@ bool checked_add(T* result, T a, T b, T c, T d) {
   return true;
 }
 
+template <typename T>
+bool checked_div(T* result, T dividend, T divisor) {
+  if (FOLLY_UNLIKELY(divisor == 0)) {
+    *result = {};
+    return false;
+  }
+  *result = dividend / divisor;
+  return true;
+}
+
+template <typename T>
+bool checked_mod(T* result, T dividend, T divisor) {
+  if (FOLLY_UNLIKELY(divisor == 0)) {
+    *result = {};
+    return false;
+  }
+  *result = dividend % divisor;
+  return true;
+}
+
 template <typename T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
 bool checked_mul(T* result, T a, T b) {
   assert(result != nullptr);
@@ -166,7 +200,7 @@ bool checked_mul(T* result, T a, T b) {
   }
   *result = {};
   return false;
-#elif _MSC_VER
+#elif _MSC_VER && FOLLY_X64
   static_assert(sizeof(T) <= sizeof(unsigned __int64), "Too large");
   if (sizeof(T) < sizeof(uint64_t)) {
     return detail::generic_checked_mul(result, a, b);
@@ -206,10 +240,14 @@ template <
     typename = std::enable_if_t<std::is_pointer<T>::value>,
     typename = std::enable_if_t<std::is_unsigned<T2>::value>>
 bool checked_add(T* result, T a, T2 b) {
-  return checked_muladd(
-      reinterpret_cast<size_t*>(result),
-      size_t(b),
+  size_t out = 0;
+  bool ret = checked_muladd(
+      &out,
+      static_cast<size_t>(b),
       sizeof(std::remove_pointer_t<T>),
-      size_t(a));
+      reinterpret_cast<size_t>(a));
+
+  *result = reinterpret_cast<T>(out);
+  return ret;
 }
 } // namespace folly

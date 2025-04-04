@@ -35,7 +35,7 @@ NSString *SRURLOrigin(NSURL *url)
     return origin;
 }
 
-extern BOOL SRURLRequiresSSL(NSURL *url)
+extern BOOL SRURLRequiresSSL(NSURL *_Nullable url)
 {
     NSString *scheme = url.scheme.lowercaseString;
     return ([scheme isEqualToString:@"wss"] || [scheme isEqualToString:@"https"]);
@@ -72,11 +72,13 @@ extern NSString *_Nullable SRStreamNetworkServiceTypeFromURLRequest(NSURLRequest
         case NSURLNetworkServiceTypeVoice:
             networkServiceType = NSStreamNetworkServiceTypeVoice;
             break;
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101200 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000 || __TV_OS_VERSION_MAX_ALLOWED >= 100000 || __WATCH_OS_VERSION_MAX_ALLOWED >= 30000)
         case NSURLNetworkServiceTypeCallSignaling: {
             if (@available(iOS 10.0, tvOS 10.0, macOS 10.12, *)) {
                 networkServiceType = NSStreamNetworkServiceTypeCallSignaling;
             }
         } break;
+#endif
     }
     return networkServiceType;
 }

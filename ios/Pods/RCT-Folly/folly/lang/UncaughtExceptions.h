@@ -16,27 +16,4 @@
 
 #pragma once
 
-#include <exception>
-
-#include <folly/CppAttributes.h>
-
-namespace folly {
-
-namespace detail {
-[[FOLLY_ATTR_PURE]] int uncaught_exceptions_() noexcept;
-}
-
-#if __cpp_lib_uncaught_exceptions >= 201411L || defined(_CPPLIB_VER)
-
-/* using override */ using std::uncaught_exceptions;
-
-#else
-
-//  mimic: std::uncaught_exceptions, c++17
-[[FOLLY_ATTR_PURE]] inline int uncaught_exceptions() noexcept {
-  return detail::uncaught_exceptions_();
-}
-
-#endif
-
-} // namespace folly
+#include <folly/lang/Exception.h>

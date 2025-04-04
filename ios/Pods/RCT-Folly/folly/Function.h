@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * @author Eric Niebler (eniebler@fb.com), Sven Over (over@fb.com)
- * Acknowledgements: Giuseppe Ottaviano (ott@fb.com)
- */
+//
+// Docs: https://fburl.com/fbcref_function
+//
 
 /**
- * @class Function
+ * @class folly::Function
+ * @refcode folly/docs/examples/folly/Function.cpp
  *
- * @brief A polymorphic function wrapper that is not copyable and does not
- *    require the wrapped function to be copy constructible.
+ * A polymorphic function wrapper that is not copyable and does not
+ * require the wrapped function to be copy constructible.
  *
  * `folly::Function` is a polymorphic function wrapper, similar to
  * `std::function`. The template parameters of the `folly::Function` define
@@ -196,24 +196,6 @@
  * select a non-const invoke operator (or the const one if no non-const one is
  * present), and then move it into a const `folly::Function` using
  * `constCastFunction`.
- * The name of `constCastFunction` should warn you that something
- * potentially dangerous is happening. As a matter of fact, using
- * `std::function` always involves this potentially dangerous aspect, which
- * is why it is not considered fully const-safe or even const-correct.
- * However, in most of the cases you will not need the dangerous aspect at all.
- * Either you do not require invocation of the function from a const context,
- * in which case you do not need to use `constCastFunction` and just
- * use the inner `folly::Function` in the example above, i.e. just use a
- * non-const `folly::Function`. Or, you may need invocation from const, but
- * the callable you are wrapping does not mutate its state (e.g. it is a class
- * object and implements `operator() const`, or it is a normal,
- * non-mutable lambda), in which case you can wrap the callable in a const
- * `folly::Function` directly, without using `constCastFunction`.
- * Only if you require invocation from a const context of a callable that
- * may mutate itself when invoked you have to go through the above procedure.
- * However, in that case what you do is potentially dangerous and requires
- * the equivalent of a `const_cast`, hence you need to call
- * `constCastFunction`.
  */
 
 #pragma once
@@ -231,6 +213,7 @@
 #include <folly/functional/Invoke.h>
 #include <folly/lang/Align.h>
 #include <folly/lang/Exception.h>
+#include <folly/lang/New.h>
 
 namespace folly {
 
@@ -241,11 +224,9 @@ template <typename ReturnType, typename... Args>
 Function<ReturnType(Args...) const> constCastFunction(
     Function<ReturnType(Args...)>&&) noexcept;
 
-#if FOLLY_HAVE_NOEXCEPT_FUNCTION_TYPE
 template <typename ReturnType, typename... Args>
 Function<ReturnType(Args...) const noexcept> constCastFunction(
     Function<ReturnType(Args...) noexcept>&&) noexcept;
-#endif
 
 namespace detail {
 namespace function {
@@ -253,8 +234,14 @@ namespace function {
 enum class Op { MOVE, NUKE, HEAP };
 
 union Data {
-  Data() {}
+  struct BigTrivialLayout {
+    void* big;
+    std::size_t size;
+    std::size_t align;
+  };
+
   void* big;
+  BigTrivialLayout bigt;
   std::aligned_storage<6 * sizeof(void*)>::type tiny;
 };
 
@@ -277,7 +264,11 @@ constexpr bool isEmptyFunction(T const& t) {
 }
 
 template <typename F, typename... Args>
-using CallableResult = decltype(FOLLY_DECLVAL(F &&)(FOLLY_DECLVAL(Args &&)...));
+using CallableResult = decltype(FOLLY_DECLVAL(F&&)(FOLLY_DECLVAL(Args&&)...));
+
+template <typename F, typename... Args>
+constexpr bool CallableNoexcept =
+    noexcept(FOLLY_DECLVAL(F&&)(FOLLY_DECLVAL(Args&&)...));
 
 template <
     typename From,
@@ -301,7 +292,7 @@ template <typename T>
 using CallArg = conditional_t<is_register_pass_v<T>, T, T&&>;
 #endif
 
-template <typename F, typename R, typename... A>
+template <typename F, bool Nx, typename R, typename... A>
 class FunctionTraitsSharedProxy {
   std::shared_ptr<Function<F>> sp_;
 
@@ -310,7 +301,7 @@ class FunctionTraitsSharedProxy {
   explicit FunctionTraitsSharedProxy(Function<F>&& func)
       : sp_(func ? std::make_shared<Function<F>>(std::move(func))
                  : std::shared_ptr<Function<F>>()) {}
-  R operator()(A... args) const {
+  R operator()(A... args) const noexcept(Nx) {
     if (!sp_) {
       throw_exception<std::bad_function_call>();
     }
@@ -320,27 +311,38 @@ class FunctionTraitsSharedProxy {
   explicit operator bool() const noexcept { return sp_ != nullptr; }
 
   friend bool operator==(
-      FunctionTraitsSharedProxy<F, R, A...> const& proxy,
-      std::nullptr_t) noexcept {
+      FunctionTraitsSharedProxy const& proxy, std::nullptr_t) noexcept {
     return proxy.sp_ == nullptr;
   }
   friend bool operator!=(
-      FunctionTraitsSharedProxy<F, R, A...> const& proxy,
-      std::nullptr_t) noexcept {
+      FunctionTraitsSharedProxy const& proxy, std::nullptr_t) noexcept {
     return proxy.sp_ != nullptr;
   }
 
   friend bool operator==(
-      std::nullptr_t,
-      FunctionTraitsSharedProxy<F, R, A...> const& proxy) noexcept {
+      std::nullptr_t, FunctionTraitsSharedProxy const& proxy) noexcept {
     return proxy.sp_ == nullptr;
   }
   friend bool operator!=(
-      std::nullptr_t,
-      FunctionTraitsSharedProxy<F, R, A...> const& proxy) noexcept {
+      std::nullptr_t, FunctionTraitsSharedProxy const& proxy) noexcept {
     return proxy.sp_ != nullptr;
   }
 };
+
+template <
+    typename Fun,
+    bool Small,
+    bool Nx,
+    typename ReturnType,
+    typename... Args>
+ReturnType call_(Args... args, Data& p) noexcept(Nx) {
+  auto& fn = *static_cast<Fun*>(Small ? &p.tiny : p.big);
+  if constexpr (std::is_void<ReturnType>::value) {
+    fn(static_cast<Args&&>(args)...);
+  } else {
+    return fn(static_cast<Args&&>(args)...);
+  }
+}
 
 template <typename FunctionType>
 struct FunctionTraits;
@@ -355,33 +357,9 @@ struct FunctionTraits<ReturnType(Args...)> {
   template <typename F, typename R = CallableResult<F&, Args...>>
   using IfSafeResult = IfSafeResultImpl<R, ReturnType>;
 
-  template <typename Fun>
-  static ReturnType callSmall(CallArg<Args>... args, Data& p) {
-    auto& fn = *static_cast<Fun*>(static_cast<void*>(&p.tiny));
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
-
-  template <typename Fun>
-  static ReturnType callBig(CallArg<Args>... args, Data& p) {
-    auto& fn = *static_cast<Fun*>(p.big);
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
+  template <typename Fun, bool Small>
+  static constexpr Call call =
+      call_<Fun, Small, false, ReturnType, CallArg<Args>...>;
 
   static ReturnType uninitCall(CallArg<Args>..., Data&) {
     throw_exception<std::bad_function_call>();
@@ -393,7 +371,7 @@ struct FunctionTraits<ReturnType(Args...)> {
   }
 
   using SharedProxy =
-      FunctionTraitsSharedProxy<NonConstSignature, ReturnType, Args...>;
+      FunctionTraitsSharedProxy<NonConstSignature, false, ReturnType, Args...>;
 };
 
 template <typename ReturnType, typename... Args>
@@ -406,33 +384,9 @@ struct FunctionTraits<ReturnType(Args...) const> {
   template <typename F, typename R = CallableResult<const F&, Args...>>
   using IfSafeResult = IfSafeResultImpl<R, ReturnType>;
 
-  template <typename Fun>
-  static ReturnType callSmall(CallArg<Args>... args, Data& p) {
-    auto& fn = *static_cast<const Fun*>(static_cast<void*>(&p.tiny));
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
-
-  template <typename Fun>
-  static ReturnType callBig(CallArg<Args>... args, Data& p) {
-    auto& fn = *static_cast<const Fun*>(p.big);
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
+  template <typename Fun, bool Small>
+  static constexpr Call call =
+      call_<const Fun, Small, false, ReturnType, CallArg<Args>...>;
 
   static ReturnType uninitCall(CallArg<Args>..., Data&) {
     throw_exception<std::bad_function_call>();
@@ -444,10 +398,9 @@ struct FunctionTraits<ReturnType(Args...) const> {
   }
 
   using SharedProxy =
-      FunctionTraitsSharedProxy<ConstSignature, ReturnType, Args...>;
+      FunctionTraitsSharedProxy<ConstSignature, false, ReturnType, Args...>;
 };
 
-#if FOLLY_HAVE_NOEXCEPT_FUNCTION_TYPE
 template <typename ReturnType, typename... Args>
 struct FunctionTraits<ReturnType(Args...) noexcept> {
   using Call = ReturnType (*)(CallArg<Args>..., Data&) noexcept;
@@ -455,36 +408,15 @@ struct FunctionTraits<ReturnType(Args...) noexcept> {
   using NonConstSignature = ReturnType(Args...) noexcept;
   using OtherSignature = ConstSignature;
 
-  template <typename F, typename R = CallableResult<F&, Args...>>
+  template <
+      typename F,
+      typename R = CallableResult<F&, Args...>,
+      std::enable_if_t<CallableNoexcept<F&, Args...>, int> = 0>
   using IfSafeResult = IfSafeResultImpl<R, ReturnType>;
 
-  template <typename Fun>
-  static ReturnType callSmall(CallArg<Args>... args, Data& p) noexcept {
-    auto& fn = *static_cast<Fun*>(static_cast<void*>(&p.tiny));
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
-
-  template <typename Fun>
-  static ReturnType callBig(CallArg<Args>... args, Data& p) noexcept {
-    auto& fn = *static_cast<Fun*>(p.big);
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
+  template <typename Fun, bool Small>
+  static constexpr Call call =
+      call_<Fun, Small, true, ReturnType, CallArg<Args>...>;
 
   static ReturnType uninitCall(CallArg<Args>..., Data&) noexcept {
     terminate_with<std::bad_function_call>();
@@ -496,7 +428,7 @@ struct FunctionTraits<ReturnType(Args...) noexcept> {
   }
 
   using SharedProxy =
-      FunctionTraitsSharedProxy<NonConstSignature, ReturnType, Args...>;
+      FunctionTraitsSharedProxy<NonConstSignature, true, ReturnType, Args...>;
 };
 
 template <typename ReturnType, typename... Args>
@@ -506,36 +438,15 @@ struct FunctionTraits<ReturnType(Args...) const noexcept> {
   using NonConstSignature = ReturnType(Args...) noexcept;
   using OtherSignature = NonConstSignature;
 
-  template <typename F, typename R = CallableResult<const F&, Args...>>
+  template <
+      typename F,
+      typename R = CallableResult<const F&, Args...>,
+      std::enable_if_t<CallableNoexcept<const F&, Args...>, int> = 0>
   using IfSafeResult = IfSafeResultImpl<R, ReturnType>;
 
-  template <typename Fun>
-  static ReturnType callSmall(CallArg<Args>... args, Data& p) noexcept {
-    auto& fn = *static_cast<const Fun*>(static_cast<void*>(&p.tiny));
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
-
-  template <typename Fun>
-  static ReturnType callBig(CallArg<Args>... args, Data& p) noexcept {
-    auto& fn = *static_cast<const Fun*>(p.big);
-#if __cpp_if_constexpr >= 201606L
-    if constexpr (std::is_void<ReturnType>::value) {
-      fn(static_cast<Args&&>(args)...);
-    } else {
-      return fn(static_cast<Args&&>(args)...);
-    }
-#else
-    return static_cast<ReturnType>(fn(static_cast<Args&&>(args)...));
-#endif
-  }
+  template <typename Fun, bool Small>
+  static constexpr Call call =
+      call_<const Fun, Small, true, ReturnType, CallArg<Args>...>;
 
   static ReturnType uninitCall(CallArg<Args>..., Data&) noexcept {
     terminate_with<std::bad_function_call>();
@@ -547,9 +458,8 @@ struct FunctionTraits<ReturnType(Args...) const noexcept> {
   }
 
   using SharedProxy =
-      FunctionTraitsSharedProxy<ConstSignature, ReturnType, Args...>;
+      FunctionTraitsSharedProxy<ConstSignature, true, ReturnType, Args...>;
 };
-#endif
 
 // These are control functions. They type-erase the operations of move-
 // construction, destruction, and conversion to bool.
@@ -557,17 +467,7 @@ struct FunctionTraits<ReturnType(Args...) const noexcept> {
 // The interface operations are noexcept, so the implementations are as well.
 // Having the implementations be noexcept in the type permits callers to omit
 // exception-handling machinery.
-
-// Portably aliasing the type pointer-to-noexcept-function is tricky. Compilers
-// sometimes reject the straightforward approach with an error. Even with this
-// technique, some compilers accept the program while discarding the exception
-// specification. This is best-effort.
-std::size_t exec_(Op, Data*, Data*) noexcept;
-using Exec = decltype(&exec_);
-#if __cpp_noexcept_function_type >= 201510L || FOLLY_CPLUSPLUS >= 201702
-static_assert(noexcept(Exec(nullptr)(Op{}, nullptr, nullptr)), "");
-#endif
-
+//
 // This is intentionally instantiated per size rather than per function in order
 // to minimize the number of instantiations. It would be safe to minimize
 // instantiations even more by simply having a single non-template function that
@@ -576,8 +476,8 @@ static_assert(noexcept(Exec(nullptr)(Op{}, nullptr, nullptr)), "");
 // need. But it is only necessary to handle those sizes which are multiples of
 // the alignof(Data), and to round up other sizes.
 struct DispatchSmallTrivial {
-  template <typename Fun, typename Base>
-  static constexpr auto call = Base::template callSmall<Fun>;
+  static constexpr bool is_in_situ = true;
+  static constexpr bool is_trivial = true;
 
   template <std::size_t Size>
   static std::size_t exec_(Op o, Data* src, Data* dst) noexcept {
@@ -598,9 +498,57 @@ struct DispatchSmallTrivial {
   static constexpr auto exec = exec_<size_<sizeof(Fun)>>;
 };
 
-struct DispatchSmall {
+struct DispatchBigTrivial {
+  static constexpr bool is_in_situ = false;
+  static constexpr bool is_trivial = true;
+
   template <typename Fun, typename Base>
-  static constexpr auto call = Base::template callSmall<Fun>;
+  static constexpr auto call = Base::template callBig<Fun>;
+
+  static constexpr bool is_align_large(size_t align) {
+    return align > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
+  }
+
+  template <bool IsAlignLarge>
+  static std::size_t exec_(Op o, Data* src, Data* dst) noexcept {
+    switch (o) {
+      case Op::MOVE:
+        dst->bigt = src->bigt;
+        src->bigt = {};
+        break;
+      case Op::NUKE:
+        IsAlignLarge
+            ? operator_delete(
+                  src->big, src->bigt.size, std::align_val_t(src->bigt.align))
+            : operator_delete(src->big, src->bigt.size);
+        break;
+      case Op::HEAP:
+        break;
+    }
+    return src->bigt.size;
+  }
+  template <typename T>
+  static constexpr auto exec = exec_<is_align_large(alignof(T))>;
+
+  FOLLY_ALWAYS_INLINE static void ctor(
+      Data& data,
+      void const* fun,
+      std::size_t size,
+      std::size_t align) noexcept {
+    // cannot use type-specific new since type-specific new is overrideable
+    // in concert with type-specific delete
+    data.bigt.big = is_align_large(align)
+        ? operator_new(size, std::align_val_t(align))
+        : operator_new(size);
+    data.bigt.size = size;
+    data.bigt.align = align;
+    std::memcpy(data.bigt.big, fun, size);
+  }
+};
+
+struct DispatchSmall {
+  static constexpr bool is_in_situ = true;
+  static constexpr bool is_trivial = false;
 
   template <typename Fun>
   static std::size_t exec(Op o, Data* src, Data* dst) noexcept {
@@ -608,7 +556,7 @@ struct DispatchSmall {
       case Op::MOVE:
         ::new (static_cast<void*>(&dst->tiny)) Fun(static_cast<Fun&&>(
             *static_cast<Fun*>(static_cast<void*>(&src->tiny))));
-        FOLLY_FALLTHROUGH;
+        [[fallthrough]];
       case Op::NUKE:
         static_cast<Fun*>(static_cast<void*>(&src->tiny))->~Fun();
         break;
@@ -620,8 +568,8 @@ struct DispatchSmall {
 };
 
 struct DispatchBig {
-  template <typename Fun, typename Base>
-  static constexpr auto call = Base::template callBig<Fun>;
+  static constexpr bool is_in_situ = false;
+  static constexpr bool is_trivial = false;
 
   template <typename Fun>
   static std::size_t exec(Op o, Data* src, Data* dst) noexcept {
@@ -640,6 +588,32 @@ struct DispatchBig {
   }
 };
 
+template <bool InSitu, bool IsTriv>
+struct Dispatch;
+template <>
+struct Dispatch<true, true> : DispatchSmallTrivial {};
+template <>
+struct Dispatch<true, false> : DispatchSmall {};
+template <>
+struct Dispatch<false, true> : DispatchBigTrivial {};
+template <>
+struct Dispatch<false, false> : DispatchBig {};
+
+template <
+    typename Fun,
+    bool InSituSize = sizeof(Fun) <= sizeof(Data),
+    bool InSituAlign = alignof(Fun) <= alignof(Data),
+    bool InSituNoexcept = noexcept(Fun(FOLLY_DECLVAL(Fun)))>
+using DispatchOf = Dispatch<
+    InSituSize && InSituAlign && InSituNoexcept,
+    std::is_trivially_copyable_v<Fun>>;
+
+// This cannot be done inseide `Function` class, because the word
+// `Function` there refers to the instantion and not the template.
+template <typename T>
+constexpr bool is_instantiation_of_folly_function_v =
+    is_instantiation_of_v<Function, T>;
+
 } // namespace function
 } // namespace detail
 
@@ -654,13 +628,13 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
 
   using Traits = detail::function::FunctionTraits<FunctionType>;
   using Call = typename Traits::Call;
-  using Exec = detail::function::Exec;
+  using Exec = std::size_t (*)(Op, Data*, Data*) noexcept;
 
   // The `data_` member is mutable to allow `constCastFunction` to work without
   // invoking undefined behavior. Const-correctness is only violated when
   // `FunctionType` is a const function type (e.g., `int() const`) and `*this`
   // is the result of calling `constCastFunction`.
-  mutable Data data_{};
+  mutable Data data_{unsafe_default_initialized};
   Call call_{&Traits::uninitCall};
   Exec exec_{nullptr};
 
@@ -681,7 +655,7 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
     using Fun = Function<Signature>;
     if (fun) {
       data_.big = new Fun(static_cast<Fun&&>(fun));
-      call_ = Traits::template callBig<Fun>;
+      call_ = Traits::template call<Fun, false>;
       exec_ = Exec(detail::function::DispatchBig::exec<Fun>);
     }
   }
@@ -697,7 +671,7 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
   /**
    * Default constructor. Constructs an empty Function.
    */
-  Function() = default;
+  constexpr Function() = default;
 
   // not copyable
   Function(const Function&) = delete;
@@ -723,60 +697,62 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
   /**
    * Constructs an empty `Function`.
    */
-  /* implicit */ Function(std::nullptr_t) noexcept {}
+  /* implicit */ constexpr Function(std::nullptr_t) noexcept {}
 
   /**
    * Constructs a new `Function` from any callable object that is _not_ a
-   * `folly::Function`. This handles function pointers, pointers to static
-   * member functions, `std::reference_wrapper` objects, `std::function`
-   * objects, and arbitrary objects that implement `operator()` if the parameter
-   * signature matches (i.e. it returns an object convertible to `R` when called
-   * with `Args...`).
+   * `folly::Function`.
    *
    * \note `typename Traits::template IfSafeResult<Fun>` prevents this overload
    * from being selected by overload resolution when `fun` is not a compatible
    * function.
    *
-   * \note The noexcept requires some explanation. `IsSmall` is true when the
+   * \note The noexcept requires some explanation. `is_in_situ` is true when the
    * decayed type fits within the internal buffer and is noexcept-movable. But
    * this ctor might copy, not move. What we need here, if this ctor does a
    * copy, is that this ctor be noexcept when the copy is noexcept. That is not
-   * checked in `IsSmall`, and shouldn't be, because once the `Function` is
+   * checked in `is_in_situ`, and shouldn't be, because once the `Function` is
    * constructed, the contained object is never copied. This check is for this
    * ctor only, in the case that this ctor does a copy.
+   *
+   * @param fun function pointers, pointers to static
+   *     member functions, `std::reference_wrapper` objects, `std::function`
+   *     objects, and arbitrary objects that implement `operator()` if the
+   * parameter signature matches (i.e. it returns an object convertible to `R`
+   * when called with `Args...`).
    */
   template <
       typename Fun,
-      typename =
-          std::enable_if_t<!detail::is_similar_instantiation_v<Function, Fun>>,
-      typename = typename Traits::template IfSafeResult<Fun>,
-      bool IsSmall = sizeof(Fun) <=
-          sizeof(Data::tiny) && noexcept(Fun(FOLLY_DECLVAL(Fun)))>
-  /* implicit */ Function(Fun fun) noexcept(
-      IsSmall&& noexcept(Fun(static_cast<Fun&&>(fun)))) {
-    using Dispatch = conditional_t<
-        IsSmall && is_trivially_copyable_v<Fun>,
-        detail::function::DispatchSmallTrivial,
-        conditional_t<
-            IsSmall,
-            detail::function::DispatchSmall,
-            detail::function::DispatchBig>>;
-    if FOLLY_CXX17_CONSTEXPR (detail::function::IsNullptrCompatible<Fun>) {
+      typename = std::enable_if_t<
+          !detail::function::is_instantiation_of_folly_function_v<Fun>>,
+      typename = typename Traits::template IfSafeResult<Fun>>
+  /* implicit */ constexpr Function(Fun fun) noexcept(
+      detail::function::DispatchOf<Fun>::is_in_situ) {
+    using Dispatch = detail::function::DispatchOf<Fun>;
+    if constexpr (detail::function::IsNullptrCompatible<Fun>) {
       if (detail::function::isEmptyFunction(fun)) {
         return;
       }
     }
-    if FOLLY_CXX17_CONSTEXPR (IsSmall) {
-      ::new (&data_.tiny) Fun(static_cast<Fun&&>(fun));
+    if constexpr (Dispatch::is_in_situ) {
+      if constexpr (
+          !std::is_empty<Fun>::value || !std::is_trivially_copyable_v<Fun>) {
+        ::new (&data_.tiny) Fun(static_cast<Fun&&>(fun));
+      }
     } else {
-      data_.big = new Fun(static_cast<Fun&&>(fun));
+      if constexpr (Dispatch::is_trivial) {
+        Dispatch::ctor(data_, &fun, sizeof(Fun), alignof(Fun));
+      } else {
+        data_.big = new Fun(static_cast<Fun&&>(fun));
+      }
     }
-    call_ = Dispatch::template call<Fun, Traits>;
+    call_ = Traits::template call<Fun, Dispatch::is_in_situ>;
     exec_ = Exec(Dispatch::template exec<Fun>);
   }
 
   /**
    * For move-constructing from a `folly::Function<X(Ys...) [const?]>`.
+   *
    * For a `Function` with a `const` function type, the object must be
    * callable from a `const`-reference, i.e. implement `operator() const`.
    * For a `Function` with a non-`const` function type, the object will
@@ -832,9 +808,11 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
    */
   Function& operator=(Function&& that) noexcept {
     exec(Op::NUKE, &data_, nullptr);
-    that.exec(Op::MOVE, &that.data_, &data_);
-    exec_ = that.exec_;
-    call_ = that.call_;
+    if (FOLLY_LIKELY(this != &that)) {
+      that.exec(Op::MOVE, &that.data_, &data_);
+      exec_ = that.exec_;
+      call_ = that.call_;
+    }
     that.exec_ = nullptr;
     that.call_ = &Traits::uninitCall;
     return *this;
@@ -902,6 +880,8 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
 
   /**
    * Exchanges the callable objects of `*this` and `that`.
+   *
+   * @param that a folly::Function ref
    */
   void swap(Function& that) noexcept { std::swap(*this, that); }
 
@@ -917,7 +897,7 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
    * allocation because the callable is stored within the `Function` object.
    */
   std::size_t heapAllocatedMemory() const noexcept {
-    return exec(Op::HEAP, nullptr, nullptr);
+    return exec(Op::HEAP, &data_, nullptr);
   }
 
   using typename Traits::SharedProxy;
@@ -964,8 +944,27 @@ bool operator!=(std::nullptr_t, const Function<FunctionType>& fn) {
 }
 
 /**
- * NOTE: See detailed note about `constCastFunction` at the top of the file.
- * This is potentially dangerous and requires the equivalent of a `const_cast`.
+ * Casts a `folly::Function` from non-const to a const signature.
+ *
+ * NOTE: The name of `constCastFunction` should warn you that something
+ * potentially dangerous is happening. As a matter of fact, using
+ * `std::function` always involves this potentially dangerous aspect, which
+ * is why it is not considered fully const-safe or even const-correct.
+ * However, in most of the cases you will not need the dangerous aspect at all.
+ * Either you do not require invocation of the function from a const context,
+ * in which case you do not need to use `constCastFunction` and just
+ * use a non-const `folly::Function`. Or, you may need invocation from const,
+ * but the callable you are wrapping does not mutate its state (e.g. it is a
+ * class object and implements `operator() const`, or it is a normal,
+ * non-mutable lambda), in which case you can wrap the callable in a const
+ * `folly::Function` directly, without using `constCastFunction`.
+ * Only if you require invocation from a const context of a callable that
+ * may mutate itself when invoked you have to go through the above procedure.
+ * However, in that case what you do is potentially dangerous and requires
+ * the equivalent of a `const_cast`, hence you need to call
+ * `constCastFunction`.
+ *
+ * @param that a non-const folly::Function.
  */
 template <typename ReturnType, typename... Args>
 Function<ReturnType(Args...) const> constCastFunction(
@@ -980,7 +979,6 @@ Function<ReturnType(Args...) const> constCastFunction(
   return std::move(that);
 }
 
-#if FOLLY_HAVE_NOEXCEPT_FUNCTION_TYPE
 template <typename ReturnType, typename... Args>
 Function<ReturnType(Args...) const noexcept> constCastFunction(
     Function<ReturnType(Args...) noexcept>&& that) noexcept {
@@ -993,12 +991,37 @@ Function<ReturnType(Args...) const noexcept> constCastFunction(
     Function<ReturnType(Args...) const noexcept>&& that) noexcept {
   return std::move(that);
 }
-#endif
+
+namespace detail {
+
+template <typename Void, typename>
+struct function_ctor_deduce_;
+
+template <typename P>
+struct function_ctor_deduce_<
+    std::enable_if_t<std::is_function<std::remove_pointer_t<P>>::value>,
+    P> {
+  using type = std::remove_pointer_t<P>;
+};
+
+template <typename F>
+struct function_ctor_deduce_<void_t<decltype(&F::operator())>, F> {
+  using type =
+      typename member_pointer_traits<decltype(&F::operator())>::member_type;
+};
+
+template <typename F>
+using function_ctor_deduce_t = typename function_ctor_deduce_<void, F>::type;
+
+} // namespace detail
+
+template <typename F>
+Function(F) -> Function<detail::function_ctor_deduce_t<F>>;
 
 /**
- * @class FunctionRef
+ * @class folly::FunctionRef
  *
- * @brief A reference wrapper for callable objects
+ * A reference wrapper for callable objects
  *
  * FunctionRef is similar to std::reference_wrapper, but the template parameter
  * is the function signature type rather than the type of the referenced object.
@@ -1082,7 +1105,7 @@ class FunctionRef<ReturnType(Args...)> final {
     // will be cast back to `Fun*` (which is a const pointer whenever `Fun`
     // is a const type) inside `FunctionRef::call`
     auto& ref = fun; // work around forwarding lint advice
-    if FOLLY_CXX17_CONSTEXPR ( //
+    if constexpr ( //
         detail::function::IsNullptrCompatible<std::decay_t<Fun>>) {
       if (detail::function::isEmptyFunction(fun)) {
         return;
