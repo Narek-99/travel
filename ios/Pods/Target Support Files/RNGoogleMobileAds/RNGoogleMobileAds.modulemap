@@ -1,6 +1,0 @@
-framework module RNGoogleMobileAds {
-  umbrella header "RNGoogleMobileAds-umbrella.h"
-
-  export *
-  module * { export * }
-}

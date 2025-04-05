@@ -1,6 +1,5 @@
 import DestinationScreen from "./destination";
 import SubscriptionScreen from "./Subscription";
-import ChatScreen from "./chat";
 import CompanionScreen from "./companion";
 import BudgetScreen from "./budget";
 import WishesScreen from "./wishes";
@@ -19,7 +18,6 @@ export {
     Onboarding1Screen,
     DestinationScreen,
     SubscriptionScreen,
-    ChatScreen,
     CompanionScreen,
     BudgetScreen,
     TripsScreen,

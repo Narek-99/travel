@@ -7,7 +7,6 @@ import Ai from './ai.svg'
 import Infinity from './infinity.svg'
 import AdsFree from './adsFree.svg'
 import Free from './free.svg'
-import GripLines from './gripLines.svg'
 import Flash from './flash.svg'
 import Done from './done.svg'
 import Plus from './plus.svg'
@@ -24,7 +23,6 @@ import Person from './person.svg'
 import Robot from './robot.svg'
 
 export const SVG = {
-    GripLines,
     BackIcon,
     Cross,
     Settings,
