@@ -697,7 +697,7 @@ const TripDetailsScreen = ({ navigation }) => {
 
             {contentHeight > maxCollapsedHeight && (
               <TouchableOpacity onPress={togglePlanHeight} style={{ marginTop: 12 }}>
-                <Text style={{ textAlign: 'center', color: COLOR.lightBlue, fontWeight: 'bold' }}>
+                <Text style={{ textAlign: 'center', color: '#0084FF', fontWeight: 'bold', marginTop: hp(2) }}>
                   {showFullPlan ? 'Show Less ▲' : 'Show More ▼'}
                 </Text>
               </TouchableOpacity>
