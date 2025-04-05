@@ -237,7 +237,6 @@ const TripsScreen = ({ navigation }) => {
                     <Text style={styles.detailButtonText}>Details →</Text>
                   </TouchableOpacity>
                 </View>
-
               </TouchableOpacity>
             )}
             renderHiddenItem={({ item }) => (
@@ -369,7 +368,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     bottom: 0,
-    padding: wp(4),
   },
   dateText: {
     fontSize: 16,
@@ -384,6 +382,7 @@ const styles = StyleSheet.create({
   },
   companionRow: {
     flexDirection: 'column',
+    padding: wp(4)
   },
   detailButton: {
     position: 'absolute',
