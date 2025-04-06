@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, View, ScrollView, Share, Pressable, Image, Text, Linking, TextInput, TouchableOpacity, Keyboard, Animated, ActivityIndicator } from 'react-native';
-import { useRoute, useFocusEffect } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Markdown from 'react-native-markdown-display';
@@ -10,7 +10,7 @@ import { SCREEN } from '../../enums/AppEnums';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Callout } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import Toast from 'react-native-toast-message';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -42,7 +42,6 @@ const TripDetailsScreen = ({ navigation }) => {
   const scrollViewRef = useRef();
   const inputRef = useRef(null);
   const [trip, setTrip] = useState(null);
-  const [isMapFullScreen, setIsMapFullScreen] = useState(false);
   const [attractions, setAttractions] = useState([]);
   const [userQuery, setUserQuery] = useState('');
   const [messages, setMessages] = useState([]);
@@ -217,7 +216,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const mapRef = React.useRef();
 
   const fetchAttractions = async () => {
-    setLoadingAttractions(true); // ✅ show skeletons
+    setLoadingAttractions(true);
     if (!region?.latitude || !region?.longitude) return;
 
     try {
@@ -229,7 +228,7 @@ const TripDetailsScreen = ({ navigation }) => {
     } catch (err) {
       console.error('❌ Fehler beim Laden der Sehenswürdigkeiten:', err);
     } finally {
-      setLoadingAttractions(false); // ✅ hide skeletons
+      setLoadingAttractions(false);
     }
   };
 
@@ -467,6 +466,78 @@ const TripDetailsScreen = ({ navigation }) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {loadingMap ? (
+          <SkeletonPlaceholder borderRadius={10}>
+            <View style={styles.map} />
+          </SkeletonPlaceholder>
+        ) : region && (
+          <>
+            <Animated.View style={{ opacity: mapFadeAnim }}>
+              <View style={{ height: 300 }}>
+                <MapView
+                  ref={mapRef}
+                  style={StyleSheet.absoluteFillObject}
+                  provider="google"
+                  region={region}
+                  showsUserLocation
+                  showsMyLocationButton
+                  rotateEnabled
+                >
+                  <Marker coordinate={region} title={trip.destination} />
+                  {attractions.map((place, index) => (
+                    <Marker
+                      key={index}
+                      coordinate={{
+                        latitude: place.geometry.location.lat,
+                        longitude: place.geometry.location.lng,
+                      }}
+                      title={place.name}
+                      description={place.vicinity}
+                    >
+                      <Callout tooltip onPress={() =>
+                        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)
+                      }>
+                        <View style={{
+                          backgroundColor: 'white',
+                          paddingBottom: 10,
+                          width: 200,
+                          alignItems: 'center',
+                          borderRadius: 8
+                        }}>
+                          {place.photos?.[0]?.photo_reference ? (
+                            <Image
+                              source={{
+                                uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=AIzaSyCNJjMnjX6DYOlog0w0HsHxWTrigKqlCM8`
+                              }}
+                              style={{ width: 200, height: 100, borderRadius: 8 }}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <Text>No Image</Text>
+                          )}
+
+                          <Text style={{ fontWeight: 'bold', marginTop: 8 }}>
+                            {place.name}
+                          </Text>
+
+                          <Text style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>
+                            {place.vicinity}
+                          </Text>
+
+                          {place.opening_hours?.open_now !== undefined && (
+                            <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>
+                              {place.opening_hours.open_now ? 'Open Now' : 'Closed'}
+                            </Text>
+                          )}
+                        </View>
+                      </Callout>
+                    </Marker>
+                  ))}
+                </MapView>
+              </View>
+            </Animated.View>
+          </>
+        )}
         {loadingWeather ? (
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.infoCard}>
@@ -494,56 +565,6 @@ const TripDetailsScreen = ({ navigation }) => {
               <Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label>
             </View>
           </Animated.View>
-        )}
-
-        {loadingMap ? (
-          <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.map} />
-          </SkeletonPlaceholder>
-        ) : region && (
-          <>
-            <Pressable
-              onPress={() => setIsMapFullScreen(prev => !prev)}
-              style={{
-                alignSelf: 'flex-end',
-                marginRight: wp(5),
-                marginBottom: 8,
-                backgroundColor: '#fff',
-                paddingHorizontal: 6,
-                paddingVertical: 6,
-                borderRadius: 8,
-                shadowColor: '#000',
-                shadowRadius: 4,
-                elevation: 2,
-              }}
-            >
-              {isMapFullScreen ? <SVG.NormalScreen fill={COLOR.dark} /> : <SVG.Fullscreen fill={COLOR.dark} />}
-            </Pressable>
-
-            <Animated.View style={{ opacity: mapFadeAnim }}>
-
-              <MapView
-                ref={mapRef}
-                style={isMapFullScreen ? styles.mapFull : styles.map}
-                provider="google"
-                region={region}
-              >
-                <Marker coordinate={region} title={trip.destination} />
-                {attractions.map((place, index) => (
-                  <Marker
-                    key={index}
-                    coordinate={{
-                      latitude: place.geometry.location.lat,
-                      longitude: place.geometry.location.lng,
-                    }}
-                    title={place.name}
-                    description={place.vicinity}
-                  />
-                ))}
-              </MapView>
-            </Animated.View>
-
-          </>
         )}
 
         {loadingAttractions ? (
@@ -624,6 +645,14 @@ const TripDetailsScreen = ({ navigation }) => {
                   <View style={styles.placeDetailsContainer}>
                     <Text style={styles.attractionName}>{place.name}</Text>
                     <Text style={styles.attractionRating}>
+                      {place.types?.[0]
+                        ? (() => {
+                          const type = place.types[0].replace('_', ' ');
+                          return type.charAt(0).toUpperCase() + type.slice(1);
+                        })()
+                        : 'Attraction'}
+                    </Text>
+                    <Text style={styles.attractionRating}>
                       ⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews
                     </Text>
                     <Text
@@ -635,10 +664,14 @@ const TripDetailsScreen = ({ navigation }) => {
                       📍 {place.vicinity}
                     </Text>
                     {place.opening_hours?.open_now !== undefined && (
-                      <Text style={styles.attractionStatus}>
+                      <Text style={[
+                        styles.attractionStatus,
+                        { color: place.opening_hours.open_now ? 'green' : 'red' }
+                      ]}>
                         🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}
                       </Text>
                     )}
+
                     <Text
                       style={styles.attractionLink}
                       onPress={() =>
@@ -793,10 +826,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   map: {
-    height: 200,
-    marginHorizontal: wp(5),
-    borderRadius: 10,
-    marginBottom: hp(2),
+    ...StyleSheet.absoluteFillObject,
   },
   attractionsContainer: {
     paddingHorizontal: wp(5),
@@ -842,7 +872,8 @@ const styles = StyleSheet.create({
   },
   placeDetailsContainer: {
     flexDirection: "column",
-    gap: hp(1.5)
+    gap: hp(1),
+    paddingTop: hp(1)
   },
   mapFull: {
     height: hp(50),
@@ -953,6 +984,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white2,
     borderTopLeftRadius: 0,
   },
+  attractionLink: {
+    color: '#0000EE'
+  }
 });
 
 const markdownStyles = {
