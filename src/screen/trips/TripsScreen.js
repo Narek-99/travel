@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerActions: { flexDirection: 'col', alignItems: 'center', gap: wp(3) },
-  contentContainer: { flex: 1, padding: 10 },
+  contentContainer: { flex: 1, padding: 20 },
   emptyText: {
     color: COLOR.black,
     textAlign: 'center',
