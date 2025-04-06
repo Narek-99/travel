@@ -2,11 +2,13 @@
 #import "RNBootSplash.h"
 #import <Firebase.h>
 #import <React/RCTBundleURLProvider.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [GMSServices provideAPIKey:@"AIzaSyCNJjMnjX6DYOlog0w0HsHxWTrigKqlCM8"];
   self.moduleName = @"Travel";
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.

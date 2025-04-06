@@ -525,6 +525,7 @@ const TripDetailsScreen = ({ navigation }) => {
               <MapView
                 ref={mapRef}
                 style={isMapFullScreen ? styles.mapFull : styles.map}
+                provider="google"
                 region={region}
               >
                 <Marker coordinate={region} title={trip.destination} />

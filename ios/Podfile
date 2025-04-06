@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '16.0' # Updated deployment target
+platform :ios, '16'
 
 prepare_react_native_project!
 
@@ -18,7 +18,11 @@ if linkage != nil
 end
 
 target 'Travel' do
+  rn_maps_path = '../node_modules/react-native-maps'
+  pod 'react-native-google-maps', :path => rn_maps_path
+  
   config = use_native_modules!
+
   use_frameworks! :linkage => :static
   use_react_native!(
     :path => config[:reactNativePath],
