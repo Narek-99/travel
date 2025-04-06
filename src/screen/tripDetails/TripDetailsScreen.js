@@ -19,6 +19,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import * as Animatable from 'react-native-animatable';
 import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -60,6 +61,24 @@ const TripDetailsScreen = ({ navigation }) => {
   const planHeight = useRef(new Animated.Value(0)).current;
   const [contentHeight, setContentHeight] = useState(0);
   const maxCollapsedHeight = 500; // px – anpassbar
+  const [tripImageUrl, setTripImageUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchTripImage = async () => {
+      try {
+        const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/unsplash?destination=${trip.destination}`);
+        const data = await response.json();
+        const imageUrl = data.results[0]?.urls?.small;
+        setTripImageUrl(imageUrl);
+      } catch (error) {
+        console.error('Error fetching trip image:', error);
+      }
+    };
+
+    if (trip?.destination) {
+      fetchTripImage();
+    }
+  }, [trip?.destination]);
 
   const handleAskAIPress = () => {
     scrollViewRef.current.scrollToEnd({ animated: true })
@@ -343,7 +362,6 @@ const TripDetailsScreen = ({ navigation }) => {
     Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
     `;
 
-
     try {
       const newPlan = await callChatGptForResponse(tripPrompt, "");
       await firestore()
@@ -462,10 +480,56 @@ const TripDetailsScreen = ({ navigation }) => {
       <KeyboardAwareScrollView
         innerRef={ref => (scrollViewRef.current = ref)}
         extraScrollHeight={hp(3)}
-        contentContainerStyle={{ paddingBottom: hp(2) }}
+        contentContainerStyle={{ paddingTop: hp(1) }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {loadingWeather ? (
+          <SkeletonPlaceholder borderRadius={10}>
+            <View style={styles.infoCard}>
+              <View style={{ width: 180, height: 25, marginBottom: 10 }} />
+              <View style={{ width: 120, height: 18, marginBottom: 8 }} />
+              <View style={{ width: 160, height: 18 }} />
+            </View>
+          </SkeletonPlaceholder>
+        ) : (
+          <View style={styles.infoCardWithImage}>
+            <FastImage
+              source={{ uri: tripImageUrl }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+            />
+
+            <LinearGradient
+              colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.7)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+
+            <Animated.View style={{ opacity: infoFadeAnim, padding: 20 }}>
+              <Label style={styles.infoDestination}>{trip.destination}</Label>
+              <Label style={styles.infoDate}>
+                {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
+              </Label>
+
+              {weather && (
+                <View style={styles.infoRow}>
+                  <Label style={styles.weatherIcon}>🌤</Label>
+                  <Label style={styles.infoText}>
+                    {weather.condition} · {weather.temp}°C
+                  </Label>
+                </View>
+              )}
+              <View style={styles.infoRow}>
+                <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
+                <Label style={styles.infoText}>
+                  {trip.companion} · {trip.numberOfPersons || '1'} person
+                </Label>
+              </View>
+            </Animated.View>
+          </View>
+        )}
         {loadingMap ? (
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.map} />
@@ -473,7 +537,7 @@ const TripDetailsScreen = ({ navigation }) => {
         ) : region && (
           <>
             <Animated.View style={{ opacity: mapFadeAnim }}>
-              <View style={{ height: 300 }}>
+              <View style={{ height: 250, marginBottom: hp(2) }}>
                 <MapView
                   ref={mapRef}
                   style={StyleSheet.absoluteFillObject}
@@ -537,34 +601,6 @@ const TripDetailsScreen = ({ navigation }) => {
               </View>
             </Animated.View>
           </>
-        )}
-        {loadingWeather ? (
-          <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.infoCard}>
-              <View style={{ width: 180, height: 25, marginBottom: 10 }} />
-              <View style={{ width: 120, height: 18, marginBottom: 8 }} />
-              <View style={{ width: 160, height: 18 }} />
-            </View>
-          </SkeletonPlaceholder>
-        ) : (
-          <Animated.View style={[styles.infoCard, { opacity: infoFadeAnim }]}>
-            <Label style={styles.infoDestination}>{trip.destination}</Label>
-            <Label style={styles.infoDate}>
-              {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
-            </Label>
-            {weather && (
-              <View style={styles.infoRow}>
-                <Label style={styles.weatherIcon}>🌤</Label>
-                <Label style={styles.infoText}>
-                  {weather.condition} · {weather.temp}°C
-                </Label>
-              </View>
-            )}
-            <View style={styles.infoRow}>
-              <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
-              <Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label>
-            </View>
-          </Animated.View>
         )}
 
         {loadingAttractions ? (
@@ -687,7 +723,7 @@ const TripDetailsScreen = ({ navigation }) => {
           </Animated.View>
         )}
 
-        <Text style={styles.tripPlanTitle}>Your Personalized Day-by-Day Travel Plan</Text>
+        <Text style={styles.tripPlanTitle}>Your Day-by-Day Itinerary</Text>
 
         {loadingTripPlan && (
           <Text style={{ fontSize: 16, padding: wp(5), fontStyle: 'italic', textAlign: 'center', color: COLOR.mediumGray }}>
@@ -805,22 +841,22 @@ const styles = StyleSheet.create({
   },
   infoDestination: {
     ...TEXT_STYLE.title,
-    color: COLOR.dark,
+    color: 'white',
     marginBottom: 4,
   },
   infoDate: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.mediumGray,
+    color: 'white',
     marginBottom: 4,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: wp(2),
+    gap: wp(2)
   },
   infoText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.dark,
+    color: 'white',
   },
   weatherIcon: {
     fontSize: 18,
@@ -833,7 +869,7 @@ const styles = StyleSheet.create({
     paddingBottom: hp(2),
   },
   attractionCard: {
-    width: wp(64), // ca. 256px
+    width: wp(64),
     marginRight: wp(4),
     backgroundColor: COLOR.white,
     borderRadius: 16,
@@ -986,7 +1022,15 @@ const styles = StyleSheet.create({
   },
   attractionLink: {
     color: '#0000EE'
-  }
+  },
+  infoCardWithImage: {
+    height: hp(19),
+    borderRadius: 10,
+    marginHorizontal: wp(3),
+    marginBottom: 20,
+    overflow: 'hidden',
+    backgroundColor: COLOR.white
+  },
 });
 
 const markdownStyles = {
