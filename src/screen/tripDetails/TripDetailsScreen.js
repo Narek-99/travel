@@ -20,6 +20,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import * as Animatable from 'react-native-animatable';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
+import { createFlightAffiliateLink, createSmartTripAffiliateLink } from '../../services/TripLinkService';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -296,11 +297,29 @@ const TripDetailsScreen = ({ navigation }) => {
       setLoadingWeather(false);
     }
   };
+  const handleOpenHotelAffiliateLink = () => {
+    if (!trip) return;
+
+    try {
+      const affiliateLink = createSmartTripAffiliateLink(trip);
+      Linking.openURL(affiliateLink);
+    } catch (error) {
+      console.error('❌ Fehler beim Öffnen des Hotellinks:', error);
+      Toast.show({ type: 'error', text1: 'Failed to open hotel link' });
+    }
+  };
+
+
+  const handleOpenFlightAffiliateLink = async () => {
+    if (!trip) return;
+    const flightLink = await createFlightAffiliateLink(trip);
+    Linking.openURL(flightLink.toString()); // <<< wichtig
+  };
 
   const getDateString = (timestamp) => {
     if (!timestamp?.toDate) return '';
     const date = timestamp.toDate();
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+    return date.toISOString().split('T')[0];
   };
 
   const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
@@ -465,12 +484,31 @@ const TripDetailsScreen = ({ navigation }) => {
           </Pressable>
         }
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
-        rightComp={
+        centerComp={
           <View style={styles.rightContainer}>
             <Pressable onPress={handleAskAIPress} style={styles.askAiContainer}>
               <SVG.AiStar fill="#90009C" />
-              <Text style={styles.askAiText}>Ask AI</Text>
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                Ask AI
+              </Text>
             </Pressable>
+            <TouchableOpacity
+              onPress={handleOpenHotelAffiliateLink}
+              style={styles.askAiContainer}
+            >
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                🏨 Hotels
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleOpenFlightAffiliateLink}
+              style={styles.askAiContainer}
+            >
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                ✈️ Flights
+              </Text>
+            </TouchableOpacity>
             <Pressable onPress={() => navigation.navigate(SCREEN.DESTINATION, { tripId })}>
               <SVG.Edit fill={COLOR.dark} />
             </Pressable>
@@ -830,7 +868,8 @@ const styles = StyleSheet.create({
   },
   rightContainer: {
     flexDirection: "row",
-    gap: wp(5),
+    marginLeft: wp(2),
+    gap: wp(3),
     alignItems: "center"
   },
   infoCard: {
@@ -973,8 +1012,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    fontSize: 16,
+    paddingHorizontal: 10,
     backgroundColor: '#0084FF',
     borderRadius: 25,
   },

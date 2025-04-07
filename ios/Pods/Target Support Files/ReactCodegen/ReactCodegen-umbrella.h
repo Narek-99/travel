@@ -47,6 +47,8 @@
 #import "rnasyncstorageJSI.h"
 #import "RNBootSplashSpec/RNBootSplashSpec.h"
 #import "RNBootSplashSpecJSI.h"
+#import "RNCGeolocationSpec/RNCGeolocationSpec.h"
+#import "RNCGeolocationSpecJSI.h"
 #import "rnclipboard/rnclipboard.h"
 #import "rnclipboardJSI.h"
 #import "RNDateTimePickerCGen/RNDateTimePickerCGen.h"
