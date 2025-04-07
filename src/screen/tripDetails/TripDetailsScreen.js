@@ -63,6 +63,8 @@ const TripDetailsScreen = ({ navigation }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const maxCollapsedHeight = 500; // px – anpassbar
   const [tripImageUrl, setTripImageUrl] = useState(null);
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+
 
   useEffect(() => {
     const fetchTripImage = async () => {
@@ -484,7 +486,7 @@ const TripDetailsScreen = ({ navigation }) => {
           </Pressable>
         }
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
-        centerComp={
+        rightComp={
           <View style={styles.rightContainer}>
             <Pressable onPress={handleAskAIPress} style={styles.askAiContainer}>
               <SVG.AiStar fill="#90009C" />
@@ -509,15 +511,6 @@ const TripDetailsScreen = ({ navigation }) => {
                 ✈️ Flights
               </Text>
             </TouchableOpacity>
-            <Pressable onPress={() => navigation.navigate(SCREEN.DESTINATION, { tripId })}>
-              <SVG.Edit fill={COLOR.dark} />
-            </Pressable>
-            <Pressable onPress={regenerateAiPlan}>
-              <SVG.Regenerate fill={COLOR.dark} />
-            </Pressable>
-            {/* <Pressable onPress={shareTrip}>
-              <SVG.Share fill={COLOR.dark} />
-            </Pressable> */}
           </View>
         }
       />
@@ -552,27 +545,36 @@ const TripDetailsScreen = ({ navigation }) => {
               style={StyleSheet.absoluteFillObject}
             />
 
-            <Animated.View style={{ opacity: infoFadeAnim, padding: 20 }}>
-              <Label style={styles.infoDestination}>{trip.destination}</Label>
-              <Label style={styles.infoDate}>
-                {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
-              </Label>
+            <Animated.View style={[styles.infoContent, { opacity: infoFadeAnim }]}>
+              <View style={styles.infoTextContainer}>
+                <Label style={styles.infoDestination}>{trip.destination}</Label>
+                <Label style={styles.infoDate}>
+                  {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
+                </Label>
 
-              {weather && (
+                {weather && (
+                  <View style={styles.infoRow}>
+                    <Label style={styles.weatherIcon}>🌤</Label>
+                    <Label style={styles.infoText}>
+                      {weather.condition} · {weather.temp}°C
+                    </Label>
+                  </View>
+                )}
                 <View style={styles.infoRow}>
-                  <Label style={styles.weatherIcon}>🌤</Label>
+                  <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
                   <Label style={styles.infoText}>
-                    {weather.condition} · {weather.temp}°C
+                    {trip.companion} · {trip.numberOfPersons || '1'} person
                   </Label>
                 </View>
-              )}
-              <View style={styles.infoRow}>
-                <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
-                <Label style={styles.infoText}>
-                  {trip.companion} · {trip.numberOfPersons || '1'} person
-                </Label>
               </View>
+              <Pressable
+                style={styles.editButton}
+                onPress={() => setShowOptionsModal(true)}
+              >
+                <SVG.Edit fill="#fff" width={18} height={18} />
+              </Pressable>
             </Animated.View>
+
           </View>
         )}
         {loadingMap ? (
@@ -845,6 +847,49 @@ const TripDetailsScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
+      {showOptionsModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setShowOptionsModal(false);
+                navigation.navigate(SCREEN.DESTINATION, { tripId });
+              }}
+            >
+              <Text style={styles.modalButtonText}>✏️ Edit Trip</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setShowOptionsModal(false);
+                shareTrip();
+              }}
+            >
+              <Text style={styles.modalButtonText}>🔗 Share Trip</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setShowOptionsModal(false);
+                regenerateAiPlan();
+              }}
+            >
+              <Text style={styles.modalButtonText}>♻️ Regenerate Plan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setShowOptionsModal(false)}
+            >
+              <Text style={styles.modalCancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
     </View>
   );
 };
@@ -1078,6 +1123,62 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: COLOR.white
   },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalButton: {
+    paddingVertical: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  modalCancelButton: {
+    marginTop: 10,
+    paddingVertical: 12,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  editButton: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 10,
+    borderRadius: 30,
+  },
+  infoContent: {
+    flex: 1,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  infoTextContainer: {
+    flex: 1,
+  },
+
 });
 
 const markdownStyles = {
