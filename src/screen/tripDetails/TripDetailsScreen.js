@@ -488,7 +488,7 @@ const TripDetailsScreen = ({ navigation }) => {
           <View style={styles.rightContainer}>
             <Pressable onPress={handleAskAIPress} style={styles.askAiContainer}>
               <SVG.AiStar fill="#90009C" />
-              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+              <Text style={{ marginLeft: wp(1), color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 Ask AI
               </Text>
             </Pressable>
@@ -496,7 +496,7 @@ const TripDetailsScreen = ({ navigation }) => {
               onPress={handleOpenHotelAffiliateLink}
               style={styles.askAiContainer}
             >
-              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+              <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 🏨 Hotels
               </Text>
             </TouchableOpacity>
@@ -505,7 +505,7 @@ const TripDetailsScreen = ({ navigation }) => {
               onPress={handleOpenFlightAffiliateLink}
               style={styles.askAiContainer}
             >
-              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+              <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 ✈️ Flights
               </Text>
             </TouchableOpacity>
@@ -515,9 +515,9 @@ const TripDetailsScreen = ({ navigation }) => {
             <Pressable onPress={regenerateAiPlan}>
               <SVG.Regenerate fill={COLOR.dark} />
             </Pressable>
-            <Pressable onPress={shareTrip}>
+            {/* <Pressable onPress={shareTrip}>
               <SVG.Share fill={COLOR.dark} />
-            </Pressable>
+            </Pressable> */}
           </View>
         }
       />
@@ -963,11 +963,11 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   tripPlanTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLOR.dark,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0084FF',
     paddingHorizontal: wp(5),
-    marginTop: hp(2)
+    marginTop: hp(2),
   },
   textInput: {
     flex: 1,
@@ -1008,14 +1008,16 @@ const styles = StyleSheet.create({
   },
   askAiContainer: {
     flexDirection: 'row',
-    gap: wp(2),
-    justifyContent: "flex-start",
-    alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#0084FF',
-    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    backgroundColor: COLOR.white,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#0084FF',
   },
+
   askAiText: {
     color: COLOR.white,
     fontSize: 16,
