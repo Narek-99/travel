@@ -185,26 +185,33 @@ const TripDetailsScreen = ({ navigation }) => {
   }, [user?.uid, tripId]);
 
   useEffect(() => {
-    if (trip?.destination) {
+    const fetchApiKeyAndGeocode = async () => {
       setLoadingMap(true);
-      Geocoder.init("AIzaSyCNJjMnjX6DYOlog0w0HsHxWTrigKqlCM8");
-      Geocoder.from(trip.destination)
-        .then(json => {
-          const location = json.results[0].geometry.location;
-          setRegion({
-            latitude: location.lat,
-            longitude: location.lng,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          });
-          setLoadingMap(false);
-        })
-        .catch(error => {
-          console.error('❌ Geocoding failed:', error);
-          setLoadingMap(false);
+      try {
+        const response = await fetch('https://openai-proxy-gilt-three.vercel.app/api/get-google-api-key');
+        const { apiKey } = await response.json();
+        Geocoder.init(apiKey);
+
+        const json = await Geocoder.from(trip.destination);
+        const location = json.results[0].geometry.location;
+        setRegion({
+          latitude: location.lat,
+          longitude: location.lng,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
         });
+      } catch (error) {
+        console.error('❌ Geocoding failed:', error);
+      } finally {
+        setLoadingMap(false);
+      }
+    };
+
+    if (trip?.destination) {
+      fetchApiKeyAndGeocode();
     }
   }, [trip?.destination]);
+
 
   useEffect(() => {
     const fetchTripDetails = async () => {
@@ -571,7 +578,7 @@ const TripDetailsScreen = ({ navigation }) => {
                           {place.photos?.[0]?.photo_reference ? (
                             <Image
                               source={{
-                                uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=AIzaSyCNJjMnjX6DYOlog0w0HsHxWTrigKqlCM8`
+                                uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`
                               }}
                               style={{ width: 200, height: 100, borderRadius: 8 }}
                               resizeMode="cover"
@@ -645,7 +652,7 @@ const TripDetailsScreen = ({ navigation }) => {
                     <View style={{ position: 'relative' }}>
                       <FastImage
                         source={{
-                          uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=AIzaSyCNJjMnjX6DYOlog0w0HsHxWTrigKqlCM8`,
+                          uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`,
                           priority: FastImage.priority.normal,
                         }}
                         style={[
