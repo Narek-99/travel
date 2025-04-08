@@ -1,0 +1,273 @@
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, View, Pressable, Text, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { SVG } from '../../assets/svgs';
+import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
+import { SCREEN } from '../../enums/AppEnums';
+import { searchFlights } from '../../services/amadeusApi';
+import { createSmartTripAffiliateLink } from '../../services/TripLinkService';
+import Toast from 'react-native-toast-message';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import AirportSelector from '../../components/AirportSelector'; // <<<< NEU
+
+const BookingScreen = ({ navigation }) => {
+  const user = useSelector(({ appReducer }) => appReducer.user);
+  const route = useRoute();
+  const tripId = route.params?.tripId;
+  const [trip, setTrip] = useState(null);
+
+  const [originAirport, setOriginAirport] = useState(null);
+  const [destinationAirport, setDestinationAirport] = useState(null);
+  const [departureDate, setDepartureDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [flights, setFlights] = useState([]);
+
+  const handleSearchFlights = async () => {
+    if (!originAirport || !destinationAirport || !departureDate) {
+      Toast.show({ type: 'error', text1: 'Please select airports and date!' });
+      return;
+    }
+    setLoading(true);
+    try {
+      const formattedDate = departureDate.toISOString().split('T')[0];
+      const result = await searchFlights({
+        originLocationCode: originAirport.iata,
+        destinationLocationCode: destinationAirport.iata,
+        departureDate: formattedDate,
+        adults: 1,
+        max: 5,
+      });
+      setFlights(result);
+    } catch (error) {
+      console.error('❌ Flight search error:', error.message);
+      Toast.show({ type: 'error', text1: 'Flight search failed.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setOriginAirport(null);
+    setDestinationAirport(null);
+    setDepartureDate(new Date());
+    setFlights([]);
+  };
+
+  const handleHotelLinkPress = () => {
+    if (!trip) return;
+    const hotelLink = createSmartTripAffiliateLink(trip);
+    Linking.openURL(hotelLink);
+  };
+
+  React.useEffect(() => {
+    if (tripId && user?.uid) {
+      firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .get()
+        .then(snapshot => {
+          const data = snapshot.data();
+          if (data) setTrip(data);
+        })
+        .catch(error => {
+          console.error('❌ Error loading trip:', error);
+        });
+    }
+  }, [tripId, user?.uid]);
+
+  return (
+    <View style={styles.screenContainer}>
+      <SafeAreaView />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable onPress={() => {
+          ReactNativeHapticFeedback.trigger('impactLight');
+          navigation.goBack();
+        }}>
+          <SVG.BackIcon fill={COLOR.dark} />
+        </Pressable>
+        <Text style={styles.headerTitle}>Your Booking</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+
+        {/* Flight Search Form */}
+        <Text style={styles.sectionTitle}>✈️ Flights</Text>
+
+        <AirportSelector
+          label="From"
+          selectedAirport={originAirport}
+          setSelectedAirport={setOriginAirport}
+        />
+        <AirportSelector
+          label="To"
+          selectedAirport={destinationAirport}
+          setSelectedAirport={setDestinationAirport}
+        />
+
+        <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          style={styles.datePickerButton}
+        >
+          <Text style={styles.datePickerText}>
+            Departure Date: {departureDate.toDateString()}
+          </Text>
+        </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={departureDate}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) setDepartureDate(selectedDate);
+            }}
+          />
+        )}
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearchFlights}>
+            <Text style={styles.buttonText}>🔎 Search Flights</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <Text style={styles.buttonText}>🧹 Reset</Text>
+          </TouchableOpacity>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color={COLOR.dark} style={{ marginTop: 20 }} />
+        ) : (
+          flights.map((flight, index) => (
+            <View key={index} style={styles.flightCard}>
+              <Text style={styles.flightText}>
+                {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+              </Text>
+              <Text style={styles.flightText}>
+                Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+              </Text>
+              <Text style={styles.flightPrice}>
+                Price: {flight.price.total} {flight.price.currency}
+              </Text>
+            </View>
+          ))
+        )}
+
+        {/* Hotel Section */}
+        {trip && (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: hp(3) }]}>
+              🏨 Hotels in {trip.destination}
+            </Text>
+            <Pressable style={styles.hotelButton} onPress={handleHotelLinkPress}>
+              <Text style={styles.hotelButtonText}>🔗 Open Hotels</Text>
+            </Pressable>
+          </>
+        )}
+
+      </ScrollView>
+    </View>
+  );
+};
+
+export default BookingScreen;
+
+const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: COLOR.white,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(5),
+    paddingVertical: hp(2),
+  },
+  headerTitle: {
+    ...TEXT_STYLE.smallTitleBold,
+    fontSize: 20,
+    color: COLOR.dark,
+  },
+  contentContainer: {
+    paddingHorizontal: wp(5),
+    paddingBottom: hp(5),
+  },
+  sectionTitle: {
+    ...TEXT_STYLE.title,
+    marginBottom: hp(2),
+  },
+  datePickerButton: {
+    backgroundColor: '#e5e5e5',
+    borderRadius: 10,
+    padding: wp(4),
+    marginBottom: hp(2),
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: COLOR.dark,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: wp(2),
+    marginBottom: hp(3),
+  },
+  searchButton: {
+    flex: 1,
+    backgroundColor: '#0084FF',
+    padding: wp(4),
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  resetButton: {
+    flex: 1,
+    backgroundColor: '#ff4d4d',
+    padding: wp(4),
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  flightCard: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    padding: wp(4),
+    marginBottom: hp(2),
+  },
+  flightText: {
+    fontSize: 14,
+    color: COLOR.dark,
+    marginBottom: 4,
+  },
+  flightPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0084FF',
+  },
+  hotelButton: {
+    backgroundColor: '#0084FF',
+    borderRadius: 10,
+    padding: wp(4),
+    alignItems: 'center',
+    marginTop: hp(1),
+  },
+  hotelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});

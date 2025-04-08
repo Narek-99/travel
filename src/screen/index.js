@@ -12,6 +12,7 @@ import HistoryScreen from "./history";
 import TripsScreen from "./trips";
 import TripDetailsScreen from "./tripDetails";
 import Onboarding1Screen from "./onboarding1";
+import BookingScreen from "./booking";
 
 export {
     DatesScreen,
@@ -27,5 +28,6 @@ export {
     WishesScreen,
     ActivitiesScreen,
     SettingScreen,
-    HistoryScreen
+    HistoryScreen,
+    BookingScreen
 }

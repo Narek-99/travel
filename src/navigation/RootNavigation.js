@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { FIREBASE_COLLECTIONS, SCREEN, USER_STATUS } from '../enums/AppEnums';
-import { HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, TripDetailsScreen, AdditionalScreen, PreferencesScreen, WishesScreen, ActivitiesScreen, DatesScreen, Onboarding1Screen, SettingScreen, SubscriptionScreen } from '../screen';
+import { HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, TripDetailsScreen, AdditionalScreen, PreferencesScreen, WishesScreen, ActivitiesScreen, DatesScreen, BookingScreen, Onboarding1Screen, SettingScreen, SubscriptionScreen } from '../screen';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KEYS } from '../utils/Keys';
@@ -86,6 +86,7 @@ const RootNavigation = () => {
               <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
               <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
               <Stack.Screen name={SCREEN.SUBSCRIPTION} component={SubscriptionScreen} />
+              <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
             </>
             :
             <>

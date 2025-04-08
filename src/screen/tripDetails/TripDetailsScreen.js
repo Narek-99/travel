@@ -65,7 +65,6 @@ const TripDetailsScreen = ({ navigation }) => {
   const [tripImageUrl, setTripImageUrl] = useState(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
 
-
   useEffect(() => {
     const fetchTripImage = async () => {
       try {
@@ -494,10 +493,8 @@ const TripDetailsScreen = ({ navigation }) => {
                 Ask AI
               </Text>
             </Pressable>
-            <TouchableOpacity
-              onPress={handleOpenHotelAffiliateLink}
-              style={styles.askAiContainer}
-            >
+            <TouchableOpacity style={styles.askAiContainer}
+              onPress={() => navigation.navigate(SCREEN.BOOKING, { tripId })}>
               <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 🏨 Hotels
               </Text>
