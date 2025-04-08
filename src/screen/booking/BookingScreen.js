@@ -12,6 +12,8 @@ import Toast from 'react-native-toast-message';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import AirportSelector from '../../components/AirportSelector';
 import airports from '../../assets/data/airports.json';
+import { Label } from '../../components';
+
 
 const BookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -22,7 +24,10 @@ const BookingScreen = ({ navigation }) => {
   const [originAirport, setOriginAirport] = useState(null);
   const [destinationAirport, setDestinationAirport] = useState(null);
   const [departureDate, setDepartureDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [startFlightDate, setStartFlightDate] = useState(new Date());
+  const [returnFlightDate, setReturnFlightDate] = useState(new Date());
+
 
   const [loading, setLoading] = useState(false);
   const [flights, setFlights] = useState([]);
@@ -57,23 +62,33 @@ const BookingScreen = ({ navigation }) => {
 
 
   const handleSearchFlights = async () => {
-    if (!originAirport || !destinationAirport || !departureDate) {
-      Toast.show({ type: 'error', text1: 'Please select airports and date!' });
+    if (!originAirport || !destinationAirport || !startFlightDate) {
+      Toast.show({ type: 'error', text1: 'Please select airports and a departure date!' });
       return;
     }
     setLoading(true);
     try {
-      const formattedDate = departureDate.toISOString().split('T')[0];
+      const departureDateFormatted = startFlightDate.toISOString().split('T')[0];
+      const returnDateFormatted = returnFlightDate?.toISOString().split('T')[0];
+
+      console.log('Departure:', departureDateFormatted, 'Return:', returnDateFormatted);
+
       const result = await searchFlights({
         originLocationCode: originAirport.iata,
         destinationLocationCode: destinationAirport.iata,
-        departureDate: formattedDate,
+        departureDate: departureDateFormatted,
+        returnDate: startFlightDate.getTime() !== returnFlightDate.getTime() ? returnDateFormatted : undefined, // 🔥 Nur wenn User RETURN anders auswählt
         adults: 1,
         max: 5,
       });
+
+      if (result?.length === 0) {
+        Toast.show({ type: 'info', text1: 'No flights found. Try adjusting your dates or airports.' });
+      }
+
       setFlights(result);
     } catch (error) {
-      console.error('❌ Flight search error:', error.message);
+      console.error('❌ Flight search error:', error.response?.data || error.message);
       Toast.show({ type: 'error', text1: 'Flight search failed.' });
     } finally {
       setLoading(false);
@@ -115,6 +130,12 @@ const BookingScreen = ({ navigation }) => {
                 country: destinationAirport.country,
               });
             }
+            if (data.startDate && data.endDate) {
+              const start = new Date(data.startDate.seconds * 1000);
+              const end = new Date(data.endDate.seconds * 1000);
+              setStartFlightDate(start);
+              setReturnFlightDate(end);
+            }
           }
         })
         .catch(error => {
@@ -155,26 +176,39 @@ const BookingScreen = ({ navigation }) => {
           setSelectedAirport={setDestinationAirport}
         />
 
-        <TouchableOpacity
-          onPress={() => setShowDatePicker(true)}
-          style={styles.datePickerButton}
-        >
-          <Text style={styles.datePickerText}>
-            Departure Date: {departureDate.toDateString()}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.dateContainer}>
+          <View>
+            <DateTimePicker
+              value={startFlightDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setStartFlightDate(selectedDate);
+                  if (selectedDate > returnFlightDate) {
+                    setReturnFlightDate(selectedDate); // Enddatum anpassen falls nötig
+                  }
+                }
+              }}
+              themeVariant="light"
+            />
+          </View>
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={departureDate}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) setDepartureDate(selectedDate);
-            }}
-          />
-        )}
+          <Label style={{ color: COLOR.black }}>to</Label>
+
+          <View>
+            <DateTimePicker
+              value={returnFlightDate}
+              mode="date"
+              display="default"
+              minimumDate={startFlightDate}
+              onChange={(event, selectedDate) => {
+                if (selectedDate) setReturnFlightDate(selectedDate);
+              }}
+              themeVariant="light"
+            />
+          </View>
+        </View>
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.searchButton} onPress={handleSearchFlights}>
@@ -310,5 +344,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  dateContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingTop: hp(5),
+    paddingBottom: hp(5),
   },
 });

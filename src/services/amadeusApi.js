@@ -1,5 +1,3 @@
-// services/amadeusApi.js
-
 import axios from 'axios';
 
 const API_KEY = 'IyLqPM5UyAvaBA6JSfO5gJeHqo5cbf6N';
@@ -35,24 +33,37 @@ export const getAccessToken = async () => {
     }
 };
 
-export const searchFlights = async ({ originLocationCode, destinationLocationCode, departureDate, adults = 1, max = 5 }) => {
+export const searchFlights = async ({
+    originLocationCode,
+    destinationLocationCode,
+    departureDate,
+    returnDate, // <-- NEU hier
+    adults = 1,
+    max = 5,
+}) => {
     const token = await getAccessToken();
 
     try {
+        const params = {
+            originLocationCode,
+            destinationLocationCode,
+            departureDate,
+            adults,
+            max,
+            currencyCode: 'USD',
+        };
+
+        if (returnDate) {
+            params.returnDate = returnDate; // ✅ returnDate anhängen wenn vorhanden
+        }
+
         const response = await axios.get(
             'https://test.api.amadeus.com/v2/shopping/flight-offers',
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                params: {
-                    originLocationCode,
-                    destinationLocationCode,
-                    departureDate,
-                    adults,
-                    max,
-                    currencyCode: 'USD',
-                },
+                params,
             }
         );
 

@@ -19,24 +19,21 @@ const AirportSelector = ({ label, selectedAirport, setSelectedAirport }) => {
   const handleSearch = (text) => {
     setQuery(text);
 
-    if (text.length === 0) {
-      setSelectedAirport(null);
+    if (text.length < 1) { // 🔥 ab 1 Buchstabe
       setFilteredAirports([]);
       return;
     }
 
-    if (text.length < 2) {
-      setFilteredAirports([]);
-      return;
-    }
     const results = airportList.filter(
       (airport) =>
         airport.name.toLowerCase().includes(text.toLowerCase()) ||
         airport.city.toLowerCase().includes(text.toLowerCase()) ||
         airport.iata.toLowerCase().includes(text.toLowerCase())
     );
+
     setFilteredAirports(results.length > 0 ? results : [{ name: 'No airport found', iata: '' }]);
   };
+
 
   const handleSelect = (airport) => {
     if (airport.iata) {
