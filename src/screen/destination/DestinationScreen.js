@@ -28,6 +28,7 @@ const DestinationScreen = ({ navigation }) => {
   const [debounceTimer, setDebounceTimer] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [localDestination, setLocalDestination] = useState(tripData.destination || '');
+  const [localCountry, setLocalCountry] = useState('');
 
   const currentStep = 1;
   const totalSteps = 8;
@@ -77,6 +78,7 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleCitySelect = (city) => {
     setLocalDestination(city.city);
+    setLocalCountry(city.country); // << NEU
     setIsValidDestination(true);
     setSuggestions([]);
   };
@@ -90,7 +92,10 @@ const DestinationScreen = ({ navigation }) => {
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({ destination: localDestination }); // ✅ nutze localDestination
+        .update({
+          destination: localDestination,
+          country: localCountry,
+        });
 
       Toast.show({
         visibilityTime: 2000,
@@ -111,7 +116,10 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleNext = () => {
     if (!isValidDestination) return;
-    setTripData({ destination: localDestination }); // jetzt wird’s in den Store übernommen
+    setTripData({
+      destination: localDestination,
+      country: localCountry,
+    });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.DATES, { tripId });
   };

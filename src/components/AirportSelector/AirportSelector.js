@@ -18,6 +18,13 @@ const AirportSelector = ({ label, selectedAirport, setSelectedAirport }) => {
 
   const handleSearch = (text) => {
     setQuery(text);
+
+    if (text.length === 0) {
+      setSelectedAirport(null);
+      setFilteredAirports([]);
+      return;
+    }
+
     if (text.length < 2) {
       setFilteredAirports([]);
       return;
@@ -45,7 +52,7 @@ const AirportSelector = ({ label, selectedAirport, setSelectedAirport }) => {
       <TextInput
         style={styles.input}
         placeholder="Search airport..."
-        value={query}
+        value={query || (selectedAirport ? `${selectedAirport.city} (${selectedAirport.iata})` : '')}
         onChangeText={handleSearch}
       />
       {filteredAirports.length > 0 && (

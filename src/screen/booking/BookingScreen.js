@@ -6,12 +6,12 @@ import firestore from '@react-native-firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SVG } from '../../assets/svgs';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
-import { SCREEN } from '../../enums/AppEnums';
 import { searchFlights } from '../../services/amadeusApi';
 import { createSmartTripAffiliateLink } from '../../services/TripLinkService';
 import Toast from 'react-native-toast-message';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import AirportSelector from '../../components/AirportSelector'; // <<<< NEU
+import AirportSelector from '../../components/AirportSelector';
+import airports from '../../assets/data/airports.json';
 
 const BookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -26,6 +26,35 @@ const BookingScreen = ({ navigation }) => {
 
   const [loading, setLoading] = useState(false);
   const [flights, setFlights] = useState([]);
+
+  const findBestAirport = (cityName, countryCode) => {
+    const airportEntries = Object.values(airports);
+
+    // 1. Zuerst Airport finden mit passender Stadt + Land
+    const byCityAndCountry = airportEntries.find(airport =>
+      airport.city?.toLowerCase() === cityName?.toLowerCase() &&
+      airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
+      airport.iata
+    );
+    if (byCityAndCountry) return byCityAndCountry;
+
+    // 2. Wenn nicht, nur Stadt suchen
+    const byCity = airportEntries.find(airport =>
+      airport.city?.toLowerCase() === cityName?.toLowerCase() &&
+      airport.iata
+    );
+    if (byCity) return byCity;
+
+    // 3. Wenn auch nicht, nur Land suchen
+    const byCountry = airportEntries.find(airport =>
+      airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
+      airport.iata
+    );
+    if (byCountry) return byCountry;
+
+    return null;
+  };
+
 
   const handleSearchFlights = async () => {
     if (!originAirport || !destinationAirport || !departureDate) {
@@ -74,7 +103,19 @@ const BookingScreen = ({ navigation }) => {
         .get()
         .then(snapshot => {
           const data = snapshot.data();
-          if (data) setTrip(data);
+          if (data) {
+            setTrip(data);
+
+            let destinationAirport = findBestAirport(data.destination, data.country);
+            if (destinationAirport) {
+              setDestinationAirport({
+                iata: destinationAirport.iata,
+                name: destinationAirport.name,
+                city: destinationAirport.city,
+                country: destinationAirport.country,
+              });
+            }
+          }
         })
         .catch(error => {
           console.error('❌ Error loading trip:', error);
