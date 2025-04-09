@@ -348,21 +348,71 @@ const BookingScreen = ({ navigation }) => {
               {selectedFlight && (
                 <>
                   <Text style={styles.modalTitle}>Flight Details</Text>
-                  <Text>From: {selectedFlight.itineraries[0].segments[0].departure.iataCode}</Text>
-                  <Text>To: {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}</Text>
-                  <Text>Duration: {selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
-                  <Text>Price: {selectedFlight.price.total} {selectedFlight.price.currency}</Text>
+
+                  {/* Departure Info */}
+                  <Text style={styles.modalSubTitle}>Departure</Text>
+                  <Text>
+                    {selectedFlight.itineraries[0].segments[0].departure.iataCode} ➔ {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                  </Text>
+                  <Text>
+                    {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleDateString()} -
+                    {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+
+                  {/* Arrival Info */}
+                  <Text style={styles.modalSubTitle}>Arrival</Text>
+                  <Text>
+                    {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleDateString()} -
+                    {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+
+                  {/* Duration */}
+                  <Text style={styles.modalSubTitle}>Duration</Text>
+                  <Text>{selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
+
+                  {/* Stops */}
+                  <Text style={styles.modalSubTitle}>Stops</Text>
+                  <Text>
+                    {selectedFlight.itineraries[0].segments.length === 1
+                      ? 'Direct flight'
+                      : `${selectedFlight.itineraries[0].segments.length - 1} stop(s)`}
+                  </Text>
+
+                  {/* Airline */}
+                  {selectedFlight.validatingAirlineCodes && (
+                    <>
+                      <Text style={styles.modalSubTitle}>Airline</Text>
+                      <Text>{selectedFlight.validatingAirlineCodes.join(', ')}</Text>
+                    </>
+                  )}
+
+                  {/* Price */}
+                  <Text style={styles.modalSubTitle}>Price</Text>
+                  <Text style={{ fontWeight: 'bold', fontSize: 18, marginTop: 4 }}>
+                    {selectedFlight.price.total} {selectedFlight.price.currency}
+                  </Text>
 
                   <TouchableOpacity
                     style={styles.modalButton}
                     onPress={() => {
+                      const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
+                      const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
+                      const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
+                        .toISOString()
+                        .split('T')[0]
+                        .replace(/-/g, '');
+
+                      const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}`;
+
+                      Linking.openURL(bookingUrl)
+                        .catch(err => console.error('Failed to open URL:', err));
                       setIsModalVisible(false);
-                      Toast.show({ text1: '✅ Flight selected!', position: 'bottom' });
                     }}
                   >
                     <Text style={styles.modalButtonText}>Book now</Text>
                   </TouchableOpacity>
 
+                  {/* Close */}
                   <TouchableOpacity onPress={() => setIsModalVisible(false)}>
                     <Text style={{ marginTop: 10, color: COLOR.dark }}>❌ Close</Text>
                   </TouchableOpacity>
@@ -371,6 +421,7 @@ const BookingScreen = ({ navigation }) => {
             </View>
           </View>
         </Modal>
+
 
 
       </ScrollView>
@@ -532,4 +583,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  modalSubTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+
 });
