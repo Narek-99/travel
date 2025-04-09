@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Pressable, Text, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Pressable, Text, ScrollView, ActivityIndicator, TouchableOpacity, Linking, Modal } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -33,13 +33,11 @@ const BookingScreen = ({ navigation }) => {
   const [departureFlights, setDepartureFlights] = useState([]);
   const [returnFlights, setReturnFlights] = useState([]);
 
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const handleFlightPress = (flight) => {
-    console.log('👉 Selected Flight:', flight);
-    Toast.show({
-      text1: `Selected flight for ${flight.price.total} ${flight.price.currency}`,
-      position: 'bottom',
-      visibilityTime: 2000,
-    });
+    setSelectedFlight(flight);
+    setIsModalVisible(true);
   };
 
   const findBestAirport = (cityName, countryCode) => {
@@ -199,7 +197,7 @@ const BookingScreen = ({ navigation }) => {
 
         <View style={styles.dateContainer}>
           <View>
-            <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Hinflug</Label>
+            <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Departure Flight</Label>
             <DateTimePicker
               value={startFlightDate}
               mode="date"
@@ -218,7 +216,7 @@ const BookingScreen = ({ navigation }) => {
 
           {showReturnFlight && (
             <>
-              <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Rückflug</Label>
+              <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Return Flight</Label>
               <DateTimePicker
                 value={returnFlightDate}
                 mode="date"
@@ -236,14 +234,14 @@ const BookingScreen = ({ navigation }) => {
               style={styles.addReturnButton}
               onPress={() => setShowReturnFlight(true)}
             >
-              <Text style={styles.addReturnButtonText}>➕ Rückflug hinzufügen</Text>
+              <Text style={styles.addReturnButtonText}>➕ Add Return Flight</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={styles.removeReturnButton}
               onPress={() => setShowReturnFlight(false)}
             >
-              <Text style={styles.removeReturnButtonText}>❌ Rückflug entfernen</Text>
+              <Text style={styles.removeReturnButtonText}>❌ Remove Return Flight</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -267,7 +265,7 @@ const BookingScreen = ({ navigation }) => {
             {/* Hinflug-Sektion */}
             {departureFlights.length > 0 && (
               <>
-                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>✈️ Hinflug</Text>
+                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>✈️ Departure Flights</Text>
                 {departureFlights.map((flight, index) => (
                   <TouchableOpacity
                     key={`dep-${index}`}
@@ -277,9 +275,21 @@ const BookingScreen = ({ navigation }) => {
                     <Text style={styles.flightText}>
                       {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
                     </Text>
+
+                    {flight.validatingAirlineCodes && (
+                      <Text style={styles.flightText}>
+                        Airline: {flight.validatingAirlineCodes.join(', ')}
+                      </Text>
+                    )}
+
                     <Text style={styles.flightText}>
                       Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
                     </Text>
+
+                    <Text style={styles.flightText}>
+                      Date: {new Date(flight.itineraries[0].segments[0].departure.at).toLocaleDateString()}
+                    </Text>
+
                     <Text style={styles.flightPrice}>
                       Price: {flight.price.total} {flight.price.currency}
                     </Text>
@@ -291,7 +301,7 @@ const BookingScreen = ({ navigation }) => {
             {/* Rückflug-Sektion */}
             {returnFlights.length > 0 && (
               <>
-                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>🔁 Rückflug</Text>
+                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>🔁 Return Flights</Text>
                 {returnFlights.map((flight, index) => (
                   <TouchableOpacity
                     key={`ret-${index}`}
@@ -326,6 +336,42 @@ const BookingScreen = ({ navigation }) => {
             </Pressable>
           </>
         )}
+
+        <Modal
+          visible={isModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              {selectedFlight && (
+                <>
+                  <Text style={styles.modalTitle}>Flight Details</Text>
+                  <Text>From: {selectedFlight.itineraries[0].segments[0].departure.iataCode}</Text>
+                  <Text>To: {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}</Text>
+                  <Text>Duration: {selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
+                  <Text>Price: {selectedFlight.price.total} {selectedFlight.price.currency}</Text>
+
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      Toast.show({ text1: '✅ Flight selected!', position: 'bottom' });
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Book now</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                    <Text style={{ marginTop: 10, color: COLOR.dark }}>❌ Close</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        </Modal>
+
 
       </ScrollView>
     </View>
@@ -456,5 +502,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalButton: {
+    marginTop: 20,
+    backgroundColor: '#0084FF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
