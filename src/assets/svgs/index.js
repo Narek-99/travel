@@ -21,6 +21,9 @@ import Send from './send.svg'
 import Stop from './stop.svg'
 import Person from './person.svg'
 import Robot from './robot.svg'
+import Search from './search.svg'
+import Minus from './minus.svg'
+import Plus2 from './plus2.svg'
 
 export const SVG = {
     BackIcon,
@@ -45,5 +48,8 @@ export const SVG = {
     Send,
     Stop,
     Person,
-    Robot
+    Robot,
+    Search,
+    Minus,
+    Plus2
 }
