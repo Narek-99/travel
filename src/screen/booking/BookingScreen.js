@@ -23,14 +23,24 @@ const BookingScreen = ({ navigation }) => {
 
   const [originAirport, setOriginAirport] = useState(null);
   const [destinationAirport, setDestinationAirport] = useState(null);
-  const [departureDate, setDepartureDate] = useState(new Date());
 
   const [startFlightDate, setStartFlightDate] = useState(new Date());
   const [returnFlightDate, setReturnFlightDate] = useState(new Date());
 
 
   const [loading, setLoading] = useState(false);
-  const [flights, setFlights] = useState([]);
+  const [showReturnFlight, setShowReturnFlight] = useState(false);
+  const [departureFlights, setDepartureFlights] = useState([]);
+  const [returnFlights, setReturnFlights] = useState([]);
+
+  const handleFlightPress = (flight) => {
+    console.log('👉 Selected Flight:', flight);
+    Toast.show({
+      text1: `Selected flight for ${flight.price.total} ${flight.price.currency}`,
+      position: 'bottom',
+      visibilityTime: 2000,
+    });
+  };
 
   const findBestAirport = (cityName, countryCode) => {
     const airportEntries = Object.values(airports);
@@ -63,9 +73,10 @@ const BookingScreen = ({ navigation }) => {
 
   const handleSearchFlights = async () => {
     if (!originAirport || !destinationAirport || !startFlightDate) {
-      Toast.show({ type: 'error', text1: 'Please select airports and a departure date!' });
+      Toast.show({ type: 'error', text1: 'Please select airports and dates!' });
       return;
     }
+
     setLoading(true);
     try {
       const departureDateFormatted = startFlightDate.toISOString().split('T')[0];
@@ -73,20 +84,32 @@ const BookingScreen = ({ navigation }) => {
 
       console.log('Departure:', departureDateFormatted, 'Return:', returnDateFormatted);
 
-      const result = await searchFlights({
+      const depFlights = await searchFlights({
         originLocationCode: originAirport.iata,
         destinationLocationCode: destinationAirport.iata,
         departureDate: departureDateFormatted,
-        returnDate: startFlightDate.getTime() !== returnFlightDate.getTime() ? returnDateFormatted : undefined, // 🔥 Nur wenn User RETURN anders auswählt
         adults: 1,
         max: 5,
       });
 
-      if (result?.length === 0) {
-        Toast.show({ type: 'info', text1: 'No flights found. Try adjusting your dates or airports.' });
+      let retFlights = [];
+
+      if (showReturnFlight && startFlightDate.getTime() !== returnFlightDate.getTime()) {
+        retFlights = await searchFlights({
+          originLocationCode: destinationAirport.iata,
+          destinationLocationCode: originAirport.iata,
+          departureDate: returnDateFormatted,
+          adults: 1,
+          max: 5,
+        });
       }
 
-      setFlights(result);
+      if (depFlights.length === 0 && retFlights.length === 0) {
+        Toast.show({ type: 'info', text1: 'No flights found. Try different dates or airports.' });
+      }
+
+      setDepartureFlights(depFlights);
+      setReturnFlights(retFlights);
     } catch (error) {
       console.error('❌ Flight search error:', error.response?.data || error.message);
       Toast.show({ type: 'error', text1: 'Flight search failed.' });
@@ -98,8 +121,6 @@ const BookingScreen = ({ navigation }) => {
   const handleReset = () => {
     setOriginAirport(null);
     setDestinationAirport(null);
-    setDepartureDate(new Date());
-    setFlights([]);
   };
 
   const handleHotelLinkPress = () => {
@@ -178,6 +199,7 @@ const BookingScreen = ({ navigation }) => {
 
         <View style={styles.dateContainer}>
           <View>
+            <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Hinflug</Label>
             <DateTimePicker
               value={startFlightDate}
               mode="date"
@@ -186,7 +208,7 @@ const BookingScreen = ({ navigation }) => {
                 if (selectedDate) {
                   setStartFlightDate(selectedDate);
                   if (selectedDate > returnFlightDate) {
-                    setReturnFlightDate(selectedDate); // Enddatum anpassen falls nötig
+                    setReturnFlightDate(selectedDate);
                   }
                 }
               }}
@@ -194,21 +216,39 @@ const BookingScreen = ({ navigation }) => {
             />
           </View>
 
-          <Label style={{ color: COLOR.black }}>to</Label>
-
-          <View>
-            <DateTimePicker
-              value={returnFlightDate}
-              mode="date"
-              display="default"
-              minimumDate={startFlightDate}
-              onChange={(event, selectedDate) => {
-                if (selectedDate) setReturnFlightDate(selectedDate);
-              }}
-              themeVariant="light"
-            />
-          </View>
+          {showReturnFlight && (
+            <>
+              <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Rückflug</Label>
+              <DateTimePicker
+                value={returnFlightDate}
+                mode="date"
+                display="default"
+                minimumDate={startFlightDate}
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) setReturnFlightDate(selectedDate);
+                }}
+                themeVariant="light"
+              />
+            </>
+          )}
+          {!showReturnFlight ? (
+            <TouchableOpacity
+              style={styles.addReturnButton}
+              onPress={() => setShowReturnFlight(true)}
+            >
+              <Text style={styles.addReturnButtonText}>➕ Rückflug hinzufügen</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.removeReturnButton}
+              onPress={() => setShowReturnFlight(false)}
+            >
+              <Text style={styles.removeReturnButtonText}>❌ Rückflug entfernen</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.searchButton} onPress={handleSearchFlights}>
@@ -223,20 +263,57 @@ const BookingScreen = ({ navigation }) => {
         {loading ? (
           <ActivityIndicator size="large" color={COLOR.dark} style={{ marginTop: 20 }} />
         ) : (
-          flights.map((flight, index) => (
-            <View key={index} style={styles.flightCard}>
-              <Text style={styles.flightText}>
-                {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-              </Text>
-              <Text style={styles.flightText}>
-                Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
-              </Text>
-              <Text style={styles.flightPrice}>
-                Price: {flight.price.total} {flight.price.currency}
-              </Text>
-            </View>
-          ))
+          <>
+            {/* Hinflug-Sektion */}
+            {departureFlights.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>✈️ Hinflug</Text>
+                {departureFlights.map((flight, index) => (
+                  <TouchableOpacity
+                    key={`dep-${index}`}
+                    style={styles.flightCard}
+                    onPress={() => handleFlightPress(flight)}
+                  >
+                    <Text style={styles.flightText}>
+                      {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                    </Text>
+                    <Text style={styles.flightText}>
+                      Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+                    </Text>
+                    <Text style={styles.flightPrice}>
+                      Price: {flight.price.total} {flight.price.currency}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+
+            {/* Rückflug-Sektion */}
+            {returnFlights.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>🔁 Rückflug</Text>
+                {returnFlights.map((flight, index) => (
+                  <TouchableOpacity
+                    key={`ret-${index}`}
+                    style={styles.flightCard}
+                    onPress={() => handleFlightPress(flight)}
+                  >
+                    <Text style={styles.flightText}>
+                      {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                    </Text>
+                    <Text style={styles.flightText}>
+                      Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+                    </Text>
+                    <Text style={styles.flightPrice}>
+                      Price: {flight.price.total} {flight.price.currency}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+          </>
         )}
+
 
         {/* Hotel Section */}
         {trip && (
@@ -352,4 +429,32 @@ const styles = StyleSheet.create({
     paddingTop: hp(5),
     paddingBottom: hp(5),
   },
+  addReturnButton: {
+    marginTop: hp(2),
+    backgroundColor: '#0084FF',
+    padding: wp(3),
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+
+  addReturnButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  removeReturnButton: {
+    marginTop: hp(2),
+    backgroundColor: '#ff4d4d',
+    padding: wp(3),
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+
+  removeReturnButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
 });
