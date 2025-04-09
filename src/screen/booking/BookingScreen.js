@@ -100,6 +100,11 @@ const BookingScreen = ({ navigation }) => {
   const handleReset = () => {
     setOriginAirport(null);
     setDestinationAirport(null);
+    setStartFlightDate(new Date());
+    setReturnFlightDate(new Date());
+    setShowReturnFlight(false);
+    setDepartureFlights([]);
+    setReturnFlights([]);
   };
 
   const handleHotelLinkPress = () => {
@@ -215,12 +220,12 @@ const BookingScreen = ({ navigation }) => {
             <AirportSelector
               label="From"
               selectedAirport={originAirport}
-              setSelectedAirport={setOriginAirport}
+              setSelectedAirport={(value) => setOriginAirport(value || null)}
             />
             <AirportSelector
               label="To"
               selectedAirport={destinationAirport}
-              setSelectedAirport={setDestinationAirport}
+              setSelectedAirport={(value) => setDestinationAirport(value || null)}
             />
           </View>
         );

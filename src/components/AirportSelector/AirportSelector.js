@@ -4,7 +4,7 @@ import airports from '../../assets/data/airports.json';
 import { COLOR, wp, hp } from '../../enums/StyleGuide';
 
 const airportList = Object.values(airports)
-  .filter(a => a.iata && a.city) // Nur Flughäfen mit IATA Code & Stadt
+  .filter(a => a.iata && a.city)
   .map(a => ({
     name: `${a.city} - ${a.name}`,
     iata: a.iata,
@@ -19,7 +19,8 @@ const AirportSelector = ({ label, selectedAirport, setSelectedAirport }) => {
   const handleSearch = (text) => {
     setQuery(text);
 
-    if (text.length < 1) { // 🔥 ab 1 Buchstabe
+    if (text.trim() === '') {
+      setSelectedAirport(null); // ✨ if empty, clear selection
       setFilteredAirports([]);
       return;
     }
@@ -34,11 +35,10 @@ const AirportSelector = ({ label, selectedAirport, setSelectedAirport }) => {
     setFilteredAirports(results.length > 0 ? results : [{ name: 'No airport found', iata: '' }]);
   };
 
-
   const handleSelect = (airport) => {
     if (airport.iata) {
       setSelectedAirport(airport);
-      setQuery(`${airport.city} (${airport.iata})`);
+      setQuery(`${airport.city} (${airport.iata})`); // show nicely selected
     }
     setFilteredAirports([]);
   };
@@ -47,10 +47,10 @@ const AirportSelector = ({ label, selectedAirport, setSelectedAirport }) => {
     <View style={{ marginBottom: hp(2) }}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Search airport..."
-        value={query || (selectedAirport ? `${selectedAirport.city} (${selectedAirport.iata})` : '')}
+        value={query}
         onChangeText={handleSearch}
+        placeholder="Search Airport..."
+        style={styles.input}
       />
       {filteredAirports.length > 0 && (
         <View style={styles.dropdown}>
