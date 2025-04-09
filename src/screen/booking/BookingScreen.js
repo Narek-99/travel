@@ -13,7 +13,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import AirportSelector from '../../components/AirportSelector';
 import airports from '../../assets/data/airports.json';
 import { Label } from '../../components';
-
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const BookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -23,18 +23,17 @@ const BookingScreen = ({ navigation }) => {
 
   const [originAirport, setOriginAirport] = useState(null);
   const [destinationAirport, setDestinationAirport] = useState(null);
-
   const [startFlightDate, setStartFlightDate] = useState(new Date());
   const [returnFlightDate, setReturnFlightDate] = useState(new Date());
-
-
   const [loading, setLoading] = useState(false);
   const [showReturnFlight, setShowReturnFlight] = useState(false);
   const [departureFlights, setDepartureFlights] = useState([]);
   const [returnFlights, setReturnFlights] = useState([]);
-
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showReturnDatePicker, setShowReturnDatePicker] = useState(false);
+
   const handleFlightPress = (flight) => {
     setSelectedFlight(flight);
     setIsModalVisible(true);
@@ -42,46 +41,34 @@ const BookingScreen = ({ navigation }) => {
 
   const findBestAirport = (cityName, countryCode) => {
     const airportEntries = Object.values(airports);
-
-    // 1. Zuerst Airport finden mit passender Stadt + Land
     const byCityAndCountry = airportEntries.find(airport =>
       airport.city?.toLowerCase() === cityName?.toLowerCase() &&
       airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
       airport.iata
     );
     if (byCityAndCountry) return byCityAndCountry;
-
-    // 2. Wenn nicht, nur Stadt suchen
     const byCity = airportEntries.find(airport =>
       airport.city?.toLowerCase() === cityName?.toLowerCase() &&
       airport.iata
     );
     if (byCity) return byCity;
-
-    // 3. Wenn auch nicht, nur Land suchen
     const byCountry = airportEntries.find(airport =>
       airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
       airport.iata
     );
     if (byCountry) return byCountry;
-
     return null;
   };
-
 
   const handleSearchFlights = async () => {
     if (!originAirport || !destinationAirport || !startFlightDate) {
       Toast.show({ type: 'error', text1: 'Please select airports and dates!' });
       return;
     }
-
     setLoading(true);
     try {
       const departureDateFormatted = startFlightDate.toISOString().split('T')[0];
       const returnDateFormatted = returnFlightDate?.toISOString().split('T')[0];
-
-      console.log('Departure:', departureDateFormatted, 'Return:', returnDateFormatted);
-
       const depFlights = await searchFlights({
         originLocationCode: originAirport.iata,
         destinationLocationCode: destinationAirport.iata,
@@ -89,9 +76,7 @@ const BookingScreen = ({ navigation }) => {
         adults: 1,
         max: 5,
       });
-
       let retFlights = [];
-
       if (showReturnFlight && startFlightDate.getTime() !== returnFlightDate.getTime()) {
         retFlights = await searchFlights({
           originLocationCode: destinationAirport.iata,
@@ -101,11 +86,9 @@ const BookingScreen = ({ navigation }) => {
           max: 5,
         });
       }
-
       if (depFlights.length === 0 && retFlights.length === 0) {
         Toast.show({ type: 'info', text1: 'No flights found. Try different dates or airports.' });
       }
-
       setDepartureFlights(depFlights);
       setReturnFlights(retFlights);
     } catch (error) {
@@ -139,7 +122,6 @@ const BookingScreen = ({ navigation }) => {
           const data = snapshot.data();
           if (data) {
             setTrip(data);
-
             let destinationAirport = findBestAirport(data.destination, data.country);
             if (destinationAirport) {
               setDestinationAirport({
@@ -165,7 +147,7 @@ const BookingScreen = ({ navigation }) => {
 
   return (
     <View style={styles.screenContainer}>
-      <SafeAreaView />
+      <SafeAreaView style={styles.safeArea} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -173,31 +155,32 @@ const BookingScreen = ({ navigation }) => {
           ReactNativeHapticFeedback.trigger('impactLight');
           navigation.goBack();
         }}>
-          <SVG.BackIcon fill={COLOR.dark} />
+          <Icon name="chevron-back" size={24} color="#1F2A44" />
         </Pressable>
-        <Text style={styles.headerTitle}>Your Booking</Text>
+        <Text style={styles.headerTitle}>Book Your Trip</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
-
         {/* Flight Search Form */}
-        <Text style={styles.sectionTitle}>✈️ Flights</Text>
+        <Text style={styles.sectionTitle}>Flights</Text>
 
-        <AirportSelector
-          label="From"
-          selectedAirport={originAirport}
-          setSelectedAirport={setOriginAirport}
-        />
-        <AirportSelector
-          label="To"
-          selectedAirport={destinationAirport}
-          setSelectedAirport={setDestinationAirport}
-        />
+        <View style={styles.inputCard}>
+          <AirportSelector
+            label="From"
+            selectedAirport={originAirport}
+            setSelectedAirport={setOriginAirport}
+          />
+          <AirportSelector
+            label="To"
+            selectedAirport={destinationAirport}
+            setSelectedAirport={setDestinationAirport}
+          />
+        </View>
 
         <View style={styles.dateContainer}>
-          <View>
-            <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Departure Flight</Label>
+          <View style={styles.datePickerWrapper}>
+            <Label style={styles.label}>Departure Date</Label>
             <DateTimePicker
               value={startFlightDate}
               mode="date"
@@ -211,112 +194,129 @@ const BookingScreen = ({ navigation }) => {
                 }
               }}
               themeVariant="light"
+              minimumDate={new Date()}
             />
           </View>
 
           {showReturnFlight && (
-            <>
-              <Label style={{ color: COLOR.dark, marginBottom: hp(1) }}>Return Flight</Label>
+            <View style={styles.datePickerWrapper}>
+              <Label style={styles.label}>Return Date</Label>
               <DateTimePicker
                 value={returnFlightDate}
                 mode="date"
                 display="default"
-                minimumDate={startFlightDate}
                 onChange={(event, selectedDate) => {
                   if (selectedDate) setReturnFlightDate(selectedDate);
                 }}
+                minimumDate={startFlightDate}
                 themeVariant="light"
               />
-            </>
+            </View>
           )}
-          {!showReturnFlight ? (
-            <TouchableOpacity
-              style={styles.addReturnButton}
-              onPress={() => setShowReturnFlight(true)}
-            >
-              <Text style={styles.addReturnButtonText}>➕ Add Return Flight</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.removeReturnButton}
-              onPress={() => setShowReturnFlight(false)}
-            >
-              <Text style={styles.removeReturnButtonText}>❌ Remove Return Flight</Text>
-            </TouchableOpacity>
-          )}
+
+          <TouchableOpacity
+            style={styles.toggleReturnButton}
+            onPress={() => setShowReturnFlight(!showReturnFlight)}
+          >
+            <Icon
+              name={showReturnFlight ? "remove-circle-outline" : "add-circle-outline"}
+              size={20}
+              color="#007AFF"
+            />
+            <Text style={styles.toggleReturnText}>
+              {showReturnFlight ? "Remove Return Date" : "Add Return Date"}
+            </Text>
+          </TouchableOpacity>
         </View>
-
-
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.searchButton} onPress={handleSearchFlights}>
-            <Text style={styles.buttonText}>🔎 Search Flights</Text>
+            <Icon name="search" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>Search Flights</Text>
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.buttonText}>🧹 Reset</Text>
+            <Icon name="refresh" size={20} color="#6B7280" style={styles.buttonIcon} />
+            <Text style={styles.resetButtonText}>Reset</Text>
           </TouchableOpacity>
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color={COLOR.dark} style={{ marginTop: 20 }} />
+          <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />
         ) : (
           <>
-            {/* Hinflug-Sektion */}
             {departureFlights.length > 0 && (
               <>
-                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>✈️ Departure Flights</Text>
+                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>Departure Flights</Text>
                 {departureFlights.map((flight, index) => (
                   <TouchableOpacity
                     key={`dep-${index}`}
                     style={styles.flightCard}
                     onPress={() => handleFlightPress(flight)}
                   >
-                    <Text style={styles.flightText}>
-                      {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-                    </Text>
-
-                    {flight.validatingAirlineCodes && (
-                      <Text style={styles.flightText}>
-                        Airline: {flight.validatingAirlineCodes.join(', ')}
+                    <View style={styles.flightCardHeader}>
+                      <Text style={styles.flightRoute}>
+                        {flight.itineraries[0].segments[0].departure.iataCode} → {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
                       </Text>
-                    )}
-
-                    <Text style={styles.flightText}>
-                      Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
-                    </Text>
-
-                    <Text style={styles.flightText}>
-                      Date: {new Date(flight.itineraries[0].segments[0].departure.at).toLocaleDateString()}
-                    </Text>
-
-                    <Text style={styles.flightPrice}>
-                      Price: {flight.price.total} {flight.price.currency}
-                    </Text>
+                      <Text style={styles.flightPrice}>
+                        {flight.price.total} {flight.price.currency}
+                      </Text>
+                    </View>
+                    <View style={styles.flightDetails}>
+                      <View style={styles.flightDetailRow}>
+                        <Icon name="airplane" size={16} color="#6B7280" />
+                        <Text style={styles.flightDetailText}>
+                          Airline: {flight.validatingAirlineCodes?.join(', ') || 'N/A'}
+                        </Text>
+                      </View>
+                      <View style={styles.flightDetailRow}>
+                        <Icon name="time-outline" size={16} color="#6B7280" />
+                        <Text style={styles.flightDetailText}>
+                          Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+                        </Text>
+                      </View>
+                      <View style={styles.flightDetailRow}>
+                        <Icon name="calendar-outline" size={16} color="#6B7280" />
+                        <Text style={styles.flightDetailText}>
+                          Date: {new Date(flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </Text>
+                      </View>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </>
             )}
 
-            {/* Rückflug-Sektion */}
             {returnFlights.length > 0 && (
               <>
-                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>🔁 Return Flights</Text>
+                <Text style={[styles.sectionTitle, { marginTop: hp(2) }]}>Return Flights</Text>
                 {returnFlights.map((flight, index) => (
                   <TouchableOpacity
                     key={`ret-${index}`}
                     style={styles.flightCard}
                     onPress={() => handleFlightPress(flight)}
                   >
-                    <Text style={styles.flightText}>
-                      {flight.itineraries[0].segments[0].departure.iataCode} ➔ {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-                    </Text>
-                    <Text style={styles.flightText}>
-                      Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
-                    </Text>
-                    <Text style={styles.flightPrice}>
-                      Price: {flight.price.total} {flight.price.currency}
-                    </Text>
+                    <View style={styles.flightCardHeader}>
+                      <Text style={styles.flightRoute}>
+                        {flight.itineraries[0].segments[0].departure.iataCode} → {flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                      </Text>
+                      <Text style={styles.flightPrice}>
+                        {flight.price.total} {flight.price.currency}
+                      </Text>
+                    </View>
+                    <View style={styles.flightDetails}>
+                      <View style={styles.flightDetailRow}>
+                        <Icon name="time-outline" size={16} color="#6B7280" />
+                        <Text style={styles.flightDetailText}>
+                          Duration: {flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+                        </Text>
+                      </View>
+                      <View style={styles.flightDetailRow}>
+                        <Icon name="calendar-outline" size={16} color="#6B7280" />
+                        <Text style={styles.flightDetailText}>
+                          Date: {new Date(flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </Text>
+                      </View>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </>
@@ -324,16 +324,13 @@ const BookingScreen = ({ navigation }) => {
           </>
         )}
 
-
-        {/* Hotel Section */}
         {trip && (
           <>
-            <Text style={[styles.sectionTitle, { marginTop: hp(3) }]}>
-              🏨 Hotels in {trip.destination}
-            </Text>
-            <Pressable style={styles.hotelButton} onPress={handleHotelLinkPress}>
-              <Text style={styles.hotelButtonText}>🔗 Open Hotels</Text>
-            </Pressable>
+            <Text style={[styles.sectionTitle, { marginTop: hp(3) }]}>Hotels in {trip.destination}</Text>
+            <TouchableOpacity style={styles.hotelButton} onPress={handleHotelLinkPress}>
+              <Icon name="bed-outline" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+              <Text style={styles.hotelButtonText}>Explore Hotels</Text>
+            </TouchableOpacity>
           </>
         )}
 
@@ -345,58 +342,67 @@ const BookingScreen = ({ navigation }) => {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
+              <View style={styles.modalHandle} />
               {selectedFlight && (
                 <>
                   <Text style={styles.modalTitle}>Flight Details</Text>
 
-                  {/* Departure Info */}
-                  <Text style={styles.modalSubTitle}>Departure</Text>
-                  <Text>
-                    {selectedFlight.itineraries[0].segments[0].departure.iataCode} ➔ {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-                  </Text>
-                  <Text>
-                    {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleDateString()} -
-                    {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSubTitle}>Route</Text>
+                    <Text style={styles.modalText}>
+                      {selectedFlight.itineraries[0].segments[0].departure.iataCode} → {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                    </Text>
+                  </View>
 
-                  {/* Arrival Info */}
-                  <Text style={styles.modalSubTitle}>Arrival</Text>
-                  <Text>
-                    {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleDateString()} -
-                    {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSubTitle}>Departure</Text>
+                    <Text style={styles.modalText}>
+                      {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
+                      {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
 
-                  {/* Duration */}
-                  <Text style={styles.modalSubTitle}>Duration</Text>
-                  <Text>{selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSubTitle}>Arrival</Text>
+                    <Text style={styles.modalText}>
+                      {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
+                      {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
 
-                  {/* Stops */}
-                  <Text style={styles.modalSubTitle}>Stops</Text>
-                  <Text>
-                    {selectedFlight.itineraries[0].segments.length === 1
-                      ? 'Direct flight'
-                      : `${selectedFlight.itineraries[0].segments.length - 1} stop(s)`}
-                  </Text>
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSubTitle}>Duration</Text>
+                    <Text style={styles.modalText}>{selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
+                  </View>
 
-                  {/* Airline */}
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSubTitle}>Stops</Text>
+                    <Text style={styles.modalText}>
+                      {selectedFlight.itineraries[0].segments.length === 1
+                        ? 'Direct Flight'
+                        : `${selectedFlight.itineraries[0].segments.length - 1} Stop(s)`}
+                    </Text>
+                  </View>
+
                   {selectedFlight.validatingAirlineCodes && (
-                    <>
+                    <View style={styles.modalSection}>
                       <Text style={styles.modalSubTitle}>Airline</Text>
-                      <Text>{selectedFlight.validatingAirlineCodes.join(', ')}</Text>
-                    </>
+                      <Text style={styles.modalText}>{selectedFlight.validatingAirlineCodes.join(', ')}</Text>
+                    </View>
                   )}
 
-                  {/* Price */}
-                  <Text style={styles.modalSubTitle}>Price</Text>
-                  <Text style={{ fontWeight: 'bold', fontSize: 18, marginTop: 4 }}>
-                    {selectedFlight.price.total} {selectedFlight.price.currency}
-                  </Text>
+                  <View style={styles.modalSection}>
+                    <Text style={styles.modalSubTitle}>Price</Text>
+                    <Text style={styles.modalPrice}>
+                      {selectedFlight.price.total} {selectedFlight.price.currency}
+                    </Text>
+                  </View>
 
                   <TouchableOpacity
                     style={styles.modalButton}
                     onPress={() => {
-                      const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode; // e.g., "DUS"
-                      const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode; // e.g., "EVN"
+                      const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
+                      const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
                       const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
                         .toISOString()
                         .split('T')[0]
@@ -409,21 +415,17 @@ const BookingScreen = ({ navigation }) => {
                       setIsModalVisible(false);
                     }}
                   >
-                    <Text style={styles.modalButtonText}>Book now</Text>
+                    <Text style={styles.modalButtonText}>Book Now</Text>
                   </TouchableOpacity>
 
-                  {/* Close */}
                   <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                    <Text style={{ marginTop: 10, color: COLOR.dark }}>❌ Close</Text>
+                    <Text style={styles.modalCloseText}>Close</Text>
                   </TouchableOpacity>
                 </>
               )}
             </View>
           </View>
         </Modal>
-
-
-
       </ScrollView>
     </View>
   );
@@ -434,160 +436,265 @@ export default BookingScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: '#F7F7F7',
+  },
+  safeArea: {
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: wp(5),
+    paddingHorizontal: wp(4),
     paddingVertical: hp(2),
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   headerTitle: {
-    ...TEXT_STYLE.smallTitleBold,
     fontSize: 20,
-    color: COLOR.dark,
+    fontWeight: '600',
+    color: '#1F2A44',
   },
   contentContainer: {
-    paddingHorizontal: wp(5),
-    paddingBottom: hp(5),
+    paddingHorizontal: wp(4),
+    paddingBottom: hp(10),
   },
   sectionTitle: {
-    ...TEXT_STYLE.title,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1F2A44',
     marginBottom: hp(2),
   },
-  datePickerButton: {
-    backgroundColor: '#e5e5e5',
-    borderRadius: 10,
+  inputCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     padding: wp(4),
     marginBottom: hp(2),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dateContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: wp(4),
+    marginBottom: hp(2),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  datePickerWrapper: {
+    marginBottom: hp(2),
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+    marginBottom: hp(1),
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F7F7F7',
+    borderRadius: 8,
+    padding: wp(3),
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   datePickerText: {
     fontSize: 16,
-    color: COLOR.dark,
+    color: '#1F2A44',
+  },
+  toggleReturnButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: hp(1),
+  },
+  toggleReturnText: {
+    fontSize: 14,
+    color: '#007AFF',
+    marginLeft: wp(2),
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: wp(2),
+    gap: wp(3),
     marginBottom: hp(3),
   },
   searchButton: {
     flex: 1,
-    backgroundColor: '#0084FF',
-    padding: wp(4),
-    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    paddingVertical: hp(1.5),
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   resetButton: {
     flex: 1,
-    backgroundColor: '#ff4d4d',
-    padding: wp(4),
-    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: hp(1.5),
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  buttonIcon: {
+    marginRight: wp(2),
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  loader: {
+    marginTop: hp(3),
   },
   flightCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     padding: wp(4),
     marginBottom: hp(2),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  flightText: {
-    fontSize: 14,
-    color: COLOR.dark,
-    marginBottom: 4,
+  flightCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: hp(1),
+  },
+  flightRoute: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2A44',
   },
   flightPrice: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0084FF',
+    fontWeight: '600',
+    color: '#34C759',
   },
-  hotelButton: {
-    backgroundColor: '#0084FF',
-    borderRadius: 10,
-    padding: wp(4),
-    alignItems: 'center',
+  flightDetails: {
     marginTop: hp(1),
   },
+  flightDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp(0.5),
+  },
+  flightDetailText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginLeft: wp(2),
+  },
+  hotelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    paddingVertical: hp(1.5),
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   hotelButtonText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dateContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingTop: hp(5),
-    paddingBottom: hp(5),
-  },
-  addReturnButton: {
-    marginTop: hp(2),
-    backgroundColor: '#0084FF',
-    padding: wp(3),
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-
-  addReturnButtonText: {
-    color: '#fff',
-    fontSize: 14,
     fontWeight: '600',
-  },
-
-  removeReturnButton: {
-    marginTop: hp(2),
-    backgroundColor: '#ff4d4d',
-    padding: wp(3),
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-
-  removeReturnButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: wp(2),
   },
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    width: '80%',
-    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: wp(5),
+    paddingTop: hp(2),
+    maxHeight: '80%',
+  },
+  modalHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: hp(2),
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1F2A44',
+    marginBottom: hp(2),
+    textAlign: 'left',
   },
-  modalButton: {
-    marginTop: 20,
-    backgroundColor: '#0084FF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  modalButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+  modalSection: {
+    marginBottom: hp(2),
   },
   modalSubTitle: {
     fontSize: 16,
     fontWeight: '600',
-    marginTop: 10,
-    marginBottom: 4,
+    color: '#6B7280',
+    marginBottom: hp(0.5),
   },
-
+  modalText: {
+    fontSize: 16,
+    color: '#1F2A44',
+  },
+  modalPrice: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#34C759',
+  },
+  modalButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: hp(1.5),
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: hp(2),
+    marginBottom: hp(1),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: '#007AFF',
+    textAlign: 'center',
+    marginTop: hp(1),
+  },
 });
