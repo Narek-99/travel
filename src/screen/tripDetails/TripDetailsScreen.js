@@ -493,19 +493,18 @@ const TripDetailsScreen = ({ navigation }) => {
                 Ask AI
               </Text>
             </Pressable>
-            <TouchableOpacity style={styles.askAiContainer}
-              onPress={() => navigation.navigate(SCREEN.BOOKING, { tripId })}>
-              <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
-                🏨 Hotels
-              </Text>
-            </TouchableOpacity>
-
             <TouchableOpacity
-              onPress={handleOpenFlightAffiliateLink}
+              onPress={() => navigation.navigate(SCREEN.BOOKING, { tripId })}
               style={styles.askAiContainer}
             >
               <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 ✈️ Flights
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.askAiContainer}
+            >
+              <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
+                🏨 Hotels
               </Text>
             </TouchableOpacity>
           </View>
