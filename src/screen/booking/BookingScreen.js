@@ -395,14 +395,14 @@ const BookingScreen = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.modalButton}
                     onPress={() => {
-                      const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
-                      const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
+                      const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode; // e.g., "DUS"
+                      const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode; // e.g., "EVN"
                       const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
                         .toISOString()
                         .split('T')[0]
                         .replace(/-/g, '');
 
-                      const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}`;
+                      const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}+one+way`;
 
                       Linking.openURL(bookingUrl)
                         .catch(err => console.error('Failed to open URL:', err));
