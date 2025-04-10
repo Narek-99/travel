@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: wp(3),
-    marginBottom: hp(3),
+    marginTop: hp(1),
   },
   searchButton: {
     flex: 1,
