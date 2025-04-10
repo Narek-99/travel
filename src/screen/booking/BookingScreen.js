@@ -114,6 +114,10 @@ const BookingScreen = ({ navigation }) => {
     Linking.openURL(hotelLink);
   };
 
+  const triggerHaptic = () => {
+    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+  };
+
   React.useEffect(() => {
     if (tripId && user?.uid) {
       firestore()
@@ -273,7 +277,10 @@ const BookingScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.toggleReturnButton}
-              onPress={() => setShowReturnFlight(!showReturnFlight)}
+              onPress={() => {
+                triggerHaptic();
+                setShowReturnFlight(!showReturnFlight);
+              }}
             >
               {showReturnFlight ? <SVG.Minus width="20" height="20" /> : <SVG.Plus width="20" height="20" fill="#007AFF" />}
 
@@ -288,11 +295,23 @@ const BookingScreen = ({ navigation }) => {
       case 'buttons':
         return (
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearchFlights}>
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={() => {
+                triggerHaptic();
+                handleSearchFlights();
+              }}
+            >
               <SVG.Search fill={COLOR.white} />
               <Text style={styles.buttonText}>Search Flights</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={() => {
+                triggerHaptic();
+                handleReset();
+              }}
+            >
               <Text style={styles.resetButtonText}>Reset</Text>
             </TouchableOpacity>
           </View>
@@ -305,7 +324,10 @@ const BookingScreen = ({ navigation }) => {
         return (
           <TouchableOpacity
             style={styles.flightCard}
-            onPress={() => handleFlightPress(item.flight)}
+            onPress={() => {
+              triggerHaptic();
+              handleFlightPress(item.flight);
+            }}
           >
             <View style={styles.flightCardHeader}>
               <Text style={styles.flightRoute}>
@@ -339,7 +361,13 @@ const BookingScreen = ({ navigation }) => {
 
       case 'hotelButton':
         return (
-          <TouchableOpacity style={styles.hotelButton} onPress={handleHotelLinkPress}>
+          <TouchableOpacity
+            style={styles.hotelButton}
+            onPress={() => {
+              triggerHaptic();
+              handleHotelLinkPress();
+            }}
+          >
             <Icon name="bed-outline" size={20} color="#FFFFFF" style={styles.buttonIcon} />
             <Text style={styles.hotelButtonText}>Explore Hotels</Text>
           </TouchableOpacity>
@@ -357,7 +385,7 @@ const BookingScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => {
-          ReactNativeHapticFeedback.trigger('impactLight');
+          triggerHaptic();
           navigation.goBack();
         }}>
           <SVG.BackIcon />
@@ -441,6 +469,7 @@ const BookingScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={() => {
+                  triggerHaptic();
                   const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
                   const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
                   const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
@@ -450,8 +479,7 @@ const BookingScreen = ({ navigation }) => {
 
                   const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}+one+way`;
 
-                  Linking.openURL(bookingUrl)
-                    .catch(err => console.error('Failed to open URL:', err));
+                  Linking.openURL(bookingUrl).catch(err => console.error('Failed to open URL:', err));
                   setIsModalVisible(false);
                 }}
               >
