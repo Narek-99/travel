@@ -15,13 +15,11 @@ import Geocoder from 'react-native-geocoding';
 import Toast from 'react-native-toast-message';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useRef } from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import * as Animatable from 'react-native-animatable';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
-import { createFlightAffiliateLink, createSmartTripAffiliateLink } from '../../services/TripLinkService';
-import { createBookingComLink } from '../../utils/bookingLinks';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -84,7 +82,7 @@ const TripDetailsScreen = ({ navigation }) => {
   }, [trip?.destination]);
 
   const handleAskAIPress = () => {
-    scrollViewRef.current.scrollToEnd({ animated: true })
+    scrollViewRef.current.scrollToEnd({ animated: true });
 
     setTimeout(() => {
       if (inputRef.current) {
@@ -109,7 +107,7 @@ const TripDetailsScreen = ({ navigation }) => {
     if (userQuery.trim() === '') return;
 
     Keyboard.dismiss();
-    scrollViewRef.current.scrollToEnd({ animated: true })
+    scrollViewRef.current.scrollToEnd({ animated: true });
     setUserQuery('');
     setMessages(prev => [...prev, { id: Date.now(), text: userQuery, sender: 'user' }]);
     setIsGenerating(true);
@@ -138,7 +136,8 @@ const TripDetailsScreen = ({ navigation }) => {
           setMessages(prev => {
             const otherMessages = prev.filter(m => m.id !== botMessage.id);
             return [...otherMessages, { ...botMessage }];
-          }); if (index % 10 === 0) scrollViewRef.current?.scrollToEnd({ animated: true });
+          });
+          if (index % 10 === 0) scrollViewRef.current?.scrollToEnd({ animated: true });
           timeoutRef.current = setTimeout(addCharacter, 10);
         } else {
           setIsGenerating(false);
@@ -214,7 +213,6 @@ const TripDetailsScreen = ({ navigation }) => {
       fetchApiKeyAndGeocode();
     }
   }, [trip?.destination]);
-
 
   useEffect(() => {
     const fetchTripDetails = async () => {
@@ -299,24 +297,22 @@ const TripDetailsScreen = ({ navigation }) => {
       setLoadingWeather(false);
     }
   };
-  const handleOpenHotelAffiliateLink = () => {
+
+  const createGoogleHotelsLink = (destination, numberOfPersons = 2) => {
+    const destinationQuery = encodeURIComponent(destination);
+    return `https://www.google.com/travel/hotels/search?destination=${destinationQuery}&adults=${numberOfPersons}`;
+  };
+
+  const handleOpenHotelAffiliateLink = async () => {
     if (!trip) return;
 
     try {
-      const checkIn = getDateString(trip.startDate);
-      const checkOut = getDateString(trip.endDate);
-      const affiliateLink = createBookingComLink(trip.destination, checkIn, checkOut);
+      const affiliateLink = createGoogleHotelsLink(trip.destination, trip.numberOfPersons || 2);
       Linking.openURL(affiliateLink);
     } catch (error) {
-      console.error('❌ Fehler beim Öffnen des Hotellinks:', error);
+      console.error('❌ Error opening hotel link:', error);
       Toast.show({ type: 'error', text1: 'Failed to open hotel link' });
     }
-  };
-
-  const handleOpenFlightAffiliateLink = async () => {
-    if (!trip) return;
-    const flightLink = await createFlightAffiliateLink(trip);
-    Linking.openURL(flightLink.toString()); // <<< wichtig
   };
 
   const getDateString = (timestamp) => {
@@ -574,7 +570,6 @@ const TripDetailsScreen = ({ navigation }) => {
                 <SVG.Edit fill="#fff" width={18} height={18} />
               </Pressable>
             </Animated.View>
-
           </View>
         )}
         {loadingMap ? (
@@ -889,12 +884,12 @@ const TripDetailsScreen = ({ navigation }) => {
           </View>
         </View>
       )}
-
     </View>
   );
 };
 
 export default TripDetailsScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
