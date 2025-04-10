@@ -210,7 +210,7 @@ const TripsScreen = ({ navigation }) => {
                   )}
 
                   <LinearGradient
-                    colors={['rgba(0, 0, 0, 0.7)', 'transparent']}
+                    colors={['rgba(0, 0, 0, 0.9)', 'transparent']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.overlay}

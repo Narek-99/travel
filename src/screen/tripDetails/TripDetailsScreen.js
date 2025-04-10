@@ -535,9 +535,9 @@ const TripDetailsScreen = ({ navigation }) => {
             />
 
             <LinearGradient
-              colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.7)']}
+              colors={['rgba(0, 0, 0, 1)', 'transparent']}
               start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFillObject}
             />
 
