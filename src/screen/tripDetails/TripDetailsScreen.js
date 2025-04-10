@@ -501,7 +501,9 @@ const TripDetailsScreen = ({ navigation }) => {
                 ✈️ Flights
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.askAiContainer}
+            <TouchableOpacity
+              onPress={() => navigation.navigate(SCREEN.HOTELBOOKING, { tripId })}
+              style={styles.askAiContainer}
             >
               <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 🏨 Hotels
