@@ -234,40 +234,42 @@ const BookingScreen = ({ navigation }) => {
       case 'datePickers':
         return (
           <View style={styles.dateContainer}>
-            <View style={styles.datePickerWrapper}>
-              <Label style={styles.label}>Departure Date</Label>
-              <DateTimePicker
-                value={startFlightDate}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) {
-                    setStartFlightDate(selectedDate);
-                    if (selectedDate > returnFlightDate) {
-                      setReturnFlightDate(selectedDate);
-                    }
-                  }
-                }}
-                themeVariant="light"
-                minimumDate={new Date()}
-              />
-            </View>
-
-            {showReturnFlight && (
+            <View style={{ flexDirection: "row", justifyContent: showReturnFlight ? "space-around" : "space-between" }}>
               <View style={styles.datePickerWrapper}>
-                <Label style={styles.label}>Return Date</Label>
+                <Label style={styles.label}>Departure Date</Label>
                 <DateTimePicker
-                  value={returnFlightDate}
+                  value={startFlightDate}
                   mode="date"
                   display="default"
-                  onChange={(event, selectedDate) => {
-                    if (selectedDate) setReturnFlightDate(selectedDate);
+                  onChange={(selectedDate) => {
+                    if (selectedDate) {
+                      setStartFlightDate(selectedDate);
+                      if (selectedDate > returnFlightDate) {
+                        setReturnFlightDate(selectedDate);
+                      }
+                    }
                   }}
-                  minimumDate={startFlightDate}
                   themeVariant="light"
+                  minimumDate={new Date()}
                 />
               </View>
-            )}
+
+              {showReturnFlight && (
+                <View style={styles.datePickerWrapper}>
+                  <Label style={styles.label}>Return Date</Label>
+                  <DateTimePicker
+                    value={returnFlightDate}
+                    mode="date"
+                    display="default"
+                    onChange={(selectedDate) => {
+                      if (selectedDate) setReturnFlightDate(selectedDate);
+                    }}
+                    minimumDate={startFlightDate}
+                    themeVariant="light"
+                  />
+                </View>
+              )}
+            </View>
 
             <TouchableOpacity
               style={styles.toggleReturnButton}
@@ -525,6 +527,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   datePickerWrapper: {
+    flexDirection: "column",
+    alignItems: "center",
     marginBottom: hp(2),
   },
   label: {
