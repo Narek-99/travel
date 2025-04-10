@@ -485,22 +485,36 @@ const TripDetailsScreen = ({ navigation }) => {
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
         rightComp={
           <View style={styles.rightContainer}>
-            <Pressable onPress={handleAskAIPress} style={styles.askAiContainer}>
+            <Pressable
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                handleAskAIPress();
+              }}
+              style={styles.askAiContainer}
+            >
               <SVG.AiStar fill="#90009C" />
               <Text style={{ marginLeft: wp(1), color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 Ask AI
               </Text>
             </Pressable>
+
             <TouchableOpacity
-              onPress={() => navigation.navigate(SCREEN.BOOKING, { tripId })}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                navigation.navigate(SCREEN.BOOKING, { tripId });
+              }}
               style={styles.askAiContainer}
             >
               <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
                 ✈️ Flights
               </Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              onPress={handleOpenHotelAffiliateLink}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                handleOpenHotelAffiliateLink();
+              }}
               style={styles.askAiContainer}
             >
               <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
@@ -733,14 +747,17 @@ const TripDetailsScreen = ({ navigation }) => {
                     <Text style={styles.attractionRating}>
                       ⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews
                     </Text>
-                    <Text
-                      style={styles.attractionAddress}
-                      onPress={() =>
-                        Linking.openURL(`https://www.google.com/maps/place/?q=place_id:${place.place_id}`)
-                      }
+                    <Pressable
+                      onLongPress={() => {
+                        Clipboard.setString(place.vicinity);
+                        ReactNativeHapticFeedback.trigger('impactLight');
+                        Toast.show({ type: 'success', text1: 'Address copied!' });
+                      }}
                     >
-                      📍 {place.vicinity}
-                    </Text>
+                      <Text style={styles.attractionAddress}>
+                        📍 {place.vicinity}
+                      </Text>
+                    </Pressable>
                     {place.opening_hours?.open_now !== undefined && (
                       <Text style={[
                         styles.attractionStatus,
@@ -1159,7 +1176,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   editButton: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     padding: 10,
     borderRadius: 30,
   },
