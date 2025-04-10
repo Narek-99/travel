@@ -21,6 +21,7 @@ import * as Animatable from 'react-native-animatable';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import { createFlightAffiliateLink, createSmartTripAffiliateLink } from '../../services/TripLinkService';
+import { createBookingComLink } from '../../utils/bookingLinks';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -302,14 +303,15 @@ const TripDetailsScreen = ({ navigation }) => {
     if (!trip) return;
 
     try {
-      const affiliateLink = createSmartTripAffiliateLink(trip);
+      const checkIn = getDateString(trip.startDate);
+      const checkOut = getDateString(trip.endDate);
+      const affiliateLink = createBookingComLink(trip.destination, checkIn, checkOut);
       Linking.openURL(affiliateLink);
     } catch (error) {
       console.error('❌ Fehler beim Öffnen des Hotellinks:', error);
       Toast.show({ type: 'error', text1: 'Failed to open hotel link' });
     }
   };
-
 
   const handleOpenFlightAffiliateLink = async () => {
     if (!trip) return;
@@ -502,7 +504,7 @@ const TripDetailsScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => navigation.navigate(SCREEN.HOTELBOOKING, { tripId })}
+              onPress={handleOpenHotelAffiliateLink}
               style={styles.askAiContainer}
             >
               <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>

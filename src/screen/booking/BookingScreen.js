@@ -241,7 +241,7 @@ const BookingScreen = ({ navigation }) => {
                   value={startFlightDate}
                   mode="date"
                   display="default"
-                  onChange={(selectedDate) => {
+                  onChange={(event, selectedDate) => {
                     if (selectedDate) {
                       setStartFlightDate(selectedDate);
                       if (selectedDate > returnFlightDate) {
@@ -261,7 +261,7 @@ const BookingScreen = ({ navigation }) => {
                     value={returnFlightDate}
                     mode="date"
                     display="default"
-                    onChange={(selectedDate) => {
+                    onChange={(event, selectedDate) => {
                       if (selectedDate) setReturnFlightDate(selectedDate);
                     }}
                     minimumDate={startFlightDate}
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: wp(3),
-    marginTop: hp(1),
+    marginTop: hp(2),
   },
   searchButton: {
     flex: 1,
