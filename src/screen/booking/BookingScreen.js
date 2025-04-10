@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Pressable, Text, FlatList, ActivityIndicator, TouchableOpacity, Linking, Modal } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Pressable, Text, FlatList, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -14,6 +14,7 @@ import AirportSelector from '../../components/AirportSelector';
 import airports from '../../assets/data/airports.json';
 import { Label } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Modal from 'react-native-modal';
 
 const BookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -315,22 +316,19 @@ const BookingScreen = ({ navigation }) => {
             <View style={styles.flightDetails}>
               {item.isDeparture && (
                 <View style={styles.flightDetailRow}>
-                  <Icon name="airplane" size={16} color="#6B7280" />
                   <Text style={styles.flightDetailText}>
-                    Airline: {item.flight.validatingAirlineCodes?.join(', ') || 'N/A'}
+                    ✈️ Airline: {item.flight.validatingAirlineCodes?.join(', ') || 'N/A'}
                   </Text>
                 </View>
               )}
               <View style={styles.flightDetailRow}>
-                <Icon name="time-outline" size={16} color="#6B7280" />
                 <Text style={styles.flightDetailText}>
-                  Duration: {item.flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+                  ⏱️ Duration: {item.flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
                 </Text>
               </View>
               <View style={styles.flightDetailRow}>
-                <Icon name="calendar-outline" size={16} color="#6B7280" />
                 <Text style={styles.flightDetailText}>
-                  Date: {new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  📅 Date: {new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </Text>
               </View>
             </View>
@@ -375,95 +373,94 @@ const BookingScreen = ({ navigation }) => {
       />
 
       <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}
+        isVisible={isModalVisible}
+        onBackdropPress={() => setIsModalVisible(false)}
+        onSwipeComplete={() => setIsModalVisible(false)}
+        swipeDirection="down"
+        style={styles.bottomModal}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHandle} />
-            {selectedFlight && (
-              <>
-                <Text style={styles.modalTitle}>Flight Details</Text>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHandle} />
+          {selectedFlight && (
+            <>
+              <Text style={styles.modalTitle}>Flight Details</Text>
 
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSubTitle}>Route</Text>
+                <Text style={styles.modalText}>
+                  {selectedFlight.itineraries[0].segments[0].departure.iataCode} → {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                </Text>
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSubTitle}>Departure</Text>
+                <Text style={styles.modalText}>
+                  {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
+                  {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSubTitle}>Arrival</Text>
+                <Text style={styles.modalText}>
+                  {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
+                  {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSubTitle}>Duration</Text>
+                <Text style={styles.modalText}>{selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSubTitle}>Stops</Text>
+                <Text style={styles.modalText}>
+                  {selectedFlight.itineraries[0].segments.length === 1
+                    ? 'Direct Flight'
+                    : `${selectedFlight.itineraries[0].segments.length - 1} Stop(s)`}
+                </Text>
+              </View>
+
+              {selectedFlight.validatingAirlineCodes && (
                 <View style={styles.modalSection}>
-                  <Text style={styles.modalSubTitle}>Route</Text>
-                  <Text style={styles.modalText}>
-                    {selectedFlight.itineraries[0].segments[0].departure.iataCode} → {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-                  </Text>
+                  <Text style={styles.modalSubTitle}>Airline</Text>
+                  <Text style={styles.modalText}>{selectedFlight.validatingAirlineCodes.join(', ')}</Text>
                 </View>
+              )}
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubTitle}>Departure</Text>
-                  <Text style={styles.modalText}>
-                    {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
-                    {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                </View>
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSubTitle}>Price</Text>
+                <Text style={styles.modalPrice}>
+                  {selectedFlight.price.total} {selectedFlight.price.currency}
+                </Text>
+              </View>
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubTitle}>Arrival</Text>
-                  <Text style={styles.modalText}>
-                    {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
-                    {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                </View>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
+                  const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
+                  const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
+                    .toISOString()
+                    .split('T')[0]
+                    .replace(/-/g, '');
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubTitle}>Duration</Text>
-                  <Text style={styles.modalText}>{selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
-                </View>
+                  const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}+one+way`;
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubTitle}>Stops</Text>
-                  <Text style={styles.modalText}>
-                    {selectedFlight.itineraries[0].segments.length === 1
-                      ? 'Direct Flight'
-                      : `${selectedFlight.itineraries[0].segments.length - 1} Stop(s)`}
-                  </Text>
-                </View>
+                  Linking.openURL(bookingUrl)
+                    .catch(err => console.error('Failed to open URL:', err));
+                  setIsModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Book Now</Text>
+              </TouchableOpacity>
 
-                {selectedFlight.validatingAirlineCodes && (
-                  <View style={styles.modalSection}>
-                    <Text style={styles.modalSubTitle}>Airline</Text>
-                    <Text style={styles.modalText}>{selectedFlight.validatingAirlineCodes.join(', ')}</Text>
-                  </View>
-                )}
-
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubTitle}>Price</Text>
-                  <Text style={styles.modalPrice}>
-                    {selectedFlight.price.total} {selectedFlight.price.currency}
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={() => {
-                    const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
-                    const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
-                    const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
-                      .toISOString()
-                      .split('T')[0]
-                      .replace(/-/g, '');
-
-                    const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}+one+way`;
-
-                    Linking.openURL(bookingUrl)
-                      .catch(err => console.error('Failed to open URL:', err));
-                    setIsModalVisible(false);
-                  }}
-                >
-                  <Text style={styles.modalButtonText}>Book Now</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                  <Text style={styles.modalCloseText}>Close</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
+              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                <Text style={styles.modalCloseText}>Close</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </Modal>
     </View>
@@ -488,12 +485,12 @@ const styles = StyleSheet.create({
     paddingVertical: hp(2),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: COLOR.white2,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2A44',
+    color: COLOR.Charcoal,
   },
   contentContainer: {
     paddingHorizontal: wp(4),
@@ -502,7 +499,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2A44',
+    color: COLOR.Charcoal,
     marginBottom: hp(2),
   },
   inputCard: {
@@ -511,7 +508,7 @@ const styles = StyleSheet.create({
     padding: wp(4),
     marginBottom: hp(2),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
@@ -636,6 +633,7 @@ const styles = StyleSheet.create({
   },
   flightDetails: {
     marginTop: hp(1),
+    marginLeft: wp(0)
   },
   flightDetailRow: {
     flexDirection: 'row',
@@ -668,7 +666,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.1)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -735,5 +733,10 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     textAlign: 'center',
     marginTop: hp(1),
+    marginBottom: hp(2),
+  },
+  bottomModal: {
+    justifyContent: 'flex-end',
+    margin: 0,
   },
 });
