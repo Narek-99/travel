@@ -162,7 +162,7 @@ const SubscriptionScreen = (props) => {
         <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
           <Button
             isLoading={loading}
-            text={selectedIndex === 0 ? 'Start Premium' : "Try Premium Now!"}
+            text={selectedIndex === 0 ? 'Try Premium Now!' : "TRY FREE NOW!"}
             style={styles.subscribeButton}
             textStyle={styles.subscribeButtonText}
             onPress={handleSubscription}
@@ -170,7 +170,7 @@ const SubscriptionScreen = (props) => {
         </Animated.View>
 
         {selectedIndex === 1 && (
-          <Label style={styles.noPaymentText}>No Payment Required Today!</Label>
+          <Label style={styles.noPaymentText}>No Payment Now!</Label>
         )}
 
         <View style={styles.legalLinks}>
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
-    paddingHorizontal: '5%',
+    paddingHorizontal: wp(5),
   },
   restoreButton: {
     alignSelf: 'flex-end',
@@ -217,13 +217,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     color: '#1F2937',
-    marginVertical: hp(0),
+    marginVertical: hp(1),
   },
   planView: {
     backgroundColor: '#FFFFFF',
     borderRadius: hp(2),
     padding: wp(4),
-    marginVertical: hp(1),
+    marginTop: hp(1),
+    marginBottom: hp(0.5),
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
