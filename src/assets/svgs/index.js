@@ -51,5 +51,5 @@ export const SVG = {
     Robot,
     Search,
     Minus,
-    Plus2
+    Plus2,
 }

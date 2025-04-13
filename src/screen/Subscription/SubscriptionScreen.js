@@ -78,8 +78,13 @@ const SubscriptionScreen = (props) => {
     }
   };
 
-  // Extract common benefits from the first plan (they are the same for both)
-  const commonBenefits = subscriptionPlans[0];
+  const benefits = [
+    "Unlimited Trips to Any City Worldwide",
+    "Best Flight & Hotel Deals",
+    "Personalized Weather-Based Recommendations & Attractions",
+    "Smart AI Travel Assistant",
+    "Fun Facts & City Secrets",
+  ]
 
   return (
     <View style={styles.container}>
@@ -110,25 +115,14 @@ const SubscriptionScreen = (props) => {
         </Pressable>
         <Label style={styles.screenText}>Unlock Premium Access</Label>
 
-        {/* Display common benefits once, below the plan selection */}
         <View style={styles.benefitsContainer}>
           <Label style={styles.benefitsTitle}>What You Get:</Label>
-          <View style={styles.featureItem}>
-            {commonBenefits.earlyIcon}
-            <Label style={styles.featureText}>{commonBenefits.earlyaccess}</Label>
-          </View>
-          <View style={styles.featureItem}>
-            {commonBenefits.noAdsIcon}
-            <Label style={styles.featureText}>{commonBenefits.noAds}</Label>
-          </View>
-          <View style={styles.featureItem}>
-            {commonBenefits.freeIcon}
-            <Label style={styles.featureText}>{commonBenefits.trial}</Label>
-          </View>
-          <View style={styles.featureItem}>
-            {commonBenefits.freeIcon}
-            <Label style={styles.featureText}>{commonBenefits.recommendations}</Label>
-          </View>
+          {benefits.map((it, index) => (
+            <View style={styles.featureItem}>
+              <SVG.Done fill="black" />
+              <Label style={styles.featureText}>{it}</Label>
+            </View>
+          ))}
         </View>
         {subscriptionPlans.map((item, index) => {
           const subscription = subsciptionList.find(sub => sub.productId === SUB_IDS[index]);
@@ -164,8 +158,6 @@ const SubscriptionScreen = (props) => {
             </View>
           );
         })}
-
-
 
         <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
           <Button
@@ -214,7 +206,6 @@ const styles = StyleSheet.create({
   },
   restoreButton: {
     alignSelf: 'flex-end',
-    marginright: wp(2),
   },
   note: {
     fontSize: 8,
@@ -226,7 +217,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     color: '#1F2937',
-    marginVertical: hp(2),
+    marginVertical: hp(0),
   },
   planView: {
     backgroundColor: '#FFFFFF',
@@ -285,13 +276,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     padding: wp(4),
     borderRadius: hp(2),
-    marginVertical: hp(2),
+    marginTop: hp(2),
+    marginBottom: hp(1)
   },
   benefitsTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: hp(1.5),
+    marginBottom: hp(1),
   },
   featureItem: {
     flexDirection: 'row',
