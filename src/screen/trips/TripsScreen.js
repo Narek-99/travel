@@ -143,6 +143,16 @@ const TripsScreen = ({ navigation }) => {
     return `${startStr} – ${endStr}`;
   };
 
+  // Handle navigation based on subscription status
+  const handleAddTripNavigation = () => {
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+    if (user?.subscription === false) {
+      navigation.navigate(SCREEN.SUBSCRIPTION);
+    } else {
+      navigation.navigate(SCREEN.DESTINATION);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
@@ -171,19 +181,13 @@ const TripsScreen = ({ navigation }) => {
           </View>
         }
         rightComp={
-          <Pressable onPress={() => {
-            navigation.navigate(SCREEN.DESTINATION);
-            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-          }}>
+          <Pressable onPress={handleAddTripNavigation}>
             <SVG.Plus fill="black" />
           </Pressable>
         }
       />
 
-      <Pressable onPress={() => {
-        navigation.navigate(SCREEN.DESTINATION);
-        ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-      }} style={styles.contentContainer}>
+      <Pressable onPress={handleAddTripNavigation} style={styles.contentContainer}>
         {trips.length === 0 ? (
           <View style={styles.emptyContainer}>
             <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
