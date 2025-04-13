@@ -23,18 +23,19 @@ const totalSteps = 8;
 const progress = currentStep / totalSteps;
 
 const wishOptions = [
-  { label: '😊 Vegan', value: 'vegetarian' },
-  { label: '👨‍👩‍👧‍👦 Family-friendly', value: 'kidFriendly' },
-  { label: '🐾 Pet-friendly', value: 'petsAllowed' },
-  { label: '🌍 Eco-friendly', value: 'ecoFriendly' },
-  { label: '🍸 With Bar/Lounge', value: 'barLounge' },
+  { label: '🌱 Vegan', value: 'vegan' },
+  { label: '🥗 Vegetarian', value: 'vegetarian' },
+  { label: '🚫 Gluten-Free', value: 'glutenFree' },
+  { label: '🥙 Halal', value: 'halal' },
+  { label: '👨‍👩‍👧‍👦 Family-Friendly', value: 'familyFriendly' },
+  { label: '🐾 Pet-Friendly', value: 'petFriendly' },
+  { label: '🍽️ Allergy-Friendly', value: 'allergyFriendly' },
   { label: '📶 Free WiFi', value: 'freeWifi' },
   { label: '🏋️‍♂️ Fitness Center', value: 'fitnessCenter' },
   { label: '🧖‍♀️ Spa Services', value: 'spaServices' },
-  { label: '🏊 Pool Available', value: 'pool' },
-  { label: '🍳 Free Breakfast', value: 'freeBreakfast' },
-  { label: '🚗 Free Parking', value: 'freeParking' },
   { label: '🌆 City View', value: 'cityView' },
+  { label: '🌃 Near Downtown', value: 'nearDowntown' },
+  { label: '🤫 Quiet Environment', value: 'quietEnvironment' },
 ];
 
 const WishesScreen = ({ navigation }) => {
@@ -117,9 +118,9 @@ const WishesScreen = ({ navigation }) => {
   };
 
   const handleNext = () => {
-    if (selectedWishes.length === 0) return;
-
-    setTripData({ wishes: selectedWishes });
+    if (selectedWishes.length !== 0) {
+      setTripData({ wishes: selectedWishes });
+    }
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.PREFERENCES, { tripId });
   };
@@ -181,7 +182,6 @@ const WishesScreen = ({ navigation }) => {
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}
-          disabled={selectedWishes.length === 0} // Disable if no wish is selected
         />
       </View>
     </View>

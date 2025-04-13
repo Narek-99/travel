@@ -22,14 +22,17 @@ const totalSteps = 8;
 const progress = currentStep / totalSteps;
 
 const activityOptions = [
-  { label: '🎭 Culture', value: 'culture' },
+  { label: '🎭 Culture & History', value: 'culture' },
   { label: '🌳 Nature', value: 'nature' },
-  { label: '🍽️ Food & Drinks', value: 'food' },
-  { label: '🧗‍♂️ Adventure', value: 'adventure' },
+  { label: '🧗 Adventure & Thrills', value: 'adventure' },
   { label: '🌃 Nightlife', value: 'nightlife' },
-  { label: '🛍️ Shopping', value: 'shopping' },
   { label: '🧘‍♀️ Relaxation', value: 'relaxation' },
+  { label: '🛍️ Shopping', value: 'shopping' },
+  { label: '📚 Learning', value: 'learning' },
   { label: '⚽ Sports', value: 'sports' },
+  { label: '🎮 Tech & VR Experiences', value: 'tech' },
+  { label: '🌍 Eco', value: 'eco_tours' },
+  { label: '📸 Photography & Sightseeing', value: 'photography' },
 ];
 
 const ActivitiesScreen = ({ navigation }) => {
@@ -164,11 +167,14 @@ const ActivitiesScreen = ({ navigation }) => {
           />
         )}
         <Button
-          style={styles.nextButton}
+          style={[
+            styles.nextButton,
+            { backgroundColor: selectedActivities.length === 0 ? '#CCCCCC' : '#002953' }
+          ]}
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}
-          disabled={selectedActivities.length === 0} // Disable if no activity is selected
+          disabled={selectedActivities.length === 0}
         />
       </View>
     </View>

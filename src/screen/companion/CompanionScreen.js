@@ -80,11 +80,12 @@ const CompanionScreen = ({ navigation }) => {
   };
 
   const handleNext = () => {
-    if (!selectedOption || (shouldShowInput && !numberOfPersons)) return;
+    if (!selectedOption || (shouldShowInput && !numberOfPersons)) {
+      return;
+    }
     setTripData({ companion: selectedOption, numberOfPersons });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    navigation.navigate(SCREEN.BUDGET, { tripId })
-
+    navigation.navigate(SCREEN.BUDGET, { tripId });
   };
 
   useEffect(() => {
@@ -162,8 +163,8 @@ const CompanionScreen = ({ navigation }) => {
             <TextInput
               style={styles.input}
               placeholder="Enter number of persons"
-              placeholderTextColor="black"
-              keyboardType="numeric"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
               value={numberOfPersons}
               onChangeText={setNumberOfPersons}
             />
@@ -179,7 +180,10 @@ const CompanionScreen = ({ navigation }) => {
             />
           )}
           <Button
-            style={styles.nextButton}
+            style={[
+              styles.nextButton,
+              { backgroundColor: !selectedOption || (shouldShowInput && !numberOfPersons) ? '#CCCCCC' : '#002953' } // Use isValidDestination to determine button color
+            ]}
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}

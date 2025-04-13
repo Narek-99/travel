@@ -88,41 +88,42 @@ const PreferencesScreen = ({ navigation }) => {
   };
 
   const handleSavePreferences = async () => {
-    if (selectedAccommodation.length === 0 || selectedLocation.length === 0) return;
+    if (selectedAccommodation.length === 0 || selectedLocation.length === 0) {
+      try {
+        await firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('trips')
+          .doc(tripId)
+          .update({
+            accommodation: selectedAccommodation,
+            location: selectedLocation
+          });
 
-    try {
-      await firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('trips')
-        .doc(tripId)
-        .update({
-          accommodation: selectedAccommodation,
-          location: selectedLocation
+        Toast.show({
+          type: 'success',
+          text1: 'Preferences Updated Successfully',
+          position: 'top',
+          visibilityTime: 2000,
         });
 
-      Toast.show({
-        type: 'success',
-        text1: 'Preferences Updated Successfully',
-        position: 'top',
-        visibilityTime: 2000,
-      });
-
-    } catch (error) {
-      console.error('Error updating preferences:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to update preferences',
-        position: 'bottom',
-        visibilityTime: 4000,
-      });
+      } catch (error) {
+        console.error('Error updating preferences:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to update preferences',
+          position: 'bottom',
+          visibilityTime: 4000,
+        });
+      }
     }
   };
 
   const handleNext = () => {
-    if (selectedAccommodation.length === 0 || selectedLocation.length === 0) return;
+    if (selectedAccommodation.length !== 0 || selectedLocation.length !== 0) {
+      setTripData({ accommodation: selectedAccommodation, location: selectedLocation });
+    }
 
-    setTripData({ accommodation: selectedAccommodation, location: selectedLocation });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.ADDITIONAL, { tripId });
   };
@@ -195,7 +196,6 @@ const PreferencesScreen = ({ navigation }) => {
             style={styles.saveButton}
             text={En.save}
             onPress={handleSavePreferences}
-            disabled={selectedAccommodation.length === 0 || selectedLocation.length === 0}
           />
         )}
         <Button
@@ -203,7 +203,6 @@ const PreferencesScreen = ({ navigation }) => {
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}
-          disabled={selectedAccommodation.length === 0 || selectedLocation.length === 0}
         />
       </View>
     </View>

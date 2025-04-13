@@ -171,10 +171,13 @@ const BudgetScreen = ({ navigation }) => {
             />
           )}
           <Button
-            style={styles.nextButton}
+            style={[
+              styles.nextButton,
+              { backgroundColor: !selectedBudget || (selectedBudget === 'custom' && !customAmount) ? '#CCCCCC' : '#002953' } // Use isValidDestination to determine button color
+            ]}
             text={En.next}
             textStyle={styles.buttonText}
-            onPress={handleNext}  // Ensure this only handles navigation
+            onPress={handleNext}
             disabled={!selectedBudget || (selectedBudget === 'custom' && !customAmount)}
           />
         </View>
