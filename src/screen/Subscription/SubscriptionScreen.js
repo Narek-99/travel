@@ -69,7 +69,7 @@ const SubscriptionScreen = (props) => {
 
       if (purchaseSuccess) {
         // Navigate to ChatScreen upon successful subscription
-        navigation.navigate(SCREEN.CHAT);
+        navigation.navigate(SCREEN.TRIPS);
         setTimeout(() => showRating(), 500);
       } else {
         console.log("Purchase was canceled or failed.");

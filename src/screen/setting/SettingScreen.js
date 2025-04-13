@@ -54,13 +54,14 @@ const SettingScreen = ({ navigation }) => {
         leftComp={
           <Pressable onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', options);
-            navigation.goBack();
+            navigation.navigate(SCREEN.TRIPS);
+
           }}>
-            <SVG.BackIcon fill="white" />
+            <SVG.BackIcon fill="black" />
           </Pressable>
         }
         title={"Settings"}
-        titleStyle={{ ...TEXT_STYLE.smallTitleBold }}
+        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.black }}
       />
       <View style={styles.innerContainer}>
         <Pressable style={styles.pressBtn} onPress={() => {
@@ -122,7 +123,7 @@ export default SettingScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOR.black
+    backgroundColor: COLOR.white
   },
   innerContainer: {
     marginTop: hp(2),
@@ -133,9 +134,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(2),
     paddingBottom: hp(1),
     borderBottomWidth: 0.2,
-    borderColor: COLOR.white,
+    borderColor: COLOR.black,
   },
   pressBtnText: {
-    ...TEXT_STYLE.textSemiBold
+    ...TEXT_STYLE.textSemiBold,
+    color: COLOR.black
   }
 })
