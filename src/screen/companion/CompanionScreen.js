@@ -22,7 +22,7 @@ const options = [
   { label: '💑 With Partner', value: 'partner' },
   { label: '👨‍👩‍👧‍👦  With Family', value: 'family' },
   { label: '👫  With Friends', value: 'friends' },
-  { label: '🧑‍🤝‍🧑 Group', value: 'group' },
+  { label: '🧑‍🤝‍🧑 With Colleagues', value: 'group' },
 ];
 
 const currentStep = 3;
