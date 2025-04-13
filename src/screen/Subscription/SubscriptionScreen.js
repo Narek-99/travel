@@ -25,20 +25,18 @@ const SubscriptionScreen = (props) => {
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const { showRating } = useRating();
 
-
   useEffect(() => {
-    // Pulse animation effect
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnimation, {
-          toValue: 1.03,
-          duration: 800,
+          toValue: 1.05,
+          duration: 600,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnimation, {
           toValue: 1,
-          duration: 700,
+          duration: 600,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -62,13 +60,12 @@ const SubscriptionScreen = (props) => {
 
   const handleSubscription = async () => {
     ReactNativeHapticFeedback.trigger('impactLight', options);
-    setLoading(true);  // Set loading to true while processing
+    setLoading(true);
     try {
       const id = SUB_IDS[selectedIndex];
       const purchaseSuccess = await handlePurchase(id);
 
       if (purchaseSuccess) {
-        // Navigate to ChatScreen upon successful subscription
         navigation.navigate(SCREEN.TRIPS);
         setTimeout(() => showRating(), 500);
       } else {
@@ -77,13 +74,13 @@ const SubscriptionScreen = (props) => {
     } catch (error) {
       console.error('handlePurchaseError ----->', error);
     } finally {
-      setLoading(false);  // Reset loading state
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      <SafeAreaView></SafeAreaView>
+      <SafeAreaView />
       <AppHeader
         leftComp={
           <Pressable onPress={() => {
@@ -92,7 +89,7 @@ const SubscriptionScreen = (props) => {
               navigation.navigate(SCREEN.TRIPS)
             }
           }}>
-            <SVG.BackIcon fill="black" />
+            <SVG.BackIcon fill={COLOR.primary} />
           </Pressable>
         }
         centerComp={<LeftComponent />}
@@ -104,17 +101,11 @@ const SubscriptionScreen = (props) => {
             ReactNativeHapticFeedback.trigger('impactLight', options);
             getAvailablePurchase();
           }}
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            paddingHorizontal: '2%',
-            marginBottom: '4%',
-          }}
+          style={styles.restoreButton}
         >
-          <Label style={styles.note}>Restore</Label>
+          <Label style={styles.note}>Restore Purchases</Label>
         </Pressable>
-        <Label style={styles.screenText}>Get Full Access</Label>
+        <Label style={styles.screenText}>Unlock Premium Access</Label>
         {subscriptionPlans.map((item, index) => {
           const subscription = subsciptionList.find(sub => sub.productId === SUB_IDS[index]);
           return (
@@ -130,40 +121,40 @@ const SubscriptionScreen = (props) => {
                   handleSelect(index, item);
                 }}
               >
-                <Label style={{ color: COLOR.white }}>{item.text}</Label>
-                {item.text === "Yearly" ? (
-                  <View style={[styles.saveBadge]}>
-                    <Label style={{ ...TEXT_STYLE.textSemiBold }}>Save 87%</Label>
-                  </View>
-                ) : (
-                  <View style={[styles.saveBadge2]}>
-                    <Label style={{ ...TEXT_STYLE.textSemiBold }}>Most Popular</Label>
-                  </View>
-                )}
-                <Label style={{ color: COLOR.white }}>
-                  {subscription ? subscription.localizedPrice : item.price}/
-                  {item.time}
+                <View style={styles.planHeader}>
+                  <Label style={styles.planTitle}>{item.text}</Label>
+                  {item.text === "Yearly" ? (
+                    <View style={styles.saveBadge}>
+                      <Label style={styles.badgeText}>Save 87%</Label>
+                    </View>
+                  ) : (
+                    <View style={styles.saveBadge2}>
+                      <Label style={styles.badgeText}>Most Popular</Label>
+                    </View>
+                  )}
+                </View>
+                <Label style={styles.planPrice}>
+                  {subscription ? subscription.localizedPrice : item.price}/{item.time}
                 </Label>
-                {/* {selectedIndex === index ? item.iconActive : item.icon} */}
               </Pressable>
               {expandedIndex === index && (
                 <View style={styles.dropdownContent}>
-                  <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
+                  <View style={styles.featureItem}>
                     {item.earlyIcon}
-                    <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.earlyaccess && item.earlyaccess}</Label>
+                    <Label style={styles.featureText}>{item.earlyaccess}</Label>
                   </View>
-                  <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
+                  <View style={styles.featureItem}>
                     {item.noLimitIcon}
-                    <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.nolimit && item.nolimit}</Label>
+                    <Label style={styles.featureText}>{item.nolimit}</Label>
                   </View>
-                  <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
+                  <View style={styles.featureItem}>
                     {item.noAdsIcon}
-                    <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.noAds && item.noAds}</Label>
+                    <Label style={styles.featureText}>{item.noAds}</Label>
                   </View>
                   {item?.trial && (
-                    <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
+                    <View style={styles.featureItem}>
                       {item.freeIcon}
-                      <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.trial}</Label>
+                      <Label style={styles.featureText}>{item.trial}</Label>
                     </View>
                   )}
                 </View>
@@ -175,32 +166,30 @@ const SubscriptionScreen = (props) => {
         <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
           <Button
             isLoading={loading}
-            text={selectedIndex === 0 ? 'Access Premium!' : "Access Premium!"}
-            style={{ marginTop: hp(6), backgroundColor: '#7548E3' }}
-            textStyle={[{ color: 'white' }]}
-            onPress={(handleSubscription)}
+            text={selectedIndex === 0 ? 'Start Premium' : "Try Premium Now"}
+            style={styles.subscribeButton}
+            textStyle={styles.subscribeButtonText}
+            onPress={handleSubscription}
           />
         </Animated.View>
 
         {selectedIndex === 1 && (
-          <View style={{ flexDirection: 'column', ...commonStyles.center, marginTop: hp(1) }}>
-            <Label style={styles.noPaymentText}>No Payment Now!</Label>
-          </View>
+          <Label style={styles.noPaymentText}>No Payment Required Today!</Label>
         )}
 
-        <View style={{ flexDirection: 'row', ...commonStyles.center, marginTop: hp(3) }}>
+        <View style={styles.legalLinks}>
           <Pressable onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', options);
-            openTermsOfUse()
+            openTermsOfUse();
           }}>
-            <Label style={styles.policyTermsText}>Terms of Service</Label>
+            <Label style={styles.legalText}>Terms of Service</Label>
           </Pressable>
-          <Label style={{ marginHorizontal: wp(2), opacity: 0.7 }}>&</Label>
+          <Label style={styles.legalSeparator}>•</Label>
           <Pressable onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', options);
             openPrivacyPolicy();
           }}>
-            <Label style={styles.policyTermsText}>Privacy Policy</Label>
+            <Label style={styles.legalText}>Privacy Policy</Label>
           </Pressable>
         </View>
       </View>
@@ -213,72 +202,128 @@ export default SubscriptionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOR.white,
-  },
-  saveBadge: {
-    backgroundColor: COLOR.black,
-    paddingHorizontal: wp(4),
-    paddingVertical: hp(0.6),
-    borderRadius: hp(1),
-    height: wp(8),
-    alignItems: 'center',
-    backgroundColor: '#7548E3',
-  },
-  saveBadge2: {
-    backgroundColor: COLOR.black,
-    paddingHorizontal: wp(4),
-    paddingVertical: hp(0.8),
-    borderRadius: hp(1),
-    height: wp(8),
-    // width: wp(),
-    alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#F8FAFC',
   },
   innerContainer: {
     flex: 1,
-    marginTop: hp(2),
-    paddingHorizontal: '4%',
+    paddingHorizontal: '5%',
+    paddingTop: hp(3),
   },
-  planView: {
-    padding: '5%',
-    marginTop: hp(2),
-    borderRadius: hp(2),
-    backgroundColor: COLOR.black,
-    ...commonStyles.justifyView,
-  },
-  selectedPlanView: {
-    backgroundColor: '#002953'
-  },
-  expandedPlanView: {
-    borderTopLeftRadius: hp(2),
-    borderTopRightRadius: hp(2),
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  dropdownContent: {
-    padding: '5%',
-    backgroundColor: COLOR.black,
-    borderBottomLeftRadius: hp(2),
-    borderBottomRightRadius: hp(2),
-  },
-  screenText: {
-    marginVertical: hp(1),
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: COLOR.black
+  restoreButton: {
+    alignSelf: 'flex-end',
+    padding: wp(2),
   },
   note: {
     ...TEXT_STYLE.smallText,
-    color: COLOR.black,
+    color: '#4B5563',
+    fontWeight: '500',
   },
-  policyTermsText: {
-    ...TEXT_STYLE.smallText,
-    opacity: 0.7,
-    color: COLOR.black
+  screenText: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#1F2937',
+    marginVertical: hp(2),
+  },
+  planView: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: hp(2),
+    padding: wp(4),
+    marginVertical: hp(1),
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  selectedPlanView: {
+    backgroundColor: '#E8F0FE',
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+  },
+  expandedPlanView: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  planHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  planTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  saveBadge: {
+    backgroundColor: '#22C55E',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(0.5),
+    borderRadius: hp(1),
+  },
+  saveBadge2: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(0.5),
+    borderRadius: hp(1),
+  },
+  badgeText: {
+    ...TEXT_STYLE.textSemiBold,
+    color: '#FFFFFF',
+    fontSize: 12,
+  },
+  planPrice: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#4B5563',
+    marginTop: hp(1),
+  },
+  dropdownContent: {
+    backgroundColor: '#F1F5F9',
+    padding: wp(4),
+    borderBottomLeftRadius: hp(2),
+    borderBottomRightRadius: hp(2),
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp(1.5),
+  },
+  featureText: {
+    marginLeft: wp(2),
+    fontSize: 14,
+    color: '#1F2937',
+  },
+  subscribeButton: {
+    marginTop: hp(4),
+    backgroundColor: '#3B82F6',
+    borderRadius: hp(1.5),
+  },
+  subscribeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   noPaymentText: {
-    ...TEXT_STYLE.text,
-    color: COLOR.black
+    textAlign: 'center',
+    color: '#10B981',
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: hp(1),
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: hp(3),
+  },
+  legalText: {
+    ...TEXT_STYLE.smallText,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  legalSeparator: {
+    marginHorizontal: wp(2),
+    color: '#6B7280',
   },
 });
