@@ -118,16 +118,16 @@ const SubscriptionScreen = (props) => {
             <Label style={styles.featureText}>{commonBenefits.earlyaccess}</Label>
           </View>
           <View style={styles.featureItem}>
-            {commonBenefits.noLimitIcon}
-            <Label style={styles.featureText}>{commonBenefits.nolimit}</Label>
-          </View>
-          <View style={styles.featureItem}>
             {commonBenefits.noAdsIcon}
             <Label style={styles.featureText}>{commonBenefits.noAds}</Label>
           </View>
           <View style={styles.featureItem}>
             {commonBenefits.freeIcon}
             <Label style={styles.featureText}>{commonBenefits.trial}</Label>
+          </View>
+          <View style={styles.featureItem}>
+            {commonBenefits.freeIcon}
+            <Label style={styles.featureText}>{commonBenefits.recommendations}</Label>
           </View>
         </View>
         {subscriptionPlans.map((item, index) => {
@@ -214,12 +214,12 @@ const styles = StyleSheet.create({
   },
   restoreButton: {
     alignSelf: 'flex-end',
-    padding: wp(2),
+    marginright: wp(2),
   },
   note: {
-    ...TEXT_STYLE.smallText,
+    fontSize: 8,
     color: '#4B5563',
-    fontWeight: '500',
+    fontWeight: '200',
   },
   screenText: {
     fontSize: 28,
@@ -324,10 +324,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(3),
+    marginTop: hp(1),
   },
   legalText: {
-    ...TEXT_STYLE.smallText,
+    fontSize: 10,
     color: '#6B7280',
     fontWeight: '500',
   },
