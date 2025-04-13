@@ -46,7 +46,7 @@ const SubscriptionScreen = (props) => {
 
   const handleSelect = (index, item) => {
     setSelectedIndex(index);
-    setExpandedIndex(expandedIndex === index ? null : index);
+    setExpandedIndex(index); // Always keep the selected plan expanded
     setPackge(item);
   };
 
@@ -78,6 +78,9 @@ const SubscriptionScreen = (props) => {
     }
   };
 
+  // Extract common benefits from the first plan (they are the same for both)
+  const commonBenefits = subscriptionPlans[0];
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
@@ -106,6 +109,27 @@ const SubscriptionScreen = (props) => {
           <Label style={styles.note}>Restore Purchases</Label>
         </Pressable>
         <Label style={styles.screenText}>Unlock Premium Access</Label>
+
+        {/* Display common benefits once, below the plan selection */}
+        <View style={styles.benefitsContainer}>
+          <Label style={styles.benefitsTitle}>What You Get:</Label>
+          <View style={styles.featureItem}>
+            {commonBenefits.earlyIcon}
+            <Label style={styles.featureText}>{commonBenefits.earlyaccess}</Label>
+          </View>
+          <View style={styles.featureItem}>
+            {commonBenefits.noLimitIcon}
+            <Label style={styles.featureText}>{commonBenefits.nolimit}</Label>
+          </View>
+          <View style={styles.featureItem}>
+            {commonBenefits.noAdsIcon}
+            <Label style={styles.featureText}>{commonBenefits.noAds}</Label>
+          </View>
+          <View style={styles.featureItem}>
+            {commonBenefits.freeIcon}
+            <Label style={styles.featureText}>{commonBenefits.trial}</Label>
+          </View>
+        </View>
         {subscriptionPlans.map((item, index) => {
           const subscription = subsciptionList.find(sub => sub.productId === SUB_IDS[index]);
           return (
@@ -137,36 +161,16 @@ const SubscriptionScreen = (props) => {
                   {subscription ? subscription.localizedPrice : item.price}/{item.time}
                 </Label>
               </Pressable>
-              {expandedIndex === index && (
-                <View style={styles.dropdownContent}>
-                  <View style={styles.featureItem}>
-                    {item.earlyIcon}
-                    <Label style={styles.featureText}>{item.earlyaccess}</Label>
-                  </View>
-                  <View style={styles.featureItem}>
-                    {item.noLimitIcon}
-                    <Label style={styles.featureText}>{item.nolimit}</Label>
-                  </View>
-                  <View style={styles.featureItem}>
-                    {item.noAdsIcon}
-                    <Label style={styles.featureText}>{item.noAds}</Label>
-                  </View>
-                  {item?.trial && (
-                    <View style={styles.featureItem}>
-                      {item.freeIcon}
-                      <Label style={styles.featureText}>{item.trial}</Label>
-                    </View>
-                  )}
-                </View>
-              )}
             </View>
           );
         })}
 
+
+
         <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
           <Button
             isLoading={loading}
-            text={selectedIndex === 0 ? 'Start Premium' : "Try Premium Now"}
+            text={selectedIndex === 0 ? 'Start Premium' : "Try Premium Now!"}
             style={styles.subscribeButton}
             textStyle={styles.subscribeButtonText}
             onPress={handleSubscription}
@@ -207,7 +211,6 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
     paddingHorizontal: '5%',
-    paddingTop: hp(3),
   },
   restoreButton: {
     alignSelf: 'flex-end',
@@ -242,8 +245,8 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
   },
   expandedPlanView: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: hp(2), // Reset since we removed the dropdown
+    borderBottomRightRadius: hp(2),
   },
   planHeader: {
     flexDirection: 'row',
@@ -278,11 +281,17 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     marginTop: hp(1),
   },
-  dropdownContent: {
+  benefitsContainer: {
     backgroundColor: '#F1F5F9',
     padding: wp(4),
-    borderBottomLeftRadius: hp(2),
-    borderBottomRightRadius: hp(2),
+    borderRadius: hp(2),
+    marginVertical: hp(2),
+  },
+  benefitsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: hp(1.5),
   },
   featureItem: {
     flexDirection: 'row',
