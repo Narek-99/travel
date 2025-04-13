@@ -21,7 +21,6 @@ import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
-
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [trips, setTrips] = useState([]);
@@ -50,7 +49,6 @@ const TripsScreen = ({ navigation }) => {
       setLoadingImages(prev => ({ ...prev, [tripId]: false }));
     }
   };
-
 
   const fetchTrips = useCallback(async () => {
     try {
@@ -139,7 +137,7 @@ const TripsScreen = ({ navigation }) => {
 
     if (!startDate || !endDate) return '';
 
-    const options = { day: '2-digit', month: 'short' }; // e.g., "Mar 21"
+    const options = { day: '2-digit', month: 'short' };
     const startStr = startDate.toLocaleDateString('en-US', options);
     const endStr = endDate.toLocaleDateString('en-US', options);
     return `${startStr} – ${endStr}`;
@@ -165,25 +163,33 @@ const TripsScreen = ({ navigation }) => {
                 ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               }
             }}>
-              <SVG.Flash fill="#99FF00" />
-              <Label style={TEXT_STYLE.textSemiBold}>
-                {user?.subscription ? "  PRO" : "  Get Access"}
+              <SVG.Flash fill="#3B82F6" />
+              <Label style={{ color: '#3B82F6', fontWeight: 700 }}>
+                {user?.subscription ? "  Premium" : "  Get Premium"}
               </Label>
             </Pressable>
           </View>
         }
         rightComp={
           <Pressable onPress={() => {
-            navigation.navigate(SCREEN.DESTINATION); ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+            navigation.navigate(SCREEN.DESTINATION);
+            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
           }}>
             <SVG.Plus fill="black" />
           </Pressable>
         }
       />
 
-      <View style={styles.contentContainer}>
+      <Pressable onPress={() => {
+        navigation.navigate(SCREEN.DESTINATION);
+        ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+      }} style={styles.contentContainer}>
         {trips.length === 0 ? (
-          <Text style={styles.emptyText}>There are no trips yet. Create one.</Text>
+          <View style={styles.emptyContainer}>
+            <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
+            <Text style={styles.emptyTitle}>No trips yet!</Text>
+            <Text style={styles.emptySubtitle}>Let’s plan your first adventure.</Text>
+          </View>
         ) : (
           <SwipeListView
             data={trips}
@@ -254,7 +260,7 @@ const TripsScreen = ({ navigation }) => {
             previewOpenDelay={3000}
           />
         )}
-      </View>
+      </Pressable>
     </View>
   );
 };
@@ -262,7 +268,7 @@ const TripsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLOR.white, paddingBottom: 10 },
   gptPlusButton: {
-    backgroundColor: '#191919',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
     paddingHorizontal: wp(6),
     paddingVertical: hp(1),
     borderRadius: hp(1),
@@ -272,10 +278,26 @@ const styles = StyleSheet.create({
   },
   headerActions: { flexDirection: 'col', alignItems: 'center', gap: wp(3) },
   contentContainer: { flex: 1, padding: 20 },
-  emptyText: {
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plusIcon: {
+    marginBottom: hp(2),
+  },
+  emptyTitle: {
     color: COLOR.black,
+    fontSize: 28,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 20,
+    marginBottom: hp(1),
+  },
+  emptySubtitle: {
+    color: '#3B82F6',
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   tripCard: {
     backgroundColor: COLOR.darkGrey,
