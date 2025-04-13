@@ -84,21 +84,19 @@ const SubscriptionScreen = (props) => {
   return (
     <View style={styles.container}>
       <SafeAreaView></SafeAreaView>
-      {from === 'settings' ? (
-        <AppHeader
-          leftComp={
-            <Pressable onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', options);
-              navigation.navigate(SCREEN.SETTINGS)
-            }}>
-              <SVG.BackIcon fill="white" />
-            </Pressable>
-          }
-          centerComp={<LeftComponent />}
-        />
-      ) : (
-        <AppHeader leftComp={<LeftComponent />} />
-      )}
+      <AppHeader
+        leftComp={
+          <Pressable onPress={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', options);
+            if (from === 'settings') { navigation.navigate(SCREEN.SETTINGS) } else {
+              navigation.navigate(SCREEN.TRIPS)
+            }
+          }}>
+            <SVG.BackIcon fill="black" />
+          </Pressable>
+        }
+        centerComp={<LeftComponent />}
+      />
 
       <View style={styles.innerContainer}>
         <Pressable
@@ -132,7 +130,7 @@ const SubscriptionScreen = (props) => {
                   handleSelect(index, item);
                 }}
               >
-                <Label>{item.text}</Label>
+                <Label style={{ color: COLOR.white }}>{item.text}</Label>
                 {item.text === "Yearly" ? (
                   <View style={[styles.saveBadge]}>
                     <Label style={{ ...TEXT_STYLE.textSemiBold }}>Save 87%</Label>
@@ -142,7 +140,7 @@ const SubscriptionScreen = (props) => {
                     <Label style={{ ...TEXT_STYLE.textSemiBold }}>Most Popular</Label>
                   </View>
                 )}
-                <Label>
+                <Label style={{ color: COLOR.white }}>
                   {subscription ? subscription.localizedPrice : item.price}/
                   {item.time}
                 </Label>
@@ -152,20 +150,20 @@ const SubscriptionScreen = (props) => {
                 <View style={styles.dropdownContent}>
                   <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
                     {item.earlyIcon}
-                    <Label style={{ marginLeft: hp(1) }}>{item.earlyaccess && item.earlyaccess}</Label>
+                    <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.earlyaccess && item.earlyaccess}</Label>
                   </View>
                   <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
                     {item.noLimitIcon}
-                    <Label style={{ marginLeft: hp(1) }}>{item.nolimit && item.nolimit}</Label>
+                    <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.nolimit && item.nolimit}</Label>
                   </View>
                   <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
                     {item.noAdsIcon}
-                    <Label style={{ marginLeft: hp(1) }}>{item.noAds && item.noAds}</Label>
+                    <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.noAds && item.noAds}</Label>
                   </View>
                   {item?.trial && (
                     <View style={[commonStyles.horizontalView, { marginBottom: hp(1) }]}>
                       {item.freeIcon}
-                      <Label style={{ marginLeft: hp(1) }}>{item.trial}</Label>
+                      <Label style={{ marginLeft: hp(1), color: COLOR.white }}>{item.trial}</Label>
                     </View>
                   )}
                 </View>
@@ -184,11 +182,11 @@ const SubscriptionScreen = (props) => {
           />
         </Animated.View>
 
-        {/* {selectedIndex === 1 && (
+        {selectedIndex === 1 && (
           <View style={{ flexDirection: 'column', ...commonStyles.center, marginTop: hp(1) }}>
             <Label style={styles.noPaymentText}>No Payment Now!</Label>
           </View>
-        )} */}
+        )}
 
         <View style={{ flexDirection: 'row', ...commonStyles.center, marginTop: hp(3) }}>
           <Pressable onPress={() => {
@@ -215,7 +213,7 @@ export default SubscriptionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOR.black,
+    backgroundColor: COLOR.white,
   },
   saveBadge: {
     backgroundColor: COLOR.black,
@@ -223,7 +221,6 @@ const styles = StyleSheet.create({
     paddingVertical: hp(0.6),
     borderRadius: hp(1),
     height: wp(8),
-    // width: wp(),
     alignItems: 'center',
     backgroundColor: '#7548E3',
   },
@@ -269,16 +266,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+    color: COLOR.black
   },
   note: {
     ...TEXT_STYLE.smallText,
-    color: COLOR.lightBlue,
+    color: COLOR.black,
   },
   policyTermsText: {
     ...TEXT_STYLE.smallText,
     opacity: 0.7,
+    color: COLOR.black
   },
   noPaymentText: {
     ...TEXT_STYLE.text,
+    color: COLOR.black
   },
 });

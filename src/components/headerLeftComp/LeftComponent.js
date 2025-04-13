@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
     },
     text: {
         ...TEXT_STYLE.smallTitleSemiBold,
-        marginLeft: wp(3)
+        marginLeft: wp(3),
+        color: 'black'
     }
 })

@@ -18,7 +18,7 @@ export const En = {
     "openAi": "OpenAI GPT-4",
     "with": "With ",
     "tryNow": "Try Now",
-    "AppName": "Sonic Chat AI",
+    "AppName": "Travel AI",
     "messagePlaceholder": "Message ChatGPT",
     "yearly": "Yearly",
     "unlimitedAccess": "Unlimited Access",
