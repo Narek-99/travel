@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Pressable } from 'react-native';
+import { SafeAreaView, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Pressable, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
@@ -46,15 +46,14 @@ const DestinationScreen = ({ navigation }) => {
           if (doc.exists) {
             const destination = doc.data().destination;
             setLocalDestination(destination);
-            setIsValidDestination(!!destination); // ✅ HIER: Aktiviert den Button
+            setIsValidDestination(!!destination);
           }
         });
     } else {
       setLocalDestination('');
-      setIsValidDestination(false); // Sicherstellen, dass Button deaktiviert ist bei neuem Trip
+      setIsValidDestination(false);
     }
   }, [tripId]);
-
 
   const getCities = async (searchQuery) => {
     try {
@@ -69,18 +68,19 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleClose = () => {
     if (tripId) {
-      navigation.navigate(SCREEN.TRIPDETAILS, { tripId }); // zurück zum Detail
+      navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
     } else {
-      resetTrip(); // Trip-Daten löschen
-      navigation.navigate(SCREEN.TRIPS); // zurück zur Übersicht
+      resetTrip();
+      navigation.navigate(SCREEN.TRIPS);
     }
   };
 
   const handleCitySelect = (city) => {
     setLocalDestination(city.city);
-    setLocalCountry(city.country); // << NEU
+    setLocalCountry(city.country);
     setIsValidDestination(true);
     setSuggestions([]);
+    Keyboard.dismiss();
   };
 
   const handleSaveDestination = async () => {
@@ -144,89 +144,91 @@ const DestinationScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.screenContainer}>
-      <View style={styles.contentContainer}>
-        <SafeAreaView />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.screenContainer}>
+        <View style={styles.contentContainer}>
+          <SafeAreaView />
 
-        <View style={styles.stepIndicatorContainer}>
-          <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-          <ProgressBar
-            progress={progress}
-            width={wp(80)}
-            height={hp(1)}
-            color={COLOR.lightBlue}
-            borderRadius={5}
-          />
+          <View style={styles.stepIndicatorContainer}>
+            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+            <ProgressBar
+              progress={progress}
+              width={wp(80)}
+              height={hp(1)}
+              color={COLOR.lightBlue}
+              borderRadius={5}
+            />
+          </View>
+
+          <View style={styles.headlineContainer}>
+            <Pressable onPress={() => {
+              navigation.navigate(SCREEN.TRIPS);
+              resetTrip();
+              setIsValidDestination(false);
+            }}>
+              <SVG.BackIcon fill="black" />
+            </Pressable>
+            <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
+
+            <View style={{ flex: 1 }} />
+            <Pressable onPress={handleClose}>
+              <SVG.Close fill="black" />
+            </Pressable>
+          </View>
+
+          <Label style={styles.subtitleText}>{En.DestinationScreenSubtitle}</Label>
+
+          <View style={styles.dropdownWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Search for a city..."
+              placeholderTextColor="#999"
+              value={localDestination}
+              onChangeText={handleInputChange}
+            />
+
+            {suggestions.length > 0 && (
+              <View style={styles.dropdown}>
+                <FlatList
+                  data={suggestions}
+                  keyExtractor={(item) => item.id}
+                  keyboardShouldPersistTaps="handled"
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.dropdownItem}
+                      onPress={() => handleCitySelect(item)}
+                    >
+                      <Label style={styles.dropdownItemText}>{item.city}</Label>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            )}
+          </View>
         </View>
 
-        <View style={styles.headlineContainer}>
-          <Pressable onPress={() => {
-            navigation.navigate(SCREEN.TRIPS);
-            resetTrip();
-            setIsValidDestination(false);
-          }}>
-            <SVG.BackIcon fill="black" />
-          </Pressable>
-          <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
-
-          <View style={{ flex: 1 }} />
-          <Pressable onPress={handleClose}>
-            <SVG.Close fill="black" />
-          </Pressable>
-        </View>
-
-        <Label style={styles.subtitleText}>{En.DestinationScreenSubtitle}</Label>
-
-        <View style={styles.dropdownWrapper}>
-          <TextInput
-            style={styles.input}
-            placeholder="Search for a city..."
-            placeholderTextColor="#999"
-            value={localDestination}
-            onChangeText={handleInputChange}
-          />
-
-          {suggestions.length > 0 && (
-            <View style={styles.dropdown}>
-              <FlatList
-                data={suggestions}
-                keyExtractor={(item) => item.id}
-                keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => handleCitySelect(item)}
-                  >
-                    <Label style={styles.dropdownItemText}>{item.city}</Label>
-                  </TouchableOpacity>
-                )}
-              />
-            </View>
+        <View style={styles.submitContainer}>
+          {tripId && (
+            <Button
+              style={styles.saveButton}
+              text={En.save}
+              onPress={handleSaveDestination}
+              disabled={!localDestination}
+            />
           )}
+          <Button
+            style={[
+              styles.nextButton,
+              { backgroundColor: isValidDestination ? '#002953' : '#CCCCCC' }
+            ]}
+            text={En.next}
+            textStyle={styles.buttonText}
+            onPress={handleNext}
+            disabled={!isValidDestination}
+          />
         </View>
       </View>
-
-      <View style={styles.submitContainer}>
-        {tripId && (
-          <Button
-            style={styles.saveButton}
-            text={En.save}
-            onPress={handleSaveDestination}
-            disabled={!localDestination}
-          />
-        )}
-        <Button
-          style={[
-            styles.nextButton,
-            { backgroundColor: isValidDestination ? '#002953' : '#CCCCCC' } // Use isValidDestination to determine button color
-          ]}
-          text={En.next}
-          textStyle={styles.buttonText}
-          onPress={handleNext}
-          disabled={!isValidDestination} // Use isValidDestination to enable/disable button
-        />
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -286,12 +288,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
   },
-  saveButton: {
-    backgroundColor: 'transparent',
-    marginHorizontal: wp(2),
-    borderWidth: 1,
-    borderColor: COLOR.lightBlue
-  },
   stepIndicatorContainer: {
     alignItems: 'center',
     marginBottom: hp(2),
@@ -304,9 +300,9 @@ const styles = StyleSheet.create({
   headlineContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align items on both ends
-    width: '100%', // Ensure the container takes full width
-    paddingHorizontal: 10, // Optional: for inner spacing
+    justifyContent: "space-between",
+    width: '100%',
+    paddingHorizontal: 10,
   },
   submitContainer: {
     justifyContent: 'flex-end',

@@ -24,6 +24,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [trips, setTrips] = useState([]);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true); // New loading state
   const hapticOptions = { enableVibrateFallback: true };
   const [tripImages, setTripImages] = useState({});
   const [loadingImages, setLoadingImages] = useState({});
@@ -68,6 +69,28 @@ const TripsScreen = ({ navigation }) => {
       console.error('❌ Fehler beim Laden der Trips:', error);
     }
   }, [user.uid]);
+
+  // Fetch subscription status from Firestore
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const unsubscribe = firestore()
+      .collection('users')
+      .doc(user.uid)
+      .onSnapshot(
+        doc => {
+          const data = doc.data();
+          // Assuming subscription is stored in Firestore; update Redux if needed
+          setIsSubscriptionLoading(false);
+        },
+        error => {
+          console.error('❌ Error fetching subscription:', error);
+          setIsSubscriptionLoading(false);
+        }
+      );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   useFocusEffect(
     useCallback(() => {
@@ -145,11 +168,21 @@ const TripsScreen = ({ navigation }) => {
 
   // Handle navigation based on subscription status
   const handleAddTripNavigation = () => {
+    if (isSubscriptionLoading) return; // Prevent navigation during loading
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     if (user?.subscription === false) {
       navigation.navigate(SCREEN.SUBSCRIPTION);
     } else {
       navigation.navigate(SCREEN.DESTINATION);
+    }
+  };
+
+  // Handle premium button press
+  const handlePremiumPress = () => {
+    if (isSubscriptionLoading) return; // Prevent navigation during loading
+    if (!user?.subscription) {
+      navigation.navigate(SCREEN.SUBSCRIPTION);
+      ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     }
   };
 
@@ -167,17 +200,18 @@ const TripsScreen = ({ navigation }) => {
         }
         centerComp={
           <View style={styles.headerActions}>
-            <Pressable style={styles.gptPlusButton} onPress={() => {
-              if (!user?.subscription) {
-                navigation.navigate(SCREEN.SUBSCRIPTION);
-                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              }
-            }}>
-              <SVG.Flash fill="#3B82F6" />
-              <Label style={{ color: '#3B82F6', fontWeight: 700 }}>
-                {user?.subscription ? "  Premium" : "  Get Premium"}
-              </Label>
-            </Pressable>
+            {isSubscriptionLoading ? (
+              <SkeletonPlaceholder borderRadius={hp(1)}>
+                <SkeletonPlaceholder.Item width={wp(30)} height={hp(4)} />
+              </SkeletonPlaceholder>
+            ) : (
+              <Pressable style={styles.gptPlusButton} onPress={handlePremiumPress}>
+                <SVG.Flash fill="#3B82F6" />
+                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>
+                  {user?.subscription ? "  Premium" : "  Get Premium"}
+                </Label>
+              </Pressable>
+            )}
           </View>
         }
         rightComp={
