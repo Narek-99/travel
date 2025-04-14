@@ -14,7 +14,7 @@ export const En = {
     "additionalTitle": "Additional Information",
     "additionalSubtitle": "Is there anything else we should consider when planning your trip?",
     "onboarding1Title": "Welcome to Travel AI",
-    "onboarding1Subtitle": "Travel made easy",
+    "onboarding1Subtitle": "Your ultimate travel companion",
     "openAi": "OpenAI GPT-4",
     "with": "With ",
     "tryNow": "Try Now",

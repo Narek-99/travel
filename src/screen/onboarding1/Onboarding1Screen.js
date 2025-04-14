@@ -40,13 +40,13 @@ const Onboarding1Screen = ({ navigation }) => {
         <SafeAreaView />
 
         <Label style={styles.titleText}>{En.onboarding1Title}</Label>
-        <Label style={styles.subtitleText}>{En.onboarding1Subtitle}</Label>
+        {/* <Label style={styles.subtitleText}>{En.onboarding1Subtitle}</Label> */}
 
       </View>
 
       <Button
         style={styles.continueButton}
-        text={En.continue}
+        text="✨ Explore Now! ✨"
         textStyle={styles.buttonText}
         onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
@@ -62,7 +62,7 @@ export default Onboarding1Screen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.black,
+    backgroundColor: '#fff',
   },
   contentContainer: {
     paddingTop: '8%',
@@ -70,11 +70,13 @@ const styles = StyleSheet.create({
   },
   titleText: {
     ...TEXT_STYLE.title,
-    color: "#FF0000",
-    marginVertical: hp(2),
+    fontWeight: '600',
+    color: "#3B82F6",
+    marginVertical: hp(1),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
+    color: "#3B82F6",
   },
   image: {
     ...StyleSheet.absoluteFillObject,
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   continueButton: {
-    backgroundColor: '#740000',
+    backgroundColor: '#3B82F6',
     marginTop: 'auto',
     marginBottom: hp(3),
     marginHorizontal: wp(2),
