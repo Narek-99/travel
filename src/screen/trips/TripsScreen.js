@@ -24,7 +24,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [trips, setTrips] = useState([]);
-  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true); // New loading state
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
   const hapticOptions = { enableVibrateFallback: true };
   const [tripImages, setTripImages] = useState({});
   const [loadingImages, setLoadingImages] = useState({});
@@ -70,7 +70,6 @@ const TripsScreen = ({ navigation }) => {
     }
   }, [user.uid]);
 
-  // Fetch subscription status from Firestore
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -79,8 +78,6 @@ const TripsScreen = ({ navigation }) => {
       .doc(user.uid)
       .onSnapshot(
         doc => {
-          const data = doc.data();
-          // Assuming subscription is stored in Firestore; update Redux if needed
           setIsSubscriptionLoading(false);
         },
         error => {
@@ -166,9 +163,8 @@ const TripsScreen = ({ navigation }) => {
     return `${startStr} – ${endStr}`;
   };
 
-  // Handle navigation based on subscription status
   const handleAddTripNavigation = () => {
-    if (isSubscriptionLoading) return; // Prevent navigation during loading
+    if (isSubscriptionLoading) return;
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     if (user?.subscription === false) {
       navigation.navigate(SCREEN.SUBSCRIPTION);
@@ -177,9 +173,8 @@ const TripsScreen = ({ navigation }) => {
     }
   };
 
-  // Handle premium button press
   const handlePremiumPress = () => {
-    if (isSubscriptionLoading) return; // Prevent navigation during loading
+    if (isSubscriptionLoading) return;
     if (!user?.subscription) {
       navigation.navigate(SCREEN.SUBSCRIPTION);
       ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
@@ -260,7 +255,7 @@ const TripsScreen = ({ navigation }) => {
                     style={styles.overlay}
                   >
                     <View style={styles.companionRow}>
-                      <Text style={styles.destinationText}>{item.destination}</Text>
+                      <Text style={styles.destinationText}>{item.destination}, {item.country}</Text>
                       <Text style={styles.dateText}>{formatDateRange(item.startDate, item.endDate)}</Text>
                       <View style={styles.infoRow}>
                         <Label style={styles.dateText}>{getCompanionEmoji(item.companion)}</Label>
@@ -438,6 +433,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: 'white',
+    marginBottom: hp(0.5)
+  },
+  countryText: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: "500",
     marginBottom: hp(0.5)
   },
   companionRow: {

@@ -28,7 +28,7 @@ const DestinationScreen = ({ navigation }) => {
   const [debounceTimer, setDebounceTimer] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [localDestination, setLocalDestination] = useState(tripData.destination || '');
-  const [localCountry, setLocalCountry] = useState('');
+  const [localCountry, setLocalCountry] = useState(tripData.country || '');
 
   const currentStep = 1;
   const totalSteps = 8;
@@ -44,16 +44,18 @@ const DestinationScreen = ({ navigation }) => {
         .get()
         .then(doc => {
           if (doc.exists) {
-            const destination = doc.data().destination;
-            setLocalDestination(destination);
+            const { destination, country } = doc.data();
+            setLocalDestination(destination || '');
+            setLocalCountry(country || '');
             setIsValidDestination(!!destination);
           }
         });
     } else {
       setLocalDestination('');
+      setLocalCountry('');
       setIsValidDestination(false);
     }
-  }, [tripId]);
+  }, [tripId, user.uid]);
 
   const getCities = async (searchQuery) => {
     try {
@@ -77,7 +79,7 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleCitySelect = (city) => {
     setLocalDestination(city.city);
-    setLocalCountry(city.country);
+    setLocalCountry(city.country || '');
     setIsValidDestination(true);
     setSuggestions([]);
     Keyboard.dismiss();
@@ -92,10 +94,14 @@ const DestinationScreen = ({ navigation }) => {
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({
-          destination: localDestination,
-          country: localCountry,
-        });
+        .set(
+          {
+            destination: localDestination,
+            country: localCountry,
+            updatedAt: firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
 
       Toast.show({
         visibilityTime: 2000,
@@ -126,6 +132,7 @@ const DestinationScreen = ({ navigation }) => {
 
   const handleInputChange = (text) => {
     setLocalDestination(text);
+    setLocalCountry('');
     setIsValidDestination(false);
 
     if (debounceTimer) {
@@ -198,7 +205,7 @@ const DestinationScreen = ({ navigation }) => {
                       style={styles.dropdownItem}
                       onPress={() => handleCitySelect(item)}
                     >
-                      <Label style={styles.dropdownItemText}>{item.city}</Label>
+                      <Label style={styles.dropdownItemText}>{item.city}, {item.country}</Label>
                     </TouchableOpacity>
                   )}
                 />
@@ -213,7 +220,7 @@ const DestinationScreen = ({ navigation }) => {
               style={styles.saveButton}
               text={En.save}
               onPress={handleSaveDestination}
-              disabled={!localDestination}
+              disabled={!localDestination || !isValidDestination}
             />
           )}
           <Button
