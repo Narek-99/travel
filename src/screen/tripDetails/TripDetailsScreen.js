@@ -782,58 +782,6 @@ const TripDetailsScreen = ({ navigation }) => {
           </Animated.View>
         )}
 
-        <Text style={styles.tripPlanTitle}>Your Day-by-Day Itinerary</Text>
-
-        {loadingTripPlan && (
-          <Text style={{ fontSize: 16, padding: wp(5), fontStyle: 'italic', textAlign: 'center', color: COLOR.mediumGray }}>
-            🧠 Creating your perfect travel plan based on your preferences...
-            This may take a moment – it's worth the wait! ✨
-          </Text>)}
-
-        {loadingTripPlan ? (
-          <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.card}>
-              <View style={{ height: 22, width: '70%', marginBottom: 10 }} />
-              <View style={{ height: 14, width: '90%', marginBottom: 8 }} />
-              <View style={{ height: 14, width: '95%', marginBottom: 8 }} />
-              <View style={{ height: 14, width: '60%' }} />
-            </View>
-          </SkeletonPlaceholder>
-        ) : trip?.aiPlan ? (
-          <Animatable.View animation="fadeInUp" duration={600} style={styles.card}>
-            <Animated.View
-              style={{
-                height: contentHeight > maxCollapsedHeight && !showFullPlan ? planHeight : 'auto',
-                overflow: 'hidden',
-              }}
-            >
-              <View
-                onLayout={(event) => {
-                  const height = event.nativeEvent.layout.height;
-                  setContentHeight(height);
-                  if (!showFullPlan) {
-                    planHeight.setValue(Math.min(height, maxCollapsedHeight));
-                  }
-                }}
-              >
-                <Pressable onLongPress={copyToClipboard}>
-                  <Markdown style={markdownStyles}>
-                    {trip.aiPlan}
-                  </Markdown>
-                </Pressable>
-              </View>
-            </Animated.View>
-
-            {contentHeight > maxCollapsedHeight && (
-              <TouchableOpacity onPress={togglePlanHeight} style={{ marginTop: 12 }}>
-                <Text style={{ textAlign: 'center', color: '#0084FF', fontWeight: 'bold', marginTop: hp(2) }}>
-                  {showFullPlan ? 'Show Less ▲' : 'Show More ▼'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </Animatable.View>
-        ) : null}
-
         {messages.map((item, index) => (
           <MessageBubble key={item.id ?? index} item={item} />
         ))}
@@ -862,6 +810,15 @@ const TripDetailsScreen = ({ navigation }) => {
       {showOptionsModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                navigation.navigate(SCREEN.DAYBYDAY, { aiPlan: trip.aiPlan });
+                setShowOptionsModal(false);
+              }}
+            >
+              <Text style={styles.modalButtonText}>📅 View Day-by-Day Plan</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {

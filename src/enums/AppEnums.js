@@ -25,7 +25,8 @@ export const SCREEN = {
   PREFERENCES: "PreferencesScreen",
   ADDITIONAL: "AdditionalScreen",
   BOOKING: "BookingScreen",
-  HOTELBOOKING: "HotelBookingScreen"
+  HOTELBOOKING: "HotelBookingScreen",
+  DAYBYDAY: "DayByDayPlanScreen"
 }
 
 export const FIREBASE_COLLECTIONS = {
