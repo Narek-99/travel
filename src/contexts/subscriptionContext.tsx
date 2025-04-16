@@ -149,14 +149,12 @@ export const SubscriptionProvider = ({ children }: any) => {
                         if (validationResponse.status === 0) { // Success
                             await finishTransaction({ purchase, isConsumable: false });
                             getAvailablePurchase();
-                            console.log('Subscription validated successfully');
                         } else {
                             console.error('Receipt validation failed:', validationResponse);
                         }
                     } catch (error: any) {
                         console.error('Error during transaction completion:', error.message || error);
                     }
-                    console.log('You have subscribed to this package successfully');
                 }
             });
 

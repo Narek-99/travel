@@ -5,15 +5,6 @@ const API_BASE_URL = 'https://openai-proxy-gilt-three.vercel.app/api/hotels';
 
 export const searchHotels = async ({ latitude, longitude, checkInDate, checkOutDate, adults, roomQuantity }) => {
     try {
-        console.log('🔍 Sending request to backend:', {
-            latitude,
-            longitude,
-            checkInDate,
-            checkOutDate,
-            adults,
-            roomQuantity,
-        });
-
         const response = await axios.get(API_BASE_URL, {
             params: {
                 latitude,
@@ -26,10 +17,7 @@ export const searchHotels = async ({ latitude, longitude, checkInDate, checkOutD
         });
 
         const hotels = response.data;
-        console.log('🏨 Hotels received from backend:', hotels);
-
         if (!hotels || hotels.length === 0) {
-            console.log('ℹ️ No hotels found from backend');
             return [];
         }
 

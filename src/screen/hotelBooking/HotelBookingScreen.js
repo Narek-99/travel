@@ -47,7 +47,6 @@ const HotelBookingScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (trip) {
-      console.log('🗺️ Trip Destination:', trip.destination);
       fetchHotels();
     }
   }, [trip]);
@@ -88,8 +87,6 @@ const HotelBookingScreen = ({ navigation }) => {
     const checkInDateObj = new Date(checkIn);
     const checkOutDateObj = new Date(checkOut);
 
-    console.log('📅 Dates:', { checkInDate: checkIn, checkOutDate: checkOut, today: today.toISOString().split('T')[0] });
-
     if (checkInDateObj < today) {
       Toast.show({ type: 'error', text1: 'Check-in date must be in the future' });
       return;
@@ -117,14 +114,10 @@ const HotelBookingScreen = ({ navigation }) => {
         adults: 2, // Reduced to 2 adults for testing
         roomQuantity: 1, // Reduced to 1 room for testing
       };
-      console.log('🔍 Hotel Search Parameters:', hotelSearchParams);
 
       const hotelsResult = await searchHotels(hotelSearchParams);
 
       let filteredHotels = hotelsResult || [];
-
-      // Log the raw hotels result before filtering
-      console.log('🏨 Raw Hotels Result:', filteredHotels);
 
       // If no hotels are found, fall back to Booking.com
       if (filteredHotels.length === 0) {
@@ -135,7 +128,6 @@ const HotelBookingScreen = ({ navigation }) => {
         });
         const url = createBookingComLink(trip.destination, checkIn, checkOut);
         await Linking.openURL(url).catch(err => {
-          console.error('❌ Failed to open URL:', err);
           Toast.show({ type: 'error', text1: 'Failed to open booking link' });
         });
         // Keep loading true during redirect to avoid UI flicker
@@ -145,7 +137,6 @@ const HotelBookingScreen = ({ navigation }) => {
       // Filter by user's accommodation preferences
       let appliedPreferences = false;
       if (trip.accommodation?.length) {
-        console.log('🛠️ Filtering with preferences:', trip.accommodation);
         appliedPreferences = true;
         const typeKeywords = trip.accommodation.map(type => type.toLowerCase());
         filteredHotels = filteredHotels.filter(hotel => {
@@ -176,8 +167,6 @@ const HotelBookingScreen = ({ navigation }) => {
         });
       }
 
-      console.log('🏨 Filtered Hotels:', filteredHotels);
-
       // If filtering removed all hotels, use the unfiltered list
       if (filteredHotels.length === 0 && appliedPreferences) {
         filteredHotels = hotelsResult || [];
@@ -191,7 +180,6 @@ const HotelBookingScreen = ({ navigation }) => {
           text2: 'Try adjusting your dates or preferences',
         });
       } else {
-        console.log('✅ Hotels to display:', filteredHotels.length);
       }
 
       setHotels(filteredHotels);

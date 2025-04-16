@@ -47,8 +47,6 @@ export const saveTrip = async (userId, tripId, tripData) => {
             .collection('trips')
             .doc(tripId)
             .set(tripData, { merge: true });
-
-        console.log('Trip gespeichert:', tripId);
     } catch (error) {
         console.error('Fehler beim Speichern des Trips:', error);
     }
@@ -84,8 +82,6 @@ export const deleteTrip = async (userId, tripId) => {
             .collection('trips')
             .doc(tripId)
             .delete();
-
-        console.log('Trip gelöscht:', tripId);
     } catch (error) {
         console.error('Fehler beim Löschen des Trips:', error);
     }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, TextInput, TouchableOpacity, Keyboard, Text } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, TextInput, TouchableOpacity, Keyboard, Text, Animated } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -21,6 +21,7 @@ const ChatbotScreen = ({ navigation }) => {
   const isGeneratingRef = useRef(false);
   const scrollViewRef = useRef();
   const inputRef = useRef(null);
+  const ringAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!user?.uid || !tripId) return;
@@ -38,12 +39,30 @@ const ChatbotScreen = ({ navigation }) => {
     return () => unsubscribe();
   }, [user?.uid, tripId]);
 
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(ringAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(ringAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [ringAnim]);
+
   const handleQuestionSubmit = async () => {
     if (!userQuery.trim()) return;
     Keyboard.dismiss();
+    const userMessage = { id: Date.now(), text: userQuery, sender: 'user' };
+    setMessages(prev => [...prev, userMessage]);
     scrollViewRef.current.scrollToEnd({ animated: true });
     setUserQuery('');
-    setMessages(prev => [...prev, { id: Date.now(), text: userQuery, sender: 'user' }]);
     setIsGenerating(true);
     isGeneratingRef.current = true;
 
@@ -93,7 +112,7 @@ const ChatbotScreen = ({ navigation }) => {
     return (
       <View style={[styles.messageWrapper, isUser ? styles.userMessageWrapper : styles.botMessageWrapper]}>
         <View style={styles.avatarContainer}>
-          {isUser ? <SVG.Person width={23} height={23} /> : <SVG.Robot width={35} height={35} />}
+          {isUser ? <SVG.Eagle width={25} height={25} /> : <SVG.Robot width={35} height={35} />}
         </View>
         <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
@@ -116,10 +135,24 @@ const ChatbotScreen = ({ navigation }) => {
             <SVG.BackIcon fill={COLOR.dark} />
           </TouchableOpacity>
         }
-        title="Chatbot"
+        title="Travel AI"
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
       <View style={styles.contentContainer}>
+        {messages.length === 0 && (
+          <View style={styles.ringContainer}>
+            <SVG.Eagle width={40} height={40} style={styles.eagle} />
+            <Animated.View style={[styles.ring, {
+              opacity: ringAnim,
+              transform: [{
+                scale: ringAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.5, 1.5],
+                }),
+              }],
+            }]} />
+          </View>
+        )}
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={styles.messagesContainer}
@@ -128,7 +161,7 @@ const ChatbotScreen = ({ navigation }) => {
         >
           {messages.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Start chatting about your trip!</Text>
+              <Text style={styles.emptyText}>Ask Travel AI about your trip!</Text>
             </View>
           ) : (
             messages.map((item, index) => <MessageBubble key={item.id ?? index} item={item} />)
@@ -141,7 +174,7 @@ const ChatbotScreen = ({ navigation }) => {
             placeholderTextColor={COLOR.lightGray}
             value={userQuery}
             onChangeText={setUserQuery}
-            placeholder="Ask about your trip..."
+            placeholder="Ask Travel AI..."
             onSubmitEditing={handleQuestionSubmit}
           />
           <TouchableOpacity
@@ -165,16 +198,38 @@ export default ChatbotScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundImage: 'linear-gradient(to bottom, #F5F5F5, #E0E0E0)',
   },
   contentContainer: {
     flex: 1,
     paddingHorizontal: wp(5),
     paddingTop: hp(2),
   },
+  ringContainer: {
+    position: 'absolute',
+    top: hp(8),
+    left: wp(42),
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  ring: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 4,
+    borderColor: '#00A3FF',
+  },
+  eagle: {
+    zIndex: 2,
+  },
   messagesContainer: {
     flexGrow: 1,
     paddingBottom: hp(2),
+    paddingTop: 0, // Changed from hp(15) to 0 to align at top
   },
   messageWrapper: {
     flexDirection: 'row',
@@ -197,12 +252,17 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   userBubble: {
-    backgroundColor: COLOR.lightBlue,
+    backgroundColor: 'transparent',
     borderTopRightRadius: 0,
   },
   botBubble: {
-    backgroundColor: COLOR.white2,
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   messageText: {
     color: COLOR.black,
@@ -211,8 +271,15 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: hp(3),
-    backgroundColor: COLOR.white,
+    paddingVertical: hp(1),
+    borderTopColor: '#E0E0E0',
+    borderRadius: 25,
+    marginBottom: hp(2),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   textInput: {
     flex: 1,
@@ -221,14 +288,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(4),
     paddingVertical: hp(1.5),
     fontSize: 16,
-    borderWidth: 0.5,
-    borderColor: '#333333',
+    borderWidth: 0.2,
+    borderColor: '#D3D3D3',
   },
   sendButton: {
     marginLeft: wp(2),
-    backgroundColor: COLOR.black,
-    borderRadius: 50,
+    backgroundColor: '#00A3FF',
+    borderRadius: "50%",
     padding: wp(2.5),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   emptyContainer: {
     flex: 1,

@@ -83,9 +83,8 @@ const TripDetailsScreen = ({ navigation }) => {
       .onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
-          console.log('Trip data loaded:', data);
           setTrip(data);
-        } else console.log('No trip data found for tripId:', tripId);
+        }
       }, (error) => console.error('❌ Fehler beim Live-Update des Trips:', error));
     return () => unsubscribe();
   }, [user?.uid, tripId]);
@@ -183,7 +182,6 @@ const TripDetailsScreen = ({ navigation }) => {
         setWeather({ condition: day.condition.text, icon: day.condition.icon, temp: day.avgtemp_c });
       } else if (data?.current) {
         setWeather({ condition: data.current.condition.text, icon: data.current.condition.icon, temp: data.current.temp_c });
-        console.log('ℹ️ Keine Prognose möglich, aktuelles Wetter verwendet');
       }
     } catch (err) {
       console.error('❌ Fehler beim Wetterabruf (Proxy):', err);
@@ -289,11 +287,8 @@ const TripDetailsScreen = ({ navigation }) => {
   };
 
   const handleOptionsPress = useCallback(() => {
-    console.log('Options button pressed');
     if (bottomSheetRef.current) {
-      console.log('Attempting to open RBSheet');
       bottomSheetRef.current.open();
-      console.log('RBSheet open called');
     } else console.error('RBSheet ref is not initialized');
   }, []);
 
@@ -381,7 +376,7 @@ const TripDetailsScreen = ({ navigation }) => {
 
       <TouchableOpacity style={styles.fab} onPress={handleOptionsPress} activeOpacity={0.7}>
         <Animated.View style={{ transform: [{ scale: new Animated.Value(1) }] }}>
-          <SVG.Eagle />
+          <SVG.Eagle width={25} height={25} />
         </Animated.View>
       </TouchableOpacity>
 

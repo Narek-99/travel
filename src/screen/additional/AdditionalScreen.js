@@ -153,7 +153,6 @@ const AdditionalScreen = ({ navigation }) => {
         .doc(tripId)
         .update({ aiPlan });
 
-      console.log("✅ AI plan generated and saved");
     } catch (error) {
       console.error("❌ Fehler beim Generieren des AI-Plans:", error);
     }

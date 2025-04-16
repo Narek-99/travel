@@ -47,11 +47,9 @@ const RootNavigation = () => {
         await firestore().collection(FIREBASE_COLLECTIONS.USERS).doc(newUserId).set(data);
         const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, newUserId);
         dispatch(setUser({ ...(user != null ? user : {}), ...userData, subscription: isSubscribed, }));
-        console.log("New User ID generated and saved.");
       } else {
         const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, existingUserId);
         dispatch(setUser({ ...(user != null ? user : {}), ...userData, subscription: isSubscribed, }));
-        console.log("User ID already exists, not replacing it.");
       }
     } catch (error) {
       console.error("Error saving User ID:", error);

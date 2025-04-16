@@ -169,9 +169,13 @@ const DestinationScreen = ({ navigation }) => {
 
           <View style={styles.headlineContainer}>
             <Pressable onPress={() => {
-              navigation.navigate(SCREEN.TRIPS);
               resetTrip();
               setIsValidDestination(false);
+              if (tripId) {
+                navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
+              } else {
+                navigation.navigate(SCREEN.TRIPS);
+              }
             }}>
               <SVG.BackIcon fill="black" />
             </Pressable>
