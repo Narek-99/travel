@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Share, Pressable, Image, Text, Linking, TextInput, TouchableOpacity, Keyboard, Animated, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { SafeAreaView, StyleSheet, View, ScrollView, Share, Image, Text, Linking, TextInput, TouchableOpacity, Keyboard, Animated, ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -13,11 +13,10 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import Toast from 'react-native-toast-message';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { useRef } from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
+import RBSheet from 'react-native-raw-bottom-sheet';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -41,7 +40,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const scrollViewRef = useRef();
   const inputRef = useRef(null);
   const [trip, setTrip] = useState(null);
-  const [previousTrip, setPreviousTrip] = useState(null); // Store previous trip data for comparison
+  const [previousTrip, setPreviousTrip] = useState(null);
   const [attractions, setAttractions] = useState([]);
   const [userQuery, setUserQuery] = useState('');
   const [messages, setMessages] = useState([]);
@@ -56,7 +55,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const attractionsFadeAnim = useFadeIn();
   const [loadedImages, setLoadedImages] = useState({});
   const [tripImageUrl, setTripImageUrl] = useState(null);
-  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const bottomSheetRef = useRef(null);
 
   useEffect(() => {
     const fetchTripImage = async () => {
@@ -76,6 +75,7 @@ const TripDetailsScreen = ({ navigation }) => {
   }, [trip?.destination]);
 
   const handleAskAIPress = () => {
+    bottomSheetRef.current?.close();
     scrollViewRef.current.scrollToEnd({ animated: true });
 
     setTimeout(() => {
@@ -158,7 +158,10 @@ const TripDetailsScreen = ({ navigation }) => {
       .onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
+          console.log('Trip data loaded:', data);
           setTrip(data);
+        } else {
+          console.log('No trip data found for tripId:', tripId);
         }
       }, (error) => {
         console.error('❌ Fehler beim Live-Update des Trips:', error);
@@ -167,14 +170,12 @@ const TripDetailsScreen = ({ navigation }) => {
     return () => unsubscribe();
   }, [user?.uid, tripId]);
 
-  // Detect changes in critical fields and regenerate aiPlan if necessary
   useEffect(() => {
     if (!trip || !previousTrip) {
       setPreviousTrip(trip);
       return;
     }
 
-    // Compare critical fields (e.g., destination, dates)
     const criticalFieldsChanged =
       trip.destination !== previousTrip.destination ||
       getDateString(trip.startDate) !== getDateString(previousTrip.startDate) ||
@@ -184,7 +185,7 @@ const TripDetailsScreen = ({ navigation }) => {
       regenerateAiPlan();
     }
 
-    setPreviousTrip(trip); // Update previousTrip for the next comparison
+    setPreviousTrip(trip);
   }, [trip]);
 
   useEffect(() => {
@@ -251,7 +252,7 @@ const TripDetailsScreen = ({ navigation }) => {
         `https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}`
       );
       const data = await response.json();
-      setAttractions(data.results.slice(0, 10)); // Top 10
+      setAttractions(data.results.slice(0, 10));
     } catch (err) {
       console.error('❌ Fehler beim Laden der Sehenswürdigkeiten:', err);
     } finally {
@@ -349,7 +350,6 @@ const TripDetailsScreen = ({ navigation }) => {
 
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
 
-    // Update Firestore to indicate that the plan is being regenerated
     await firestore()
       .collection('users')
       .doc(user.uid)
@@ -477,64 +477,63 @@ const TripDetailsScreen = ({ navigation }) => {
     );
   });
 
+  const handleEditPress = useCallback(() => {
+    console.log('Edit button pressed');
+    if (bottomSheetRef.current) {
+      console.log('Attempting to open RBSheet');
+      bottomSheetRef.current.open();
+      console.log('RBSheet open called');
+    } else {
+      console.error('RBSheet ref is not initialized');
+    }
+  }, []);
+
+  const handleMenuPress = useCallback(() => {
+    ReactNativeHapticFeedback.trigger('impactLight');
+    if (bottomSheetRef.current) {
+      console.log('Menu button pressed, opening RBSheet');
+      bottomSheetRef.current.open();
+      console.log('RBSheet open called from menu');
+    } else {
+      console.error('RBSheet ref is not initialized');
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
       <AppHeader
         leftComp={
-          <Pressable onPress={() => {
+          <TouchableOpacity onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
             navigation.navigate(SCREEN.TRIPS);
           }}>
             <SVG.BackIcon fill={COLOR.dark} />
-          </Pressable>
+          </TouchableOpacity>
         }
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
-        rightComp={
-          <View style={styles.rightContainer}>
-            <Pressable
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight');
-                handleAskAIPress();
-              }}
-              style={styles.askAiContainer}
-            >
-              <SVG.AiStar fill="#90009C" />
-              <Text style={{ marginLeft: wp(1), color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
-                Ask AI
-              </Text>
-            </Pressable>
-
-            <TouchableOpacity
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight');
-                navigation.navigate(SCREEN.BOOKING, { tripId });
-              }}
-              style={styles.askAiContainer}
-            >
-              <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
-                ✈️ Flights
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight');
-                handleOpenHotelAffiliateLink();
-              }}
-              style={styles.askAiContainer}
-            >
-              <Text style={{ color: '#0084FF', fontSize: 12, fontWeight: '600' }}>
-                🏨 Hotels
-              </Text>
-            </TouchableOpacity>
-          </View>
-        }
+      // rightComp={
+      //   <TouchableOpacity
+      //     onPress={handleMenuPress}
+      //     style={styles.menuButton}
+      //   >
+      //     <SVG.Ai fill={COLOR.dark} width={24} height={24} />
+      //   </TouchableOpacity>
+      // }
       />
 
-      <KeyboardAwareScrollView
-        innerRef={ref => (scrollViewRef.current = ref)}
-        extraScrollHeight={hp(3)}
+      {!loadingWeather && trip && (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={handleEditPress}
+          activeOpacity={0.7}
+        >
+          <SVG.Edit fill="#fff" width={18} height={18} />
+        </TouchableOpacity>
+      )}
+
+      <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={{ paddingTop: hp(1) }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -547,28 +546,25 @@ const TripDetailsScreen = ({ navigation }) => {
               <View style={{ width: 160, height: 18 }} />
             </View>
           </SkeletonPlaceholder>
-        ) : (
+        ) : trip ? (
           <View style={styles.infoCardWithImage}>
             <FastImage
               source={{ uri: tripImageUrl }}
               style={StyleSheet.absoluteFillObject}
               resizeMode="cover"
             />
-
             <LinearGradient
               colors={['rgba(0, 0, 0, 1)', 'transparent']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFillObject}
             />
-
-            <Animated.View style={[styles.infoContent, { opacity: infoFadeAnim }]}>
-              <View style={styles.infoTextContainer}>
+            <View style={styles.infoContent}>
+              <Animated.View style={[styles.infoTextContainer, { opacity: infoFadeAnim }]}>
                 <Label style={styles.infoDestination}>{trip.destination}</Label>
                 <Label style={styles.infoDate}>
                   {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
                 </Label>
-
                 {weather && (
                   <View style={styles.infoRow}>
                     <Label style={styles.weatherIcon}>🌤</Label>
@@ -583,15 +579,11 @@ const TripDetailsScreen = ({ navigation }) => {
                     {trip.companion} · {trip.numberOfPersons || '1'} person
                   </Label>
                 </View>
-              </View>
-              <Pressable
-                style={styles.editButton}
-                onPress={() => setShowOptionsModal(true)}
-              >
-                <SVG.Edit fill="#fff" width={18} height={18} />
-              </Pressable>
-            </Animated.View>
+              </Animated.View>
+            </View>
           </View>
+        ) : (
+          <Text style={styles.loadingText}>Loading trip details...</Text>
         )}
         {loadingMap ? (
           <SkeletonPlaceholder borderRadius={10}>
@@ -691,7 +683,7 @@ const TripDetailsScreen = ({ navigation }) => {
               contentContainerStyle={styles.attractionsContainer}
             >
               {attractions.map((place, index) => (
-                <Pressable
+                <TouchableOpacity
                   key={index}
                   onPress={() => {
                     const loc = place.geometry.location;
@@ -754,7 +746,7 @@ const TripDetailsScreen = ({ navigation }) => {
                     <Text style={styles.attractionRating}>
                       ⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews
                     </Text>
-                    <Pressable
+                    <TouchableOpacity
                       onLongPress={() => {
                         Clipboard.setString(place.vicinity);
                         ReactNativeHapticFeedback.trigger('impactLight');
@@ -764,7 +756,7 @@ const TripDetailsScreen = ({ navigation }) => {
                       <Text style={styles.attractionAddress}>
                         📍 {place.vicinity}
                       </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                     {place.opening_hours?.open_now !== undefined && (
                       <Text style={[
                         styles.attractionStatus,
@@ -783,7 +775,7 @@ const TripDetailsScreen = ({ navigation }) => {
                       🔗 See on Google Maps
                     </Text>
                   </View>
-                </Pressable>
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </Animated.View>
@@ -813,58 +805,98 @@ const TripDetailsScreen = ({ navigation }) => {
               (<SVG.Send fill='#fff' width={15} height={15} />)}
           </TouchableOpacity>
         </View>
-      </KeyboardAwareScrollView>
-      {showOptionsModal && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                navigation.navigate(SCREEN.DAYBYDAY, { tripId });
-                setShowOptionsModal(false);
-              }}
-            >
-              <Text style={styles.modalButtonText}>📅 View Day-by-Day Plan</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setShowOptionsModal(false);
-                navigation.navigate(SCREEN.DESTINATION, { tripId });
-              }}
-            >
-              <Text style={styles.modalButtonText}>✏️ Edit Trip</Text>
-            </TouchableOpacity>
+      </ScrollView>
 
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setShowOptionsModal(false);
-                shareTrip();
-              }}
-            >
-              <Text style={styles.modalButtonText}>🔗 Share Trip</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setShowOptionsModal(false);
-                regenerateAiPlan();
-              }}
-            >
-              <Text style={styles.modalButtonText}>♻️ Regenerate Plan</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalCancelButton}
-              onPress={() => setShowOptionsModal(false)}
-            >
-              <Text style={styles.modalCancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+      <RBSheet
+        ref={bottomSheetRef}
+        useNativeDriver={false}
+        draggable
+        height={hp(50)}
+        customStyles={{
+          wrapper: { backgroundColor: 'transparent' },
+          draggableIcon: { backgroundColor: COLOR.lightGray },
+          container: {
+            backgroundColor: COLOR.white,
+            shadowColor: COLOR.black,
+            shadowOffset: { width: 2, height: 12 },
+            shadowOpacity: 0.58,
+            shadowRadius: 16,
+            elevation: 24,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+          }
+        }}
+        customModalProps={{ animationType: 'slide', statusBarTranslucent: true }}
+        customAvoidingViewProps={{ enabled: false }}
+      >
+        <View style={styles.sheetContent}>
+          <Text style={styles.sheetTitle}>Trip Options</Text>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={() => {
+              bottomSheetRef.current?.close();
+              navigation.navigate(SCREEN.DAYBYDAY, { tripId });
+            }}
+          >
+            <Text style={styles.sheetButtonText}>📅  Day-by-Day Plan</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={() => {
+              bottomSheetRef.current?.close();
+              handleOpenHotelAffiliateLink();
+            }}
+          >
+            <Text style={styles.sheetButtonText}>🏨  Hotels</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={() => {
+              bottomSheetRef.current?.close();
+              navigation.navigate(SCREEN.BOOKING, { tripId });
+            }}
+          >
+            <Text style={styles.sheetButtonText}>✈️  Flights</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={handleAskAIPress}
+          >
+            <SVG.AiStar fill="#90009C" width={20} height={20} />
+            <Text style={styles.sheetButtonText}>Chatbot</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={() => {
+              bottomSheetRef.current?.close();
+              navigation.navigate(SCREEN.DESTINATION, { tripId });
+            }}
+          >
+            <SVG.Edit fill={COLOR.dark} width={20} height={20} />
+            <Text style={styles.sheetButtonText}>Edit Trip</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={() => {
+              bottomSheetRef.current?.close();
+              shareTrip();
+            }}
+          >
+            <Text style={styles.sheetIcon}>🔗</Text>
+            <Text style={styles.sheetButtonText}>Share Trip</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetButton}
+            onPress={() => {
+              bottomSheetRef.current?.close();
+              regenerateAiPlan();
+            }}
+          >
+            <Text style={styles.sheetIcon}>♻️</Text>
+            <Text style={styles.sheetButtonText}>Regenerate Plan</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </RBSheet>
     </View>
   );
 };
@@ -887,11 +919,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  rightContainer: {
-    flexDirection: "row",
-    marginLeft: wp(2),
-    gap: wp(3),
-    alignItems: "center"
+  menuButton: {
+    padding: wp(2),
   },
   infoCard: {
     backgroundColor: COLOR.white,
@@ -994,46 +1023,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 10
   },
-  chatResponse: {
-    fontSize: 16,
-    color: COLOR.dark,
-  },
   questionContainer: {
     flexDirection: "row",
     gap: wp(1),
     padding: wp(5),
     alignItems: 'center',
-  },
-  askAiContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    backgroundColor: COLOR.white,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#0084FF',
-  },
-  askAiText: {
-    color: COLOR.white,
-    fontSize: 16,
-    fontWeight: "bold"
-  },
-  messageContainer: {
-    padding: 15,
-    backgroundColor: COLOR.lightBlue,
-    borderRadius: 20,
-    marginHorizontal: wp(5),
-    marginTop: hp(2)
-  },
-  messageText: {
-    color: 'black',
-    fontSize: 16,
-  },
-  messagesList: {
-    flex: 1,
-    marginBottom: hp(2)
   },
   messageWrapper: {
     flexDirection: 'row',
@@ -1064,6 +1058,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white2,
     borderTopLeftRadius: 0,
   },
+  messageText: {
+    color: 'black',
+    fontSize: 16,
+  },
   attractionLink: {
     color: '#0000EE'
   },
@@ -1073,62 +1071,49 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(3),
     marginBottom: 20,
     overflow: 'hidden',
-    backgroundColor: COLOR.white
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 999,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    width: '80%',
-    alignItems: 'center',
-  },
-  modalButton: {
-    paddingVertical: 12,
-    width: '100%',
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  modalCancelButton: {
-    marginTop: 10,
-    paddingVertical: 12,
-    width: '100%',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    backgroundColor: COLOR.white,
   },
   editButton: {
     backgroundColor: 'rgba(0,0,0,0.7)',
     padding: 10,
     borderRadius: 30,
+    position: 'absolute',
+    top: hp(10),
+    right: wp(3),
+    zIndex: 10,
   },
   infoContent: {
     flex: 1,
     padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
   },
   infoTextContainer: {
     flex: 1,
   },
-
+  sheetContent: {
+    flex: 1,
+    padding: wp(5),
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLOR.dark,
+    marginBottom: hp(2),
+    textAlign: 'center',
+  },
+  sheetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: hp(1.5),
+    gap: wp(3),
+    borderBottomWidth: 1,
+    borderBottomColor: COLOR.lightGray,
+  },
+  // sheetIcon: {
+  //   fontSize: 20,
+  //   marginRight: wp(3),
+  // },
+  sheetButtonText: {
+    fontSize: 16,
+    color: COLOR.dark,
+  },
 });

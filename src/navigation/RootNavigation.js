@@ -14,6 +14,7 @@ import { setUser } from '../redux/action/Action';
 import { COLOR } from '../enums/StyleGuide';
 import { useSubscriptions } from '../contexts/subscriptionContext';
 
+
 const RootNavigation = () => {
   const Stack = createNativeStackNavigator();
   const dispatch = useDispatch();
@@ -70,31 +71,28 @@ const RootNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {
-          user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 ?
-            <>
-              <Stack.Screen name={SCREEN.TRIPS} component={TripsScreen} />
-              <Stack.Screen name={SCREEN.TRIPDETAILS} component={TripDetailsScreen} />
-              <Stack.Screen name={SCREEN.DESTINATION} component={DestinationScreen} />
-              <Stack.Screen name={SCREEN.DATES} component={DatesScreen} />
-              <Stack.Screen name={SCREEN.COMPANION} component={CompanionScreen} />
-              <Stack.Screen name={SCREEN.BUDGET} component={BudgetScreen} />
-              <Stack.Screen name={SCREEN.ACTIVITIES} component={ActivitiesScreen} />
-              <Stack.Screen name={SCREEN.WISHES} component={WishesScreen} />
-              <Stack.Screen name={SCREEN.PREFERENCES} component={PreferencesScreen} />
-              <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
-              <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
-              <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
-              <Stack.Screen name={SCREEN.SUBSCRIPTION} component={SubscriptionScreen} />
-              <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
-              <Stack.Screen name={SCREEN.HOTELBOOKING} component={HotelBookingScreen} />
-              <Stack.Screen name={SCREEN.DAYBYDAY} component={DayByDayPlanScreen} />
-            </>
-            :
-            <>
-              <Stack.Screen name={SCREEN.ONBOARDING1} component={Onboarding1Screen} />
-            </>
-        }
+        {user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 ? (
+          <>
+            <Stack.Screen name={SCREEN.TRIPS} component={TripsScreen} />
+            <Stack.Screen name={SCREEN.TRIPDETAILS} component={TripDetailsScreen} />
+            <Stack.Screen name={SCREEN.DESTINATION} component={DestinationScreen} />
+            <Stack.Screen name={SCREEN.DATES} component={DatesScreen} />
+            <Stack.Screen name={SCREEN.COMPANION} component={CompanionScreen} />
+            <Stack.Screen name={SCREEN.BUDGET} component={BudgetScreen} />
+            <Stack.Screen name={SCREEN.ACTIVITIES} component={ActivitiesScreen} />
+            <Stack.Screen name={SCREEN.WISHES} component={WishesScreen} />
+            <Stack.Screen name={SCREEN.PREFERENCES} component={PreferencesScreen} />
+            <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
+            <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
+            <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
+            <Stack.Screen name={SCREEN.SUBSCRIPTION} component={SubscriptionScreen} />
+            <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
+            <Stack.Screen name={SCREEN.HOTELBOOKING} component={HotelBookingScreen} />
+            <Stack.Screen name={SCREEN.DAYBYDAY} component={DayByDayPlanScreen} />
+          </>
+        ) : (
+          <Stack.Screen name={SCREEN.ONBOARDING1} component={Onboarding1Screen} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
