@@ -6,7 +6,6 @@ import firestore from '@react-native-firebase/firestore';
 import Markdown from 'react-native-markdown-display';
 import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
-import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -17,14 +16,14 @@ import Toast from 'react-native-toast-message';
 
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
-  const { tripId } = route.params; // Get the tripId passed from TripDetailsScreen
+  const { tripId } = route.params;
   const user = useSelector(({ appReducer }) => appReducer.user);
 
-  // State and refs for handling the "Show More/Show Less" functionality
+
   const [showFullPlan, setShowFullPlan] = useState(false);
   const planHeight = useRef(new Animated.Value(0)).current;
   const [contentHeight, setContentHeight] = useState(0);
-  const maxCollapsedHeight = 500; // Same as TripDetailsScreen
+  const maxCollapsedHeight = 500;
   const scrollViewRef = useRef();
 
   const [aiPlan, setAiPlan] = useState(null);
@@ -43,7 +42,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
           if (doc.exists) {
             const data = doc.data();
             setAiPlan(data.aiPlan);
-            setLoadingTripPlan(!data.aiPlan); // Set loading to false once aiPlan is available
+            setLoadingTripPlan(data.aiPlan === null || !data.aiPlan);
           }
         },
         (error) => {

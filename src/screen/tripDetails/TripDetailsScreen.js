@@ -41,6 +41,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const scrollViewRef = useRef();
   const inputRef = useRef(null);
   const [trip, setTrip] = useState(null);
+  const [previousTrip, setPreviousTrip] = useState(null); // Store previous trip data for comparison
   const [attractions, setAttractions] = useState([]);
   const [userQuery, setUserQuery] = useState('');
   const [messages, setMessages] = useState([]);
@@ -165,6 +166,26 @@ const TripDetailsScreen = ({ navigation }) => {
 
     return () => unsubscribe();
   }, [user?.uid, tripId]);
+
+  // Detect changes in critical fields and regenerate aiPlan if necessary
+  useEffect(() => {
+    if (!trip || !previousTrip) {
+      setPreviousTrip(trip);
+      return;
+    }
+
+    // Compare critical fields (e.g., destination, dates)
+    const criticalFieldsChanged =
+      trip.destination !== previousTrip.destination ||
+      getDateString(trip.startDate) !== getDateString(previousTrip.startDate) ||
+      getDateString(trip.endDate) !== getDateString(previousTrip.endDate);
+
+    if (criticalFieldsChanged) {
+      regenerateAiPlan();
+    }
+
+    setPreviousTrip(trip); // Update previousTrip for the next comparison
+  }, [trip]);
 
   useEffect(() => {
     const fetchApiKeyAndGeocode = async () => {
@@ -327,7 +348,14 @@ const TripDetailsScreen = ({ navigation }) => {
     const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
 
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
-    setTrip(prev => ({ ...prev, aiPlan: '🧠 Creating your perfect travel plan based on your preferences...  This may take a moment ⏳' }));
+
+    // Update Firestore to indicate that the plan is being regenerated
+    await firestore()
+      .collection('users')
+      .doc(user.uid)
+      .collection('trips')
+      .doc(tripId)
+      .update({ aiPlan: null });
 
     const tripPrompt = `
     Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
