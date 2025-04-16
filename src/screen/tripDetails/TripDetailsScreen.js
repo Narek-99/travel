@@ -3,7 +3,6 @@ import { SafeAreaView, StyleSheet, View, ScrollView, Share, Pressable, Image, Te
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
-import Markdown from 'react-native-markdown-display';
 import { Label, AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
@@ -17,7 +16,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useRef } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import * as Animatable from 'react-native-animatable';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -52,15 +50,10 @@ const TripDetailsScreen = ({ navigation }) => {
   const [loadingAttractions, setLoadingAttractions] = useState(true);
   const [loadingMap, setLoadingMap] = useState(true);
   const [loadingWeather, setLoadingWeather] = useState(true);
-  const [loadingTripPlan, setLoadingTripPlan] = useState(true);
   const infoFadeAnim = useFadeIn();
   const mapFadeAnim = useFadeIn();
   const attractionsFadeAnim = useFadeIn();
   const [loadedImages, setLoadedImages] = useState({});
-  const [showFullPlan, setShowFullPlan] = useState(false);
-  const planHeight = useRef(new Animated.Value(0)).current;
-  const [contentHeight, setContentHeight] = useState(0);
-  const maxCollapsedHeight = 500; // px – anpassbar
   const [tripImageUrl, setTripImageUrl] = useState(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
 
@@ -89,18 +82,6 @@ const TripDetailsScreen = ({ navigation }) => {
         inputRef.current.focus();
       }
     }, 500);
-  };
-
-  const togglePlanHeight = () => {
-    const finalHeight = showFullPlan ? maxCollapsedHeight : contentHeight;
-
-    Animated.timing(planHeight, {
-      toValue: finalHeight,
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => {
-      setShowFullPlan(!showFullPlan);
-    });
   };
 
   const handleQuestionSubmit = async () => {
@@ -177,7 +158,6 @@ const TripDetailsScreen = ({ navigation }) => {
         if (doc.exists) {
           const data = doc.data();
           setTrip(data);
-          setLoadingTripPlan(!data.aiPlan);
         }
       }, (error) => {
         console.error('❌ Fehler beim Live-Update des Trips:', error);
@@ -227,7 +207,6 @@ const TripDetailsScreen = ({ navigation }) => {
         const data = snapshot.data();
         if (data) {
           setTrip(data);
-          setLoadingTripPlan(!data.aiPlan);
         }
       } catch (error) {
         console.error('❌ Fehler beim Laden des Trips:', error);
@@ -971,18 +950,6 @@ const styles = StyleSheet.create({
     gap: hp(1),
     paddingTop: hp(1)
   },
-  mapFull: {
-    height: hp(50),
-    width: '100%',
-    borderRadius: 10
-  },
-  tripPlanTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0084FF',
-    paddingHorizontal: wp(5),
-    marginTop: hp(2),
-  },
   textInput: {
     flex: 1,
     color: COLOR.black,
@@ -999,16 +966,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 10
   },
-  sendButtonText: {
-    color: COLOR.white,
-    fontSize: 16,
-  },
-  chatContainer: {
-    backgroundColor: COLOR.white2,
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 10,
-  },
   chatResponse: {
     fontSize: 16,
     color: COLOR.dark,
@@ -1017,7 +974,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: wp(1),
     padding: wp(5),
-    // marginBottom: hp(2),
     alignItems: 'center',
   },
   askAiContainer: {
@@ -1031,7 +987,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#0084FF',
   },
-
   askAiText: {
     color: COLOR.white,
     fontSize: 16,
@@ -1149,20 +1104,3 @@ const styles = StyleSheet.create({
   },
 
 });
-
-const markdownStyles = {
-  body: {
-    color: COLOR.dark,
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  heading1: {
-    fontSize: 22,
-    color: COLOR.lightBlue,
-    marginBottom: 8,
-  },
-  strong: {
-    color: COLOR.dark,
-  },
-
-};
