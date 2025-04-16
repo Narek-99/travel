@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Share, Image, Text, Linking, TextInput, TouchableOpacity, Keyboard, Animated, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, Share, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import { Label, AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
-import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import MapView, { Marker, Callout } from 'react-native-maps';
@@ -36,15 +35,9 @@ const TripDetailsScreen = ({ navigation }) => {
   const { tripId } = route.params;
   const [region, setRegion] = useState(null);
   const scrollViewRef = useRef();
-  const inputRef = useRef(null);
   const [trip, setTrip] = useState(null);
   const [previousTrip, setPreviousTrip] = useState(null);
   const [attractions, setAttractions] = useState([]);
-  const [userQuery, setUserQuery] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const timeoutRef = useRef(null);
-  const isGeneratingRef = useRef(false);
   const [loadingAttractions, setLoadingAttractions] = useState(true);
   const [loadingMap, setLoadingMap] = useState(true);
   const [loadingWeather, setLoadingWeather] = useState(true);
@@ -69,54 +62,9 @@ const TripDetailsScreen = ({ navigation }) => {
     if (trip?.destination) fetchTripImage();
   }, [trip?.destination]);
 
-  const handleAskAIPress = () => {
+  const handleChatbotPress = () => {
     bottomSheetRef.current?.close();
-    scrollViewRef.current.scrollToEnd({ animated: true });
-    setTimeout(() => inputRef.current?.focus(), 500);
-  };
-
-  const handleQuestionSubmit = async () => {
-    if (!userQuery.trim()) return;
-    Keyboard.dismiss();
-    scrollViewRef.current.scrollToEnd({ animated: true });
-    setUserQuery('');
-    setMessages(prev => [...prev, { id: Date.now(), text: userQuery, sender: 'user' }]);
-    setIsGenerating(true);
-    isGeneratingRef.current = true;
-
-    const botMessage = { id: Date.now() + 1, text: '', sender: 'bot' };
-    const enrichedPrompt = `
-      User's Question: "${userQuery}"
-      Context: The user is planning a trip to ${trip.destination}, from ${getDateString(trip.startDate)} to ${getDateString(trip.endDate)}. They will be traveling with ${trip.companion}, and they are interested in ${trip.activities?.join(', ') || 'various activities'}. The user might have preferences for ${trip.accommodation?.join(', ') || 'certain types of accommodation'} and has a budget described as ${trip.budget || 'medium'}.
-      Answer the question taking into account these details about their trip.
-    `;
-
-    try {
-      const response = await callChatGptForResponse(enrichedPrompt, "35");
-      let index = 0;
-      const addCharacter = () => {
-        if (index < response.length && isGeneratingRef.current) {
-          botMessage.text += response.charAt(index++);
-          setMessages(prev => [...prev.filter(m => m.id !== botMessage.id), { ...botMessage }]);
-          if (index % 10 === 0) scrollViewRef.current?.scrollToEnd({ animated: true });
-          timeoutRef.current = setTimeout(addCharacter, 10);
-        } else {
-          setIsGenerating(false);
-          isGeneratingRef.current = false;
-        }
-      };
-      addCharacter();
-    } catch (err) {
-      console.error(err);
-      setIsGenerating(false);
-      isGeneratingRef.current = false;
-      setMessages([{ id: Date.now(), text: "Failed to get response", sender: 'bot' }]);
-    }
-  };
-
-  const handleStopGeneration = () => {
-    clearTimeout(timeoutRef.current);
-    setIsGenerating(false);
+    navigation.navigate(SCREEN.CHATBOT, { tripId });
   };
 
   const copyToClipboard = () => {
@@ -340,20 +288,6 @@ const TripDetailsScreen = ({ navigation }) => {
     }
   };
 
-  const MessageBubble = React.memo(({ item }) => {
-    const isUser = item.sender === 'user';
-    return (
-      <View style={[styles.messageWrapper, isUser ? styles.userMessageWrapper : styles.botMessageWrapper]}>
-        <View style={styles.avatarContainer}>
-          {isUser ? <SVG.Person width={23} height={23} /> : <SVG.Robot width={35} height={35} />}
-        </View>
-        <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}>
-          <Text style={styles.messageText}>{item.text}</Text>
-        </View>
-      </View>
-    );
-  });
-
   const handleOptionsPress = useCallback(() => {
     console.log('Options button pressed');
     if (bottomSheetRef.current) {
@@ -379,7 +313,7 @@ const TripDetailsScreen = ({ navigation }) => {
 
       <ScrollView
         ref={scrollViewRef}
-        contentContainerStyle={{ paddingTop: hp(1), paddingBottom: hp(8) }} // Extra padding for FAB
+        contentContainerStyle={{ paddingTop: hp(1), paddingBottom: hp(8) }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -443,15 +377,6 @@ const TripDetailsScreen = ({ navigation }) => {
             </ScrollView>
           </Animated.View>
         )}
-
-        {messages.map((item, index) => <MessageBubble key={item.id ?? index} item={item} />)}
-
-        <View style={styles.questionContainer}>
-          <TextInput style={styles.textInput} ref={inputRef} placeholderTextColor={COLOR.lightGray} value={userQuery} onChangeText={setUserQuery} placeholder="Ask here..." onSubmitEditing={handleQuestionSubmit} />
-          <TouchableOpacity style={styles.sendButton} onPress={isGenerating ? handleStopGeneration : handleQuestionSubmit}>
-            {isGenerating ? <SVG.Stop fill='#fff' width={15} height={15} /> : <SVG.Send fill='#fff' width={15} height={15} />}
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
       <TouchableOpacity style={styles.fab} onPress={handleOptionsPress} activeOpacity={0.7}>
@@ -493,7 +418,7 @@ const TripDetailsScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.BOOKING, { tripId }); }}>
             <Text style={styles.sheetButtonText}>✈️  Flights</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={handleAskAIPress}>
+          <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
             <SVG.AiStar fill="#90009C" width={20} height={20} />
             <Text style={styles.sheetButtonText}>Chatbot</Text>
           </TouchableOpacity>
@@ -604,61 +529,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: hp(1),
     paddingTop: hp(1),
-  },
-  textInput: {
-    flex: 1,
-    color: COLOR.black,
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    fontSize: 16,
-    borderWidth: 0.5,
-    borderColor: '#333333',
-  },
-  sendButton: {
-    marginLeft: wp(1),
-    backgroundColor: 'black',
-    borderRadius: 50,
-    padding: 10,
-  },
-  questionContainer: {
-    flexDirection: 'row',
-    gap: wp(1),
-    padding: wp(5),
-    alignItems: 'center',
-  },
-  messageWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: wp(5),
-    marginTop: hp(2),
-  },
-  userMessageWrapper: {
-    justifyContent: 'flex-end',
-  },
-  botMessageWrapper: {
-    justifyContent: 'flex-start',
-  },
-  avatarContainer: {
-    marginRight: wp(3),
-    marginTop: hp(1),
-  },
-  messageBubble: {
-    maxWidth: '80%',
-    padding: 12,
-    borderRadius: 18,
-  },
-  userBubble: {
-    backgroundColor: COLOR.lightBlue,
-    borderTopRightRadius: 0,
-  },
-  botBubble: {
-    backgroundColor: COLOR.white2,
-    borderTopLeftRadius: 0,
-  },
-  messageText: {
-    color: 'black',
-    fontSize: 16,
   },
   attractionLink: {
     color: '#0000EE',

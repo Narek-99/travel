@@ -15,6 +15,7 @@ import Onboarding1Screen from "./onboarding1";
 import BookingScreen from "./booking";
 import HotelBookingScreen from "./hotelBooking";
 import DayByDayPlanScreen from "./dayByDayPlan";
+import ChatbotScreen from "./chatbot";
 
 export {
     DatesScreen,
@@ -33,5 +34,6 @@ export {
     HistoryScreen,
     BookingScreen,
     HotelBookingScreen,
-    DayByDayPlanScreen
+    DayByDayPlanScreen,
+    ChatbotScreen
 }
