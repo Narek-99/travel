@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView, StyleSheet, View, Pressable, Text, TouchableOpacity, Animated } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
 import Markdown from 'react-native-markdown-display';
 import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
@@ -15,7 +17,8 @@ import Toast from 'react-native-toast-message';
 
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
-  const { aiPlan } = route.params; // Get the aiPlan passed from TripDetailsScreen
+  const user = useSelector(({ appReducer }) => appReducer.user);
+  const { tripId } = route.params; // Get the tripId passed from TripDetailsScreen
 
   // State and refs for handling the "Show More/Show Less" functionality
   const [showFullPlan, setShowFullPlan] = useState(false);
@@ -24,15 +27,37 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const maxCollapsedHeight = 500; // Same as TripDetailsScreen
   const scrollViewRef = useRef();
 
-  // Simulate loading state (optional, depending on whether you want to fetch aiPlan dynamically)
-  const [loadingTripPlan, setLoadingTripPlan] = useState(false);
+  // State for the aiPlan and loading
+  const [aiPlan, setAiPlan] = useState(null);
+  const [loadingTripPlan, setLoadingTripPlan] = useState(true);
 
   useEffect(() => {
-    // If aiPlan is already passed, no need to show loading state
-    if (aiPlan) {
-      setLoadingTripPlan(false);
-    }
-  }, [aiPlan]);
+    if (!user?.uid || !tripId) return;
+
+    const unsubscribe = firestore()
+      .collection('users')
+      .doc(user.uid)
+      .collection('trips')
+      .doc(tripId)
+      .onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          setAiPlan(data.aiPlan || null);
+          // If aiPlan is being generated (contains "Creating"), keep loading state true
+          setLoadingTripPlan(
+            !data.aiPlan || data.aiPlan.includes('Creating your perfect travel plan')
+          );
+        } else {
+          setAiPlan(null);
+          setLoadingTripPlan(false);
+        }
+      }, (error) => {
+        console.error('❌ Error fetching trip data:', error);
+        setLoadingTripPlan(false);
+      });
+
+    return () => unsubscribe();
+  }, [user?.uid, tripId]);
 
   const togglePlanHeight = () => {
     const finalHeight = showFullPlan ? maxCollapsedHeight : contentHeight;
@@ -47,9 +72,11 @@ const DayByDayPlanScreen = ({ navigation }) => {
   };
 
   const copyToClipboard = () => {
-    Clipboard.setString(aiPlan);
-    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
-    Toast.show({ type: 'success', text1: 'Copied!', position: 'bottom' });
+    if (aiPlan) {
+      Clipboard.setString(aiPlan);
+      ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+      Toast.show({ type: 'success', text1: 'Copied!', position: 'bottom' });
+    }
   };
 
   return (
@@ -89,8 +116,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
               color: COLOR.mediumGray,
             }}
           >
-            🧠 Creating your perfect travel plan based on your preferences... This may take a moment – it's worth the
-            wait! ✨
+            🧠 Creating your perfect travel plan based on your preferences... This may take a moment – it's worth the wait! ✨
           </Text>
         )}
 
@@ -141,7 +167,18 @@ const DayByDayPlanScreen = ({ navigation }) => {
               </TouchableOpacity>
             )}
           </Animatable.View>
-        ) : null}
+        ) : (
+          <Text
+            style={{
+              fontSize: 16,
+              padding: wp(5),
+              textAlign: 'center',
+              color: COLOR.mediumGray,
+            }}
+          >
+            No plan available. Please generate a plan in the Trip Details screen.
+          </Text>
+        )}
       </KeyboardAwareScrollView>
     </View>
   );

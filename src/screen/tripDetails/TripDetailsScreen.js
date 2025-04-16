@@ -792,7 +792,7 @@ const TripDetailsScreen = ({ navigation }) => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
-                navigation.navigate(SCREEN.DAYBYDAY, { aiPlan: trip.aiPlan });
+                navigation.navigate(SCREEN.DAYBYDAY, { tripId });
                 setShowOptionsModal(false);
               }}
             >
