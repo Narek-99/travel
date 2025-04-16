@@ -24,6 +24,7 @@ import Robot from './robot.svg'
 import Search from './search.svg'
 import Minus from './minus.svg'
 import Plus2 from './plus2.svg'
+import Eagle from './eagle.svg'
 
 export const SVG = {
     BackIcon,
@@ -52,4 +53,5 @@ export const SVG = {
     Search,
     Minus,
     Plus2,
+    Eagle
 }
