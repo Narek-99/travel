@@ -17,8 +17,8 @@ import Toast from 'react-native-toast-message';
 
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
-  const user = useSelector(({ appReducer }) => appReducer.user);
   const { tripId } = route.params; // Get the tripId passed from TripDetailsScreen
+  const user = useSelector(({ appReducer }) => appReducer.user);
 
   // State and refs for handling the "Show More/Show Less" functionality
   const [showFullPlan, setShowFullPlan] = useState(false);
@@ -27,7 +27,6 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const maxCollapsedHeight = 500; // Same as TripDetailsScreen
   const scrollViewRef = useRef();
 
-  // State for the aiPlan and loading
   const [aiPlan, setAiPlan] = useState(null);
   const [loadingTripPlan, setLoadingTripPlan] = useState(true);
 
@@ -39,24 +38,21 @@ const DayByDayPlanScreen = ({ navigation }) => {
       .doc(user.uid)
       .collection('trips')
       .doc(tripId)
-      .onSnapshot((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          setAiPlan(data.aiPlan || null);
-          // If aiPlan is being generated (contains "Creating"), keep loading state true
-          setLoadingTripPlan(
-            !data.aiPlan || data.aiPlan.includes('Creating your perfect travel plan')
-          );
-        } else {
-          setAiPlan(null);
+      .onSnapshot(
+        (doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            setAiPlan(data.aiPlan);
+            setLoadingTripPlan(!data.aiPlan); // Set loading to false once aiPlan is available
+          }
+        },
+        (error) => {
+          console.error('❌ Error fetching trip data:', error);
           setLoadingTripPlan(false);
         }
-      }, (error) => {
-        console.error('❌ Error fetching trip data:', error);
-        setLoadingTripPlan(false);
-      });
+      );
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, [user?.uid, tripId]);
 
   const togglePlanHeight = () => {
