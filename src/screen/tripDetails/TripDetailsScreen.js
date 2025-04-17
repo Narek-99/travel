@@ -286,6 +286,10 @@ const TripDetailsScreen = ({ navigation }) => {
     } else console.error('RBSheet ref is not initialized');
   }, []);
 
+  const handleEditTripPress = () => {
+    navigation.navigate(SCREEN.DESTINATION, { tripId });
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
@@ -316,6 +320,9 @@ const TripDetailsScreen = ({ navigation }) => {
                 {weather && <View style={styles.infoRow}><Label style={styles.weatherIcon}>🌤</Label><Label style={styles.infoText}>{weather.condition} · {weather.temp}°C</Label></View>}
                 <View style={styles.infoRow}><Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label><Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label></View>
               </Animated.View>
+              <TouchableOpacity style={styles.editButton} onPress={handleEditTripPress}>
+                <SVG.Edit fill={COLOR.white} width={20} height={20} />
+              </TouchableOpacity>
             </View>
           </View>
         ) : <Text style={styles.loadingText}>Loading trip details...</Text>}
@@ -406,16 +413,12 @@ const TripDetailsScreen = ({ navigation }) => {
             <SVG.AiStar fill="#00A3FF" width={20} height={20} />
             <Text style={styles.sheetButtonText}>Chatbot</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.DESTINATION, { tripId }); }}>
-            <SVG.Edit fill={COLOR.dark} width={20} height={20} />
-            <Text style={styles.sheetButtonText}>Edit Trip</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
+          {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
             <Text style={styles.sheetButtonText}>🔗  Share Trip</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); regenerateAiPlan(); }}>
             <Text style={styles.sheetButtonText}>♻️  Regenerate Plan</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </RBSheet>
     </View>
@@ -528,9 +531,18 @@ const styles = StyleSheet.create({
   infoContent: {
     flex: 1,
     padding: 10,
+    position: 'relative', // Added to allow absolute positioning of the edit button
   },
   infoTextContainer: {
     flex: 1,
+  },
+  editButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(74, 144, 226, 0.8)',
+    borderRadius: "50%",
+    padding: wp(3),
   },
   sheetContent: {
     flex: 1,
