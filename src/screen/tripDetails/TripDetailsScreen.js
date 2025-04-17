@@ -67,12 +67,6 @@ const TripDetailsScreen = ({ navigation }) => {
     navigation.navigate(SCREEN.CHATBOT, { tripId });
   };
 
-  const copyToClipboard = () => {
-    Clipboard.setString(trip.aiPlan);
-    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
-    Toast.show({ type: 'success', text1: 'Copied!', position: 'bottom' });
-  };
-
   useEffect(() => {
     if (!user?.uid || !tripId) return;
     const unsubscribe = firestore()
@@ -298,11 +292,6 @@ const TripDetailsScreen = ({ navigation }) => {
       <AppHeader
         leftComp={<TouchableOpacity onPress={() => { ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true }); navigation.navigate(SCREEN.TRIPS); }}><SVG.BackIcon fill={COLOR.dark} /></TouchableOpacity>}
         title={trip?.destination || 'Trip Details'}
-        rightComp={
-          <TouchableOpacity onPress={handleOptionsPress} style={styles.headerAction}>
-            <SVG.Ai fill="white" width={24} height={24} />
-          </TouchableOpacity>
-        }
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
 
@@ -364,8 +353,8 @@ const TripDetailsScreen = ({ navigation }) => {
           <Animated.View style={{ opacity: attractionsFadeAnim }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
               {attractions.map((place, index) => (
-                <TouchableOpacity key={index} onPress={() => { const loc = place.geometry.location; mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800); }} style={styles.attractionCard}>
-                  {place.photos?.[0]?.photo_reference ? <View style={{ position: 'relative' }}><FastImage source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }} style={[styles.attractionImage, { opacity: loadedImages[place.place_id] ? 1 : 0.3 }]} resizeMode={FastImage.resizeMode.cover} onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))} onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))} />{!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}</View> : <View style={styles.noImageBox}><Text style={styles.noImageText}>Kein Bild</Text></View>}
+                <TouchableOpacity key={index} activeOpacity={1} onPress={() => { const loc = place.geometry.location; mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800); }} style={styles.attractionCard}>
+                  {place.photos?.[0]?.photo_reference ? <View style={{ position: 'relative' }}><FastImage source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }} style={styles.attractionImage} resizeMode={FastImage.resizeMode.cover} onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))} onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))} />{!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}</View> : <View style={styles.noImageBox}><Text style={styles.noImageText}>Kein Bild</Text></View>}
                   <View style={styles.placeDetailsContainer}><Text style={styles.attractionName}>{place.name}</Text><Text style={styles.attractionRating}>{place.types?.[0] ? (() => { const type = place.types[0].replace('_', ' '); return type.charAt(0).toUpperCase() + type.slice(1); })() : 'Attraction'}</Text><Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text><TouchableOpacity onLongPress={() => { Clipboard.setString(place.vicinity); ReactNativeHapticFeedback.trigger('impactLight'); Toast.show({ type: 'success', text1: 'Address copied!' }); }}><Text style={styles.attractionAddress}>📍 {place.vicinity}</Text></TouchableOpacity>{place.opening_hours?.open_now !== undefined && <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}</Text>}<Text style={styles.attractionLink} onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>🔗 See on Google Maps</Text></View>
                 </TouchableOpacity>
               ))}
@@ -414,7 +403,7 @@ const TripDetailsScreen = ({ navigation }) => {
             <Text style={styles.sheetButtonText}>✈️  Flights</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
-            <SVG.AiStar fill="#90009C" width={20} height={20} />
+            <SVG.AiStar fill="#00A3FF" width={20} height={20} />
             <Text style={styles.sheetButtonText}>Chatbot</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.DESTINATION, { tripId }); }}>
@@ -488,11 +477,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white,
     borderRadius: 16,
     padding: wp(3),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   attractionImage: {
     width: '100%',

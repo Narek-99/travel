@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, TextInput, TouchableOpacity, Keyboard, Text, Animated } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, TextInput, TouchableOpacity, Keyboard, Text, Animated, KeyboardAvoidingView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -112,7 +112,7 @@ const ChatbotScreen = ({ navigation }) => {
     return (
       <View style={[styles.messageWrapper, isUser ? styles.userMessageWrapper : styles.botMessageWrapper]}>
         <View style={styles.avatarContainer}>
-          {isUser ? <SVG.Eagle width={25} height={25} /> : <SVG.Robot width={35} height={35} />}
+          {isUser ? <SVG.Person fill="#00A3FF" width={25} height={25} /> : <SVG.Eagle width={25} height={25} />}
         </View>
         <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
@@ -123,72 +123,74 @@ const ChatbotScreen = ({ navigation }) => {
 
   return (
     <View style={styles.screenContainer}>
-      <SafeAreaView />
-      <AppHeader
-        leftComp={
-          <TouchableOpacity
-            onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
-              navigation.goBack();
-            }}
-          >
-            <SVG.BackIcon fill={COLOR.dark} />
-          </TouchableOpacity>
-        }
-        title="Travel AI"
-        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
-      />
-      <View style={styles.contentContainer}>
-        {messages.length === 0 && (
-          <View style={styles.ringContainer}>
-            <SVG.Eagle width={40} height={40} style={styles.eagle} />
-            <Animated.View style={[styles.ring, {
-              opacity: ringAnim,
-              transform: [{
-                scale: ringAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.5, 1.5],
-                }),
-              }],
-            }]} />
-          </View>
-        )}
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={styles.messagesContainer}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {messages.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Ask Travel AI about your trip!</Text>
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        <SafeAreaView />
+        <AppHeader
+          leftComp={
+            <TouchableOpacity
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+                navigation.goBack();
+              }}
+            >
+              <SVG.BackIcon fill={COLOR.dark} />
+            </TouchableOpacity>
+          }
+          title="Travel AI"
+          titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
+        />
+        <View style={styles.contentContainer}>
+          {messages.length === 0 && (
+            <View style={styles.ringContainer}>
+              <SVG.Eagle width={40} height={40} style={styles.eagle} />
+              <Animated.View style={[styles.ring, {
+                opacity: ringAnim,
+                transform: [{
+                  scale: ringAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.5, 1.5],
+                  }),
+                }],
+              }]} />
             </View>
-          ) : (
-            messages.map((item, index) => <MessageBubble key={item.id ?? index} item={item} />)
           )}
-        </ScrollView>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.textInput}
-            ref={inputRef}
-            placeholderTextColor={COLOR.lightGray}
-            value={userQuery}
-            onChangeText={setUserQuery}
-            placeholder="Ask Travel AI..."
-            onSubmitEditing={handleQuestionSubmit}
-          />
-          <TouchableOpacity
-            style={styles.sendButton}
-            onPress={isGenerating ? handleStopGeneration : handleQuestionSubmit}
+          <ScrollView
+            ref={scrollViewRef}
+            contentContainerStyle={styles.messagesContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {isGenerating ? (
-              <SVG.Stop fill="#fff" width={15} height={15} />
+            {messages.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Ask Travel AI about your trip!</Text>
+              </View>
             ) : (
-              <SVG.Send fill="#fff" width={15} height={15} />
+              messages.map((item, index) => <MessageBubble key={item.id ?? index} item={item} />)
             )}
-          </TouchableOpacity>
+          </ScrollView>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              ref={inputRef}
+              placeholderTextColor={COLOR.lightGray}
+              value={userQuery}
+              onChangeText={setUserQuery}
+              placeholder="Ask Travel AI..."
+              onSubmitEditing={handleQuestionSubmit}
+            />
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={isGenerating ? handleStopGeneration : handleQuestionSubmit}
+            >
+              {isGenerating ? (
+                <SVG.Stop fill="#fff" width={15} height={15} />
+              ) : (
+                <SVG.Send fill="#fff" width={15} height={15} />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flexGrow: 1,
     paddingBottom: hp(2),
-    paddingTop: 0, // Changed from hp(15) to 0 to align at top
+    paddingTop: 0,
   },
   messageWrapper: {
     flexDirection: 'row',
