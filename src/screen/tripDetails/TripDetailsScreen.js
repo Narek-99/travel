@@ -477,6 +477,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white,
     borderRadius: 16,
     padding: wp(3),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   attractionImage: {
     width: '100%',
