@@ -327,7 +327,10 @@ const TripDetailsScreen = ({ navigation }) => {
       >
         {loadingWeather ? (
           <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.infoCard}><View style={{ width: 180, height: 25, marginBottom: 10 }} /><View style={{ width: 120, height: 18, marginBottom: 8 }} /><View style={{ width: 160, height: 18 }} /></View>
+            <View style={styles.infoCard}><View style={{ width: 180, height: 25, marginBottom: 10 }} />
+              <View style={{ width: 120, height: 18, marginBottom: 8 }} />
+              <View style={{ width: 160, height: 18 }} />
+            </View>
           </SkeletonPlaceholder>
         ) : trip ? (
           <View style={styles.infoCardWithImage}>
@@ -532,6 +535,9 @@ const TripDetailsScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.BOOKING, { tripId }); }}>
             <Text style={styles.sheetButtonText}>✈️  Flights</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.FUNFACTS, { tripId }); }}>
+            <Text style={styles.sheetButtonText}>😊  Fun Facts</Text>
+          </TouchableOpacity>
           {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
             <Text style={styles.sheetButtonText}>🔗  Share Trip</Text>
           </TouchableOpacity>
@@ -543,7 +549,6 @@ const TripDetailsScreen = ({ navigation }) => {
     </View>
   );
 };
-
 export default TripDetailsScreen;
 
 const styles = StyleSheet.create({
