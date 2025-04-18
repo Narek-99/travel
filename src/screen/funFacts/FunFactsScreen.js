@@ -11,6 +11,9 @@ import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import Toast from 'react-native-toast-message';
 import { SCREEN } from '../../enums/AppEnums';
 import { getFunFactsPrompt } from '../../apis/Prompts';
+import Clipboard from '@react-native-clipboard/clipboard';
+import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 
 const FunFactsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -20,7 +23,23 @@ const FunFactsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [destination, setDestination] = useState('');
-  const fadeAnims = useRef(funFacts.map(() => new Animated.Value(0))).current;
+  const [tripImageUrl, setTripImageUrl] = useState(null);
+  const fadeAnims = useRef([]).current;
+  const copyScales = useRef([]).current;
+
+  useEffect(() => {
+    const fetchTripImage = async () => {
+      try {
+        const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/unsplash?destination=${destination}`);
+        const data = await response.json();
+        const imageUrl = data.results[0]?.urls?.small;
+        setTripImageUrl(imageUrl);
+      } catch (error) {
+        console.error('Error fetching trip image:', error);
+      }
+    };
+    if (destination) fetchTripImage();
+  }, [destination]);
 
   useEffect(() => {
     const fetchFunFacts = async () => {
@@ -50,40 +69,21 @@ const FunFactsScreen = ({ navigation }) => {
         if (tripData.funFacts && tripData.funFacts.length > 0) {
           setFunFacts(tripData.funFacts);
           setLoading(false);
-          // Initialize fade animations for existing facts
-          fadeAnims.current = tripData.funFacts.map(() => new Animated.Value(0));
+          // Initialize animations
+          fadeAnims.length = 0;
+          copyScales.length = 0;
           tripData.funFacts.forEach((_, index) => {
-            Animated.timing(fadeAnims.current[index], {
+            fadeAnims[index] = new Animated.Value(0);
+            copyScales[index] = new Animated.Value(1);
+            Animated.timing(fadeAnims[index], {
               toValue: 1,
               duration: 300,
-              delay: index * 100,
+              delay: index * 200,
               useNativeDriver: true,
             }).start();
           });
         } else {
-          // Generate fun facts if none exist
-          const funFactsResponse = await callChatGptForResponse(getFunFactsPrompt(tripData.destination), "");
-          const newFunFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
-
-          await firestore()
-            .collection('users')
-            .doc(user.uid)
-            .collection('trips')
-            .doc(tripId)
-            .update({ funFacts: newFunFacts });
-
-          setFunFacts(newFunFacts);
-          setLoading(false);
-          // Initialize and start fade animations for new facts
-          fadeAnims.current = newFunFacts.map(() => new Animated.Value(0));
-          newFunFacts.forEach((_, index) => {
-            Animated.timing(fadeAnims.current[index], {
-              toValue: 1,
-              duration: 300,
-              delay: index * 100,
-              useNativeDriver: true,
-            }).start();
-          });
+          await regenerateFunFacts(tripData.destination);
         }
       } catch (err) {
         console.error('❌ Error fetching fun facts:', err);
@@ -101,8 +101,84 @@ const FunFactsScreen = ({ navigation }) => {
     fetchFunFacts();
   }, [user?.uid, tripId]);
 
+  const regenerateFunFacts = async (dest) => {
+    setLoading(true);
+    try {
+      const funFactsResponse = await callChatGptForResponse(getFunFactsPrompt(dest), "");
+      const newFunFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
+
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .update({ funFacts: newFunFacts });
+
+      setFunFacts(newFunFacts);
+      // Initialize animations for new facts
+      fadeAnims.length = 0;
+      copyScales.length = 0;
+      newFunFacts.forEach((_, index) => {
+        fadeAnims[index] = new Animated.Value(0);
+        copyScales[index] = new Animated.Value(1);
+        Animated.timing(fadeAnims[index], {
+          toValue: 1,
+          duration: 300,
+          delay: index * 200,
+          useNativeDriver: true,
+        }).start();
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Fun facts regenerated!',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+    } catch (err) {
+      console.error('❌ Error regenerating fun facts:', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to regenerate fun facts',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopyFact = (fact, index) => {
+    ReactNativeHapticFeedback.trigger('impactLight');
+    Clipboard.setString(fact);
+    Toast.show({
+      type: 'success',
+      text1: 'Fact copied!',
+      position: 'top',
+      visibilityTime: 2000,
+    });
+
+    Animated.sequence([
+      Animated.spring(copyScales[index], {
+        toValue: 0.8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(copyScales[index], {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const parseFact = (fact) => {
+    const match = fact.match(/^\d+\.\s*([^:]+):\s*(.+)$/);
+    if (match) {
+      return { title: match[1].trim(), description: match[2].trim() };
+    }
+    return { title: '', description: fact };
+  };
+
   return (
-    <View style={styles.screenContainer}>
+    <LinearGradient colors={['#FFFFFF', '#F1F5F9']} style={styles.screenContainer}>
       <SafeAreaView />
       <AppHeader
         leftComp={
@@ -115,30 +191,65 @@ const FunFactsScreen = ({ navigation }) => {
             <SVG.BackIcon fill={COLOR.dark} />
           </TouchableOpacity>
         }
-        title={`Fun Facts about ${destination}`}
+        title={`Cool Facts about ${destination}`}
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
+      <View style={styles.headerImageContainer}>
+        {tripImageUrl ? (
+          <FastImage
+            source={{ uri: tripImageUrl }}
+            style={StyleSheet.absoluteFillObject}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.placeholderImage} />
+        )}
+        <LinearGradient
+          colors={['rgba(0, 0, 0, 0.7)', 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <Text style={styles.headerTitle}>{destination}</Text>
+      </View>
       <View style={styles.contentContainer}>
         {loading ? (
           <ActivityIndicator size="large" color={COLOR.dark} style={styles.loader} />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : funFacts.length > 0 ? (
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {funFacts.map((fact, index) => (
-              <Animated.View
-                key={index}
-                style={[styles.factContainer, { opacity: fadeAnims.current[index] }]}
-              >
-                <Text style={styles.factText}>{fact}</Text>
-              </Animated.View>
-            ))}
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            {funFacts.map((fact, index) => {
+              const { title, description } = parseFact(fact);
+              return (
+                <Animated.View
+                  key={index}
+                  style={[styles.factContainer, { opacity: fadeAnims[index] }]}
+                >
+                  <View style={styles.factContent}>
+                    <View style={styles.factHeader}>
+                      <SVG.Light width={20} height={20} fill="#F59E0B" style={styles.factIcon} />
+                      <Text style={styles.factTitle}>{title}</Text>
+                    </View>
+                    <Text style={styles.factDescription}>{description}</Text>
+                  </View>
+                  <Animated.View style={[styles.copyButton, { transform: [{ scale: copyScales[index] }] }]}>
+                    <TouchableOpacity
+                      onPress={() => handleCopyFact(fact, index)}
+                      activeOpacity={0.8}
+                    >
+                      <SVG.Copy width={20} height={20} fill={COLOR.dark} />
+                    </TouchableOpacity>
+                  </Animated.View>
+                </Animated.View>
+              );
+            })}
           </ScrollView>
         ) : (
           <Text style={styles.noFactsText}>No fun facts available.</Text>
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -147,32 +258,88 @@ export default FunFactsScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+  },
+  headerImageContainer: {
+    height: hp(20),
+    marginHorizontal: wp(5),
+    marginTop: hp(1),
+    marginBottom: hp(2),
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  placeholderImage: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#E5E7EB',
+  },
+  headerTitle: {
+    ...TEXT_STYLE.title,
+    color: COLOR.white,
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   contentContainer: {
     flex: 1,
     paddingHorizontal: wp(5),
-    paddingTop: hp(2),
   },
   scrollContent: {
-    paddingBottom: hp(6),
+    paddingBottom: hp(10),
   },
   factContainer: {
-    marginBottom: hp(2.5),
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp(2),
     padding: wp(4),
-    backgroundColor: COLOR.white,
+    backgroundColor: '#F7F7F7',
     borderRadius: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 2,
   },
-  factText: {
-    ...TEXT_STYLE.text,
+  factContent: {
+    flex: 1,
+  },
+  factHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp(0.5),
+  },
+  factIcon: {
+    marginRight: wp(2),
+  },
+  factTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: COLOR.dark,
-    fontSize: 15,
-    lineHeight: 22,
+  },
+  factDescription: {
+    fontSize: 14,
+    color: COLOR.mediumGray,
+    lineHeight: 20,
+  },
+  copyButton: {
+    padding: wp(2),
+  },
+  regenerateButton: {
+    position: 'absolute',
+    bottom: hp(3),
+    right: wp(5),
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#1E3A8A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 10,
   },
   loader: {
     flex: 1,
