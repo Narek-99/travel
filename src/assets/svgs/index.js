@@ -31,6 +31,7 @@ import Hotel from './hotel.svg'
 import TakeOff from './takeoff.svg'
 import AiBirn from './aiBirn.svg'
 import Copy from './copy.svg'
+import Eagle2 from './eagle2.svg'
 
 export const SVG = {
     BackIcon,
@@ -65,5 +66,6 @@ export const SVG = {
     Hotel,
     TakeOff,
     AiBirn,
-    Copy
+    Copy,
+    Eagle2
 }

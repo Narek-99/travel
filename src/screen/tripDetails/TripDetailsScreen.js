@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Share, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
-import { Label, AppHeader } from '../../components';
+import { Label, AppHeader, Photo } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
@@ -18,6 +18,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { getTripPrompt, getFunFactsPrompt } from '../../apis/Prompts';
+import { IMAGES } from '../../assets/images';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -487,6 +488,7 @@ const TripDetailsScreen = ({ navigation }) => {
           activeOpacity={0.8}
           style={styles.fabInner}
         >
+          {/* <Photo src={IMAGES.Eagle2} style={styles.image} contain /> */}
           <SVG.Eagle width={28} height={28} />
         </TouchableOpacity>
       </Animated.View>
@@ -773,7 +775,7 @@ const styles = StyleSheet.create({
     width: 66,
     height: 66,
     borderRadius: 33,
-    backgroundColor: "rgba(30, 58, 138, 1)', 'transparent",
+    backgroundColor: 'rgba(30, 58, 138, 1)', // Fixed syntax
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#1E3A8A',
@@ -781,6 +783,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 10,
+  },
+  image: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
   },
   loadingText: {
     textAlign: 'center',
