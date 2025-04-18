@@ -312,13 +312,12 @@ const TripDetailsScreen = ({ navigation }) => {
           }}>
             <SVG.BackIcon fill={COLOR.dark} />
           </TouchableOpacity>}
-        title={trip?.destination || 'Trip Details'}
+        title='Trip Details'
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
 
       <ScrollView
         ref={scrollViewRef}
-        contentContainerStyle={{ paddingTop: hp(1), paddingBottom: hp(8) }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -695,12 +694,16 @@ const styles = StyleSheet.create({
     color: '#0000EE',
   },
   infoCardWithImage: {
-    height: hp(19),
-    borderRadius: 10,
-    marginHorizontal: wp(3),
-    marginBottom: 20,
+    height: hp(18),
     overflow: 'hidden',
     backgroundColor: COLOR.white,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
   },
   infoContent: {
     flex: 1,
@@ -712,8 +715,8 @@ const styles = StyleSheet.create({
   },
   editButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 15,
+    right: 15,
     backgroundColor: 'rgba(30, 58, 138, 0.8)',
     borderRadius: "50%",
     padding: wp(3),
@@ -775,7 +778,7 @@ const styles = StyleSheet.create({
     width: 66,
     height: 66,
     borderRadius: 33,
-    backgroundColor: 'rgba(30, 58, 138, 1)', // Fixed syntax
+    backgroundColor: 'rgba(30, 58, 138, 1)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#1E3A8A',
