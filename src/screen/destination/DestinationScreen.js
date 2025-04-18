@@ -190,13 +190,17 @@ const DestinationScreen = ({ navigation }) => {
           <Label style={styles.subtitleText}>{En.DestinationScreenSubtitle}</Label>
 
           <View style={styles.dropdownWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Search for a city..."
-              placeholderTextColor="#999"
-              value={localDestination}
-              onChangeText={handleInputChange}
-            />
+            <View style={styles.inputContainer}>
+              <SVG.Search width={18} height={18} fill="#8E8E93" style={styles.searchIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Search for a city..."
+                placeholderTextColor="#8E8E93"
+                value={localDestination}
+                onChangeText={handleInputChange}
+                accessibilityLabel="Search for a city"
+              />
+            </View>
 
             {suggestions.length > 0 && (
               <View style={styles.dropdown}>
@@ -251,7 +255,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white,
   },
   contentContainer: {
-    paddingTop: "8%",
+    paddingTop: '8%',
     paddingHorizontal: '5%',
   },
   titleText: {
@@ -263,21 +267,30 @@ const styles = StyleSheet.create({
   subtitleText: {
     ...TEXT_STYLE.textMedium,
   },
-  input: {
-    height: 50,
-    borderColor: COLOR.black,
-    borderWidth: 0.5,
-    borderRadius: 10,
-    paddingHorizontal: wp(3),
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEEEF0',
+    borderRadius: wp(3),
     marginVertical: hp(2),
+    paddingHorizontal: wp(2.5),
+  },
+  searchIcon: {
+    marginRight: wp(1.5),
+  },
+  input: {
+    flex: 1,
+    height: 44,
     color: 'black',
+    fontSize: 17,
+    backgroundColor: 'transparent',
   },
   suggestionItem: {
     backgroundColor: COLOR.lightBlue,
     padding: 10,
     marginVertical: 2,
     borderRadius: 5,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -294,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginHorizontal: wp(2),
     borderWidth: 1,
-    borderColor: COLOR.lightBlue
+    borderColor: COLOR.lightBlue,
   },
   buttonText: {
     color: 'white',
@@ -306,12 +319,12 @@ const styles = StyleSheet.create({
   stepText: {
     ...TEXT_STYLE.textSmall,
     color: COLOR.black,
-    marginBottom: hp(1)
+    marginBottom: hp(1),
   },
   headlineContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
     paddingHorizontal: 10,
   },
