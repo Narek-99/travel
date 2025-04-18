@@ -47,6 +47,26 @@ const TripDetailsScreen = ({ navigation }) => {
   const [loadedImages, setLoadedImages] = useState({});
   const [tripImageUrl, setTripImageUrl] = useState(null);
   const bottomSheetRef = useRef(null);
+  const fabScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(fabScale, {
+          toValue: 1.1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fabScale, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+  }, []);
+
 
   useEffect(() => {
     const fetchTripImage = async () => {
@@ -223,6 +243,7 @@ const TripDetailsScreen = ({ navigation }) => {
     const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
     await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({ aiPlan: null });
+
     const tripPrompt = `
       Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
       1. Provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
@@ -249,18 +270,12 @@ const TripDetailsScreen = ({ navigation }) => {
     `;
     try {
       const newPlan = await callChatGptForResponse(tripPrompt, "");
-      await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({ aiPlan: newPlan });
+      await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({
+        aiPlan: newPlan
+      });
       setTrip(prev => ({ ...prev, aiPlan: newPlan }));
     } catch (error) {
       console.error('❌ Fehler beim Neugenerieren des Plans:', error);
-    }
-  };
-
-  const shareTrip = async () => {
-    try {
-      await Share.share({ title: `Trip to ${trip.destination}`, message: trip.aiPlan });
-    } catch (error) {
-      console.error('❌ Fehler beim Teilen:', error);
     }
   };
 
@@ -294,7 +309,12 @@ const TripDetailsScreen = ({ navigation }) => {
     <View style={styles.container}>
       <SafeAreaView />
       <AppHeader
-        leftComp={<TouchableOpacity onPress={() => { ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true }); navigation.navigate(SCREEN.TRIPS); }}><SVG.BackIcon fill={COLOR.dark} /></TouchableOpacity>}
+        leftComp={
+          <TouchableOpacity onPress={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true }); navigation.navigate(SCREEN.TRIPS);
+          }}>
+            <SVG.BackIcon fill={COLOR.dark} />
+          </TouchableOpacity>}
         title={trip?.destination || 'Trip Details'}
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
@@ -312,22 +332,46 @@ const TripDetailsScreen = ({ navigation }) => {
         ) : trip ? (
           <View style={styles.infoCardWithImage}>
             <FastImage source={{ uri: tripImageUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-            <LinearGradient colors={['rgba(0, 0, 0, 1)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={['rgba(0, 0, 0, 1)', 'transparent']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFillObject}
+            />
             <View style={styles.infoContent}>
-              <Animated.View style={[styles.infoTextContainer, { opacity: infoFadeAnim }]}>
-                <Label style={styles.infoDestination}>{trip.destination}</Label>
-                <Label style={styles.infoDate}>{formatDate(trip.startDate)} – {formatDate(trip.endDate)}</Label>
-                {weather && <View style={styles.infoRow}><Label style={styles.weatherIcon}>🌤</Label><Label style={styles.infoText}>{weather.condition} · {weather.temp}°C</Label></View>}
-                <View style={styles.infoRow}><Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label><Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label></View>
+              <Animated.View
+                style={
+                  [styles.infoTextContainer, { opacity: infoFadeAnim }]
+                }
+              >
+                <Label style={styles.infoDestination}>
+                  {trip.destination}
+                </Label>
+                <Label style={styles.infoDate}>
+                  {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
+                </Label>
+                {weather &&
+                  <View style={styles.infoRow}>
+                    <Label style={styles.weatherIcon}>🌤</Label>
+                    <Label style={styles.infoText}>{weather.condition} · {weather.temp}°C</Label>
+                  </View>}
+                <View style={styles.infoRow}>
+                  <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
+                  <Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label>
+                </View>
               </Animated.View>
-              <TouchableOpacity style={styles.editButton} onPress={handleEditTripPress}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={handleEditTripPress}>
                 <SVG.Edit fill={COLOR.white} width={20} height={20} />
               </TouchableOpacity>
             </View>
           </View>
         ) : <Text style={styles.loadingText}>Loading trip details...</Text>}
         {loadingMap ? (
-          <SkeletonPlaceholder borderRadius={10}><View style={styles.map} /></SkeletonPlaceholder>
+          <SkeletonPlaceholder borderRadius={10}>
+            <View style={styles.map} />
+          </SkeletonPlaceholder>
         ) : region && (
           <Animated.View style={{ opacity: mapFadeAnim }}>
             <View style={{ height: 250, marginBottom: hp(2) }}>
@@ -336,11 +380,24 @@ const TripDetailsScreen = ({ navigation }) => {
                 {attractions.map((place, index) => (
                   <Marker key={index} coordinate={{ latitude: place.geometry.location.lat, longitude: place.geometry.location.lng }} title={place.name} description={place.vicinity}>
                     <Callout tooltip onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
-                      <View style={{ backgroundColor: 'white', paddingBottom: 10, width: 200, alignItems: 'center', borderRadius: 8 }}>
+                      <View
+                        style={{
+                          backgroundColor: 'white',
+                          paddingBottom: 10,
+                          width: 200,
+                          alignItems: 'center',
+                          borderRadius: 8
+                        }}>
                         {place.photos?.[0]?.photo_reference ? <Image source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}` }} style={{ width: 200, height: 100, borderRadius: 8 }} resizeMode="cover" /> : <Text>No Image</Text>}
-                        <Text style={{ fontWeight: 'bold', marginTop: 8 }}>{place.name}</Text>
-                        <Text style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>{place.vicinity}</Text>
-                        {place.opening_hours?.open_now !== undefined && <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>{place.opening_hours.open_now ? 'Open Now' : 'Closed'}</Text>}
+                        <Text style={{ fontWeight: 'bold', marginTop: 8 }}>
+                          {place.name}
+                        </Text>
+                        <Text
+                          style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>{place.vicinity}</Text>
+                        {place.opening_hours?.open_now !== undefined &&
+                          <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>
+                            {place.opening_hours.open_now ? 'Open Now' : 'Closed'}
+                          </Text>}
                       </View>
                     </Callout>
                   </Marker>
@@ -351,18 +408,71 @@ const TripDetailsScreen = ({ navigation }) => {
         )}
 
         {loadingAttractions ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.attractionsContainer}
+          >
             {[...Array(3)].map((_, index) => (
-              <SkeletonPlaceholder key={index} borderRadius={16}><View style={styles.attractionCard}><View style={styles.attractionImage} /><View style={{ height: 16, width: '80%', marginTop: 8 }} /><View style={{ height: 14, width: '60%', marginTop: 6 }} /><View style={{ height: 14, width: '90%', marginTop: 6 }} /></View></SkeletonPlaceholder>
+              <SkeletonPlaceholder
+                key={index}
+                borderRadius={16}>
+                <View style={styles.attractionCard}>
+                  <View style={styles.attractionImage} />
+                  <View style={{ height: 16, width: '80%', marginTop: 8 }} />
+                  <View style={{ height: 14, width: '60%', marginTop: 6 }} />
+                  <View style={{ height: 14, width: '90%', marginTop: 6 }} />
+                </View>
+              </SkeletonPlaceholder>
             ))}
           </ScrollView>
         ) : (
-          <Animated.View style={{ opacity: attractionsFadeAnim }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
+          <Animated.View
+            style={{ opacity: attractionsFadeAnim }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.attractionsContainer}>
               {attractions.map((place, index) => (
-                <TouchableOpacity key={index} activeOpacity={1} onPress={() => { const loc = place.geometry.location; mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800); }} style={styles.attractionCard}>
-                  {place.photos?.[0]?.photo_reference ? <View style={{ position: 'relative' }}><FastImage source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }} style={styles.attractionImage} resizeMode={FastImage.resizeMode.cover} onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))} onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))} />{!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}</View> : <View style={styles.noImageBox}><Text style={styles.noImageText}>Kein Bild</Text></View>}
-                  <View style={styles.placeDetailsContainer}><Text style={styles.attractionName}>{place.name}</Text><Text style={styles.attractionRating}>{place.types?.[0] ? (() => { const type = place.types[0].replace('_', ' '); return type.charAt(0).toUpperCase() + type.slice(1); })() : 'Attraction'}</Text><Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text><TouchableOpacity onLongPress={() => { Clipboard.setString(place.vicinity); ReactNativeHapticFeedback.trigger('impactLight'); Toast.show({ type: 'success', text1: 'Address copied!' }); }}><Text style={styles.attractionAddress}>📍 {place.vicinity}</Text></TouchableOpacity>{place.opening_hours?.open_now !== undefined && <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}</Text>}<Text style={styles.attractionLink} onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>🔗 See on Google Maps</Text></View>
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={1}
+                  onPress={() => { const loc = place.geometry.location; mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800); }} style={styles.attractionCard}>
+                  {place.photos?.[0]?.photo_reference ?
+                    <View style={{ position: 'relative' }}>
+                      <FastImage
+                        source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }}
+                        style={styles.attractionImage}
+                        resizeMode={FastImage.resizeMode.cover}
+                        onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
+                        onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))} />
+                      {!loadedImages[place.place_id] &&
+                        <ActivityIndicator
+                          style={{ position: 'absolute', top: 60, alignSelf: 'center' }}
+                          size="small"
+                          color={COLOR.dark}
+                        />}
+                    </View> : <View style={styles.noImageBox}>
+                      <Text style={styles.noImageText}>Kein Bild</Text>
+                    </View>}
+                  <View style={styles.placeDetailsContainer}>
+                    <Text style={styles.attractionName}>{place.name}</Text>
+                    <Text style={styles.attractionRating}>
+                      {place.types?.[0] ? (() => { const type = place.types[0].replace('_', ' '); return type.charAt(0).toUpperCase() + type.slice(1); })() : 'Attraction'}
+                    </Text>
+                    <Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text>
+                    <TouchableOpacity
+                      onLongPress={() => {
+                        Clipboard.setString(place.vicinity);
+                        ReactNativeHapticFeedback.trigger('impactLight');
+                        Toast.show({ type: 'success', text1: 'Address copied!' });
+                      }}>
+                      <Text style={styles.attractionAddress}>📍 {place.vicinity}</Text>
+                    </TouchableOpacity>{place.opening_hours?.open_now !== undefined && <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}</Text>}
+                    <Text
+                      style={styles.attractionLink}
+                      onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>🔗 See on Google Maps</Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -370,11 +480,17 @@ const TripDetailsScreen = ({ navigation }) => {
         )}
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab} onPress={handleOptionsPress} activeOpacity={0.7}>
-        <Animated.View style={{ transform: [{ scale: new Animated.Value(1) }] }}>
-          <SVG.Eagle width={25} height={25} />
-        </Animated.View>
-      </TouchableOpacity>
+      <Animated.View
+        style={
+          [styles.fab, { transform: [{ scale: fabScale }] }]}>
+        <TouchableOpacity
+          onPress={handleOptionsPress}
+          activeOpacity={0.8}
+          style={styles.fabInner}
+        >
+          <SVG.Eagle width={28} height={28} />
+        </TouchableOpacity>
+      </Animated.View>
 
       <RBSheet
         ref={bottomSheetRef}
@@ -395,11 +511,18 @@ const TripDetailsScreen = ({ navigation }) => {
             borderTopRightRadius: 20,
           }
         }}
-        customModalProps={{ animationType: 'slide', statusBarTranslucent: true }}
+        customModalProps={{
+          animationType: 'slide',
+          statusBarTranslucent: true
+        }}
         customAvoidingViewProps={{ enabled: false }}
       >
         <View style={styles.sheetContent}>
           <Text style={styles.sheetTitle}>Trip Options</Text>
+          <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
+            <SVG.AiStar fill="#00A3FF" width={20} height={20} />
+            <Text style={styles.sheetButtonText}>AI Chat</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.DAYBYDAY, { tripId }); }}>
             <Text style={styles.sheetButtonText}>📅  Day-by-Day Plan</Text>
           </TouchableOpacity>
@@ -408,10 +531,6 @@ const TripDetailsScreen = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.BOOKING, { tripId }); }}>
             <Text style={styles.sheetButtonText}>✈️  Flights</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
-            <SVG.AiStar fill="#00A3FF" width={20} height={20} />
-            <Text style={styles.sheetButtonText}>Chatbot</Text>
           </TouchableOpacity>
           {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
             <Text style={styles.sheetButtonText}>🔗  Share Trip</Text>
@@ -531,7 +650,7 @@ const styles = StyleSheet.create({
   infoContent: {
     flex: 1,
     padding: 10,
-    position: 'relative', // Added to allow absolute positioning of the edit button
+    position: 'relative',
   },
   infoTextContainer: {
     flex: 1,
@@ -540,7 +659,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(74, 144, 226, 0.8)',
+    backgroundColor: 'rgba(30, 58, 138, 0.8)',
     borderRadius: "50%",
     padding: wp(3),
   },
@@ -571,18 +690,33 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: hp(3),
     right: wp(3),
-    backgroundColor: '#4A90E2',
     width: 66,
     height: 66,
-    borderRadius: "50%",
+    borderRadius: 33,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
+    backgroundColor: 'transparent',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowRadius: 5,
+    elevation: 6,
   },
+
+  fabInner: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: '#1E3A8A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+
   loadingText: {
     textAlign: 'center',
     color: COLOR.dark,
