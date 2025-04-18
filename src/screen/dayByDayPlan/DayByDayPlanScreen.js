@@ -152,7 +152,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
                 <Text
                   style={{
                     textAlign: 'center',
-                    color: '#0084FF',
+                    color: 'rgba(30, 58, 138, 1)',
                     fontWeight: 'bold',
                     marginTop: hp(2),
                   }}
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   tripPlanTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0084FF',
+    color: 'rgba(30, 58, 138, 1)',
     paddingHorizontal: wp(5),
     marginTop: hp(2),
   },
