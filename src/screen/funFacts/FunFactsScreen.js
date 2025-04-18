@@ -10,6 +10,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import Toast from 'react-native-toast-message';
 import { SCREEN } from '../../enums/AppEnums';
+import { getFunFactsPrompt } from '../../apis/Prompts';
 
 const FunFactsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -61,10 +62,7 @@ const FunFactsScreen = ({ navigation }) => {
           });
         } else {
           // Generate fun facts if none exist
-          const funFactsPrompt = `
-            Provide exactly 15 highly engaging, unique, and surprising fun facts about ${tripData.destination}, tailored for a travel app to captivate and inspire travelers. At least 3 facts must focus on famous people who lived or worked there, each including a fun or memorable story about their time in the city. At least 3 additional facts should tell quirky or fascinating stories about the city’s history, culture, or landmarks. Each fact must be concise (1-2 sentences), positive, and exciting to read. Format the response as a plain text numbered list (1. to 15.), with each fact starting with a number and a period (e.g., "1. ..."). Do not include any introductory text, headings, or extra formatting beyond the numbered list.
-          `;
-          const funFactsResponse = await callChatGptForResponse(funFactsPrompt, "35");
+          const funFactsResponse = await callChatGptForResponse(getFunFactsPrompt(tripData.destination), "");
           const newFunFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
 
           await firestore()

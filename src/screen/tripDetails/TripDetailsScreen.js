@@ -17,6 +17,7 @@ import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
+import { getTripPrompt, getFunFactsPrompt } from '../../apis/Prompts';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -244,37 +245,10 @@ const TripDetailsScreen = ({ navigation }) => {
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
     await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({ aiPlan: null, funFacts: [] });
 
-    const tripPrompt = `
-      Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
-      1. Provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
-      2. Use this precise daily structure for each day (provide the response in Markdown):
-      📅 Day [X]
-      - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
-      - 🕒 Suggested defined time range (e.g., 9:00–12:00)
-      - 💰 Budget-friendly tips (where applicable, based on user's selected budget).
-      - 🥘 Recommended dining spots relevant to user's preferences.
-      - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
-      - 🚶 Travel tips or local insights relevant to the itinerary.
-      Repeat exactly this structured format for every single day of the trip.
-      User’s Trip Details to Strictly Follow:
-      - Destination: ${trip.destination}
-      - Travel Dates: ${trip.startDate} to ${trip.endDate} (Provide itinerary for every day!)
-      - Traveling with: ${trip.companion}, ${trip.persons || '1'} person(s)
-      - Budget: ${trip.budget || 'medium'}
-      - Preferred Activities: ${trip.activities?.join(', ') || 'no specific activities'}
-      - Special Wishes: ${trip.wishes?.join(', ') || 'none'}
-      - Accommodation Preferences: ${trip.accommodation?.join(', ') || 'no specific preferences'}
-      - Preferred Location within Destination: ${trip.location?.join(', ') || 'no specific location'}
-      - Additional Information: ${trip.additionalInfo || 'none'}
-      Maintain a friendly, enthusiastic, and highly personalized tone throughout.
-    `;
-
-    const funFactsPrompt = `Provide exactly 15 highly engaging, unique, and surprising fun facts about ${trip.destination}, tailored for a travel app to captivate and inspire travelers. At least 3 facts must focus on famous people who lived or worked there, each including a fun or memorable story about their time in the city. At least 3 additional facts should tell quirky or fascinating stories about the city’s history, culture, or landmarks. Each fact must be concise (1-2 sentences), positive, and exciting to read. Format the response as a plain text numbered list (1. to 15.), with each fact starting with a number and a period (e.g., "1. ..."). Do not include any introductory text, headings, or extra formatting beyond the numbered list.`;
-
     try {
       const [newPlan, funFactsResponse] = await Promise.all([
-        callChatGptForResponse(tripPrompt, ""),
-        callChatGptForResponse(funFactsPrompt, "35")
+        callChatGptForResponse(getTripPrompt(trip, from, to), ""),
+        callChatGptForResponse(getFunFactsPrompt(trip.destination), "")
       ]);
       const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
       await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({
@@ -531,15 +505,15 @@ const TripDetailsScreen = ({ navigation }) => {
       >
         <View style={styles.sheetContent}>
           <Text style={styles.sheetTitle}>Trip Options</Text>
-          <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
-            <SVG.AiStar fill="#00A3FF" width={20} height={20} />
-            <Text style={styles.sheetButtonText}>AI Chat</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.DAYBYDAY, { tripId }); }}>
             <Text style={styles.sheetButtonText}>📅  Day-by-Day Plan</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.FUNFACTS, { tripId }); }}>
             <Text style={styles.sheetButtonText}>😊  Fun Facts</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
+            <SVG.AiStar fill="#00A3FF" width={20} height={20} />
+            <Text style={styles.sheetButtonText}>AI Chat</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); handleOpenHotelAffiliateLink(); }}>
             <Text style={styles.sheetButtonText}>🏨  Hotels</Text>
@@ -547,7 +521,12 @@ const TripDetailsScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.BOOKING, { tripId }); }}>
             <Text style={styles.sheetButtonText}>✈️  Flights</Text>
           </TouchableOpacity>
-
+          {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
+            <Text style={styles.sheetButtonText}>🔗  Share Trip</Text>
+          </TouchableOpacity> */}
+          {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); regenerateAiPlan(); }}>
+            <Text style={styles.sheetButtonText}>♻️  Regenerate Plan</Text>
+          </TouchableOpacity> */}
         </View>
       </RBSheet>
     </View>

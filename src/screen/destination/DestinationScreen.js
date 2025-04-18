@@ -162,7 +162,7 @@ const DestinationScreen = ({ navigation }) => {
               progress={progress}
               width={wp(80)}
               height={hp(1)}
-              color={COLOR.lightBlue}
+              color="#1E3A8A"
               borderRadius={5}
             />
           </View>

@@ -13,6 +13,7 @@ import { ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
+import { getTripPrompt, getFunFactsPrompt } from '../../apis/Prompts';
 
 const currentStep = 8;
 const totalSteps = 8;
@@ -96,42 +97,10 @@ const AdditionalScreen = ({ navigation }) => {
   const generateAiPlanInBackground = async (tripData, tripId) => {
     const { from, to } = getLimitedDateRange(tripData.startDate, tripData.endDate);
 
-    const tripPrompt = `
-    Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
-    Follow these instructions carefully:
-    1. Provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
-    2. Use this precise daily structure for each day (provide the response in Markdown):
-    -----
-    📅 Day [X]
-    - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
-    - 🕒 Suggested defined time range (e.g., 9:00–12:00)
-    - 💰 Budget-friendly tips (where applicable, based on user's selected budget).
-    - 🥘 Recommended dining spots relevant to user's preferences.
-    - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
-    - 🚶 Travel tips or local insights relevant to the itinerary.
-    ----
-    Repeat exactly this structured format for every single day of the trip.
-    User’s Trip Details to Strictly Follow:
-    - **Destination:** ${tripData.destination}
-    - **Travel Dates:** ${tripData.startDate} to ${tripData.endDate} (Provide itinerary for every day!)
-    - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
-    - **Budget:** ${tripData.budget || 'medium'}
-    - **Preferred Activities:** ${tripData.activities?.join(', ') || 'no specific activities'}
-    - **Special Wishes:** ${tripData.wishes?.join(', ') || 'none'}
-    - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}
-    - **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}
-    - **Additional Information:** ${tripData.additionalInfo || 'none'}
-    Maintain a friendly, enthusiastic, and highly personalized tone throughout.
-    `;
-
-    const funFactsPrompt = `
-    Provide exactly 15 highly engaging, unique, and surprising fun facts about ${tripData.destination}, tailored for a travel app to captivate and inspire travelers. At least 3 facts must focus on famous people who lived or worked there, each including a fun or memorable story about their time in the city. At least 3 additional facts should tell quirky or fascinating stories about the city’s history, culture, or landmarks. Each fact must be concise (1-2 sentences), positive, and exciting to read. Format the response as a plain text numbered list (1. to 15.), with each fact starting with a number and a period (e.g., "1. ..."). Do not include any introductory text, headings, or extra formatting beyond the numbered list.
-    `;
-
     try {
       const [aiPlan, funFactsResponse] = await Promise.all([
-        callChatGptForResponse(tripPrompt, ""),
-        callChatGptForResponse(funFactsPrompt, "35")
+        callChatGptForResponse(getTripPrompt(tripData, from, to), ""),
+        callChatGptForResponse(getFunFactsPrompt(tripData.destination), "")
       ]);
       const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
       await firestore()
@@ -201,7 +170,7 @@ const AdditionalScreen = ({ navigation }) => {
               progress={progress}
               width={wp(80)}
               height={hp(1)}
-              color={COLOR.lightBlue}
+              color="#1E3A8A"
               borderRadius={5}
             />
           </View>
