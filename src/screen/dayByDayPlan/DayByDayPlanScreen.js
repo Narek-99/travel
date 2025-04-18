@@ -70,7 +70,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
     if (aiPlan) {
       Clipboard.setString(aiPlan);
       ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
-      Toast.show({ type: 'success', text1: 'Copied!', position: 'bottom' });
+      Toast.show({ type: 'success', text1: 'Copied!', position: 'top' });
     }
   };
 
