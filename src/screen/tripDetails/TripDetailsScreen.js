@@ -16,6 +16,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import { callChatGptForResponse } from '../../apis/ChatGptApi';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -66,7 +67,6 @@ const TripDetailsScreen = ({ navigation }) => {
     );
     pulse.start();
   }, []);
-
 
   useEffect(() => {
     const fetchTripImage = async () => {
@@ -242,7 +242,7 @@ const TripDetailsScreen = ({ navigation }) => {
     if (!trip) return;
     const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
-    await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({ aiPlan: null });
+    await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({ aiPlan: null, funFacts: [] });
 
     const tripPrompt = `
       Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
@@ -268,14 +268,23 @@ const TripDetailsScreen = ({ navigation }) => {
       - Additional Information: ${trip.additionalInfo || 'none'}
       Maintain a friendly, enthusiastic, and highly personalized tone throughout.
     `;
+
+    const funFactsPrompt = `Provide exactly 15 highly engaging, unique, and surprising fun facts about ${trip.destination}, tailored for a travel app to captivate and inspire travelers. At least 3 facts must focus on famous people who lived or worked there, each including a fun or memorable story about their time in the city. At least 3 additional facts should tell quirky or fascinating stories about the city’s history, culture, or landmarks. Each fact must be concise (1-2 sentences), positive, and exciting to read. Format the response as a plain text numbered list (1. to 15.), with each fact starting with a number and a period (e.g., "1. ..."). Do not include any introductory text, headings, or extra formatting beyond the numbered list.`;
+
     try {
-      const newPlan = await callChatGptForResponse(tripPrompt, "");
+      const [newPlan, funFactsResponse] = await Promise.all([
+        callChatGptForResponse(tripPrompt, ""),
+        callChatGptForResponse(funFactsPrompt, "35")
+      ]);
+      const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
       await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({
-        aiPlan: newPlan
+        aiPlan: newPlan,
+        funFacts
       });
-      setTrip(prev => ({ ...prev, aiPlan: newPlan }));
+      setTrip(prev => ({ ...prev, aiPlan: newPlan, funFacts }));
     } catch (error) {
-      console.error('❌ Fehler beim Neugenerieren des Plans:', error);
+      console.error('❌ Fehler beim Neugenerieren des Plans oder Fun Facts:', error);
+      Toast.show({ type: 'error', text1: 'Failed to regenerate plan or fun facts' });
     }
   };
 
@@ -529,21 +538,16 @@ const TripDetailsScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.DAYBYDAY, { tripId }); }}>
             <Text style={styles.sheetButtonText}>📅  Day-by-Day Plan</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.FUNFACTS, { tripId }); }}>
+            <Text style={styles.sheetButtonText}>😊  Fun Facts</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); handleOpenHotelAffiliateLink(); }}>
             <Text style={styles.sheetButtonText}>🏨  Hotels</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.BOOKING, { tripId }); }}>
             <Text style={styles.sheetButtonText}>✈️  Flights</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.FUNFACTS, { tripId }); }}>
-            <Text style={styles.sheetButtonText}>😊  Fun Facts</Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
-            <Text style={styles.sheetButtonText}>🔗  Share Trip</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); regenerateAiPlan(); }}>
-            <Text style={styles.sheetButtonText}>♻️  Regenerate Plan</Text>
-          </TouchableOpacity> */}
+
         </View>
       </RBSheet>
     </View>
@@ -707,7 +711,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 6,
   },
-
   fabInner: {
     width: 66,
     height: 66,
@@ -721,7 +724,6 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 10,
   },
-
   loadingText: {
     textAlign: 'center',
     color: COLOR.dark,

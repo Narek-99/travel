@@ -4,8 +4,8 @@ import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import ProgressBar from 'react-native-progress/Bar';
-import { useTripStore } from '../../store/tripStore'; // Zustand Store
-import { useSelector } from 'react-redux'; // Get user ID from Redux
+import { useTripStore } from '../../store/tripStore';
+import { useSelector } from 'react-redux';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
@@ -21,15 +21,14 @@ const progress = currentStep / totalSteps;
 const AdditionalScreen = ({ navigation }) => {
   const { tripData, setTripData, resetTrip } = useTripStore();
   const [additionalInfo, setAdditionalInfo] = useState(tripData.additionalInfo || '');
-  const user = useSelector(({ appReducer }) => appReducer.user); // Get logged-in user
+  const user = useSelector(({ appReducer }) => appReducer.user);
   const [loading, setLoading] = useState(false);
-
   const route = useRoute();
   const tripId = route.params?.tripId;
 
   const getDateString = (timestamp) => {
-    if (!timestamp?.toDate) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); // Support für Timestamp und ISO
+    if (!timestamp?.toDate && !timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toISOString().split('T')[0];
   };
 
@@ -37,21 +36,17 @@ const AdditionalScreen = ({ navigation }) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-
     if (duration <= maxDays) {
       return { from: getDateString(start), to: getDateString(end) };
     }
-
     const limitedEnd = new Date(start);
     limitedEnd.setDate(start.getDate() + maxDays - 1);
-
     return { from: getDateString(start), to: getDateString(limitedEnd) };
   };
 
   useEffect(() => {
     const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
-
+      if (!tripId) return;
       try {
         const tripDetails = await firestore()
           .collection('users')
@@ -61,20 +56,18 @@ const AdditionalScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-
-          setAdditionalInfo(data.additionalInfo);
+          setAdditionalInfo(data.additionalInfo || '');
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
       }
     };
-
     loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
+  }, [tripId, user.uid]);
 
   useEffect(() => {
     setTripData({ additionalInfo });
-  }, [additionalInfo]);
+  }, [additionalInfo, setTripData]);
 
   const handleSaveAdditionalInformation = async () => {
     try {
@@ -84,38 +77,31 @@ const AdditionalScreen = ({ navigation }) => {
         .collection('trips')
         .doc(tripId)
         .update({ additionalInfo });
-
       Toast.show({
         type: 'success',
         text1: 'Additional information updated successfully',
         position: 'top',
         visibilityTime: 2000,
       });
-
     } catch (error) {
-
       Toast.show({
         type: 'error',
         text1: 'Failed to update additional information',
         position: 'bottom',
         visibilityTime: 4000,
       });
-    };
-  }
+    }
+  };
 
   const generateAiPlanInBackground = async (tripData, tripId) => {
     const { from, to } = getLimitedDateRange(tripData.startDate, tripData.endDate);
 
     const tripPrompt = `
     Create a highly personalized, clearly structured day-by-day travel itinerary based strictly on the user's provided preferences and trip details below.
-    
     Follow these instructions carefully:
-    
-    1. Then, provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
+    1. Provide a separate, clearly marked itinerary for EVERY SINGLE DAY of the trip, from **${from}** to **${to}**.
     2. Use this precise daily structure for each day (provide the response in Markdown):
-    
     -----
-    
     📅 Day [X]
     - 📍 Activity & Location: Specific location name and a brief description tailored exactly to user's preferences.
     - 🕒 Suggested defined time range (e.g., 9:00–12:00)
@@ -123,13 +109,9 @@ const AdditionalScreen = ({ navigation }) => {
     - 🥘 Recommended dining spots relevant to user's preferences.
     - 🏨 Recommended accommodations aligned with user's preferences (if applicable).
     - 🚶 Travel tips or local insights relevant to the itinerary.
-    
     ----
     Repeat exactly this structured format for every single day of the trip.
-    
-    
     User’s Trip Details to Strictly Follow:
-    
     - **Destination:** ${tripData.destination}
     - **Travel Dates:** ${tripData.startDate} to ${tripData.endDate} (Provide itinerary for every day!)
     - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
@@ -139,22 +121,27 @@ const AdditionalScreen = ({ navigation }) => {
     - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}
     - **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}
     - **Additional Information:** ${tripData.additionalInfo || 'none'}
-    
-    Maintain a friendly, enthusiastic, and highly personalized tone throughout. It should feel obvious that the itinerary was carefully crafted specifically for the user's provided wishes and preferences.
+    Maintain a friendly, enthusiastic, and highly personalized tone throughout.
+    `;
+
+    const funFactsPrompt = `
+    Provide exactly 15 highly engaging, unique, and surprising fun facts about ${tripData.destination}, tailored for a travel app to captivate and inspire travelers. At least 3 facts must focus on famous people who lived or worked there, each including a fun or memorable story about their time in the city. At least 3 additional facts should tell quirky or fascinating stories about the city’s history, culture, or landmarks. Each fact must be concise (1-2 sentences), positive, and exciting to read. Format the response as a plain text numbered list (1. to 15.), with each fact starting with a number and a period (e.g., "1. ..."). Do not include any introductory text, headings, or extra formatting beyond the numbered list.
     `;
 
     try {
-      const aiPlan = await callChatGptForResponse(tripPrompt, "35");
-
+      const [aiPlan, funFactsResponse] = await Promise.all([
+        callChatGptForResponse(tripPrompt, ""),
+        callChatGptForResponse(funFactsPrompt, "35")
+      ]);
+      const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
       await firestore()
         .collection('users')
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({ aiPlan });
-
+        .update({ aiPlan, funFacts });
     } catch (error) {
-      console.error("❌ Fehler beim Generieren des AI-Plans:", error);
+      console.error("❌ Fehler beim Generieren des AI-Plans oder Fun Facts:", error);
     }
   };
 
@@ -172,6 +159,7 @@ const AdditionalScreen = ({ navigation }) => {
       ...tripData,
       additionalInfo,
       aiPlan: '',
+      funFacts: [],
       updatedAt: new Date().toISOString(),
     };
 
@@ -186,13 +174,9 @@ const AdditionalScreen = ({ navigation }) => {
         .collection('trips')
         .doc(effectiveTripId)
         .set(tripToSave, { merge: true });
-
       resetTrip();
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId: effectiveTripId });
-
-      // 🧠 Starte AI-Plan-Erstellung im Hintergrund
       generateAiPlanInBackground(tripToSave, effectiveTripId);
-
     } catch (error) {
       console.error("Error saving trip:", error);
       Toast.show({
@@ -211,8 +195,6 @@ const AdditionalScreen = ({ navigation }) => {
       <View style={styles.screenContainer}>
         <View style={styles.contentContainer}>
           <SafeAreaView />
-
-          {/* Step Indicator and Progress Bar */}
           <View style={styles.stepIndicatorContainer}>
             <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
             <ProgressBar
@@ -223,21 +205,17 @@ const AdditionalScreen = ({ navigation }) => {
               borderRadius={5}
             />
           </View>
-
           <View style={styles.headlineContainer}>
             <Pressable onPress={() => navigation.goBack()}>
               <SVG.BackIcon fill="black" />
             </Pressable>
             <Label style={styles.titleText}>{En.additionalTitle}</Label>
-
             <View style={{ flex: 1 }} />
             <Pressable onPress={() => tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId }) : navigation.navigate(SCREEN.TRIPS)}>
               <SVG.Close fill="black" />
             </Pressable>
           </View>
           <Label style={styles.subtitleText}>{En.additionalSubtitle}</Label>
-
-          {/* Text Input for Additional Information */}
           <TextInput
             style={styles.textInput}
             onChangeText={(text) => setAdditionalInfo(text)}
@@ -247,7 +225,6 @@ const AdditionalScreen = ({ navigation }) => {
             value={additionalInfo}
             multiline
           />
-
           <View style={styles.submitContainer}>
             <Button
               style={styles.nextButton}
@@ -273,9 +250,9 @@ const styles = StyleSheet.create({
   headlineContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align items on both ends
-    width: '100%', // Ensure the container takes full width
-    paddingHorizontal: 10, // Optional: for inner spacing
+    justifyContent: "space-between",
+    width: '100%',
+    paddingHorizontal: 10,
     gap: wp(2),
     marginTop: hp(2)
   },
@@ -308,11 +285,6 @@ const styles = StyleSheet.create({
     marginVertical: hp(3),
     textAlignVertical: 'top',
   },
-  optionalText: {
-    ...TEXT_STYLE.textSmall,
-    color: COLOR.black,
-    marginTop: hp(1),
-  },
   stepIndicatorContainer: {
     alignItems: 'center',
   },
@@ -320,15 +292,6 @@ const styles = StyleSheet.create({
     ...TEXT_STYLE.textSmall,
     color: COLOR.lightBlue,
     marginBottom: hp(1),
-  },
-  continueButton: {
-    backgroundColor: '#002953',
-    marginTop: 'auto',
-    marginBottom: hp(5),
-    marginHorizontal: wp(2),
-  },
-  buttonText: {
-    color: 'white',
   },
   submitContainer: {
     justifyContent: 'flex-end',
@@ -340,5 +303,8 @@ const styles = StyleSheet.create({
   nextButton: {
     backgroundColor: '#002953',
     marginHorizontal: wp(2),
+  },
+  buttonText: {
+    color: 'white',
   },
 });
