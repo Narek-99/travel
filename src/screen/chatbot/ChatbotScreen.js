@@ -1,9 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, TextInput, TouchableOpacity, Keyboard, Text, Animated, KeyboardAvoidingView } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Keyboard,
+  Text,
+  Animated,
+  KeyboardAvoidingView
+} from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
-import { AppHeader, Label } from '../../components';
+import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { SVG } from '../../assets/svgs';
@@ -223,7 +234,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 4,
-    borderColor: '#00A3FF',
+    borderColor: '#1E3A8A',
   },
   eagle: {
     zIndex: 2,
@@ -295,7 +306,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: wp(2),
-    backgroundColor: '#00A3FF',
+    backgroundColor: '#1E3A8A',
     borderRadius: "50%",
     padding: wp(2.5),
     shadowColor: '#000',
