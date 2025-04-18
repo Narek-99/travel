@@ -25,6 +25,11 @@ import Search from './search.svg'
 import Minus from './minus.svg'
 import Plus2 from './plus2.svg'
 import Eagle from './eagle.svg'
+import Itinerary from './itinerary.svg'
+import Light from './light.svg'
+import Hotel from './hotel.svg'
+import TakeOff from './takeoff.svg'
+import AiBirn from './aiBirn.svg'
 
 export const SVG = {
     BackIcon,
@@ -53,5 +58,10 @@ export const SVG = {
     Search,
     Minus,
     Plus2,
-    Eagle
+    Eagle,
+    Itinerary,
+    Light,
+    Hotel,
+    TakeOff,
+    AiBirn
 }

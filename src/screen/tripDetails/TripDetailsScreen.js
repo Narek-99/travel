@@ -51,6 +51,14 @@ const TripDetailsScreen = ({ navigation }) => {
   const bottomSheetRef = useRef(null);
   const fabScale = useRef(new Animated.Value(1)).current;
 
+  const optionFadeAnims = [
+    useFadeIn(),
+    useFadeIn(),
+    useFadeIn(),
+    useFadeIn(),
+    useFadeIn(),
+  ];
+
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.sequence([
@@ -288,6 +296,11 @@ const TripDetailsScreen = ({ navigation }) => {
     navigation.navigate(SCREEN.DESTINATION, { tripId });
   };
 
+  const handleOptionPress = (action) => {
+    ReactNativeHapticFeedback.trigger('impactLight');
+    action();
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
@@ -482,19 +495,18 @@ const TripDetailsScreen = ({ navigation }) => {
         ref={bottomSheetRef}
         useNativeDriver={false}
         draggable
-        height={hp(50)}
+        height={hp(52)}
         customStyles={{
           wrapper: { backgroundColor: 'transparent' },
-          draggableIcon: { backgroundColor: COLOR.lightGray },
+          draggableIcon: { backgroundColor: '#D1D5DB' },
           container: {
-            backgroundColor: COLOR.white,
             shadowColor: COLOR.black,
-            shadowOffset: { width: 2, height: 12 },
-            shadowOpacity: 0.58,
-            shadowRadius: 16,
-            elevation: 24,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 12,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
           }
         }}
         customModalProps={{
@@ -503,31 +515,84 @@ const TripDetailsScreen = ({ navigation }) => {
         }}
         customAvoidingViewProps={{ enabled: false }}
       >
-        <View style={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>Trip Options</Text>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.DAYBYDAY, { tripId }); }}>
-            <Text style={styles.sheetButtonText}>📅  Day-by-Day Plan</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.FUNFACTS, { tripId }); }}>
-            <Text style={styles.sheetButtonText}>😊  Fun Facts</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={handleChatbotPress}>
-            <SVG.AiStar fill="#00A3FF" width={20} height={20} />
-            <Text style={styles.sheetButtonText}>AI Chat</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); handleOpenHotelAffiliateLink(); }}>
-            <Text style={styles.sheetButtonText}>🏨  Hotels</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); navigation.navigate(SCREEN.BOOKING, { tripId }); }}>
-            <Text style={styles.sheetButtonText}>✈️  Flights</Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); shareTrip(); }}>
-            <Text style={styles.sheetButtonText}>🔗  Share Trip</Text>
-          </TouchableOpacity> */}
-          {/* <TouchableOpacity style={styles.sheetButton} onPress={() => { bottomSheetRef.current?.close(); regenerateAiPlan(); }}>
-            <Text style={styles.sheetButtonText}>♻️  Regenerate Plan</Text>
-          </TouchableOpacity> */}
-        </View>
+        <LinearGradient
+          colors={['#FFFFFF', '#F1F5F9']}
+          style={styles.sheetContent}
+        >
+          <Text style={styles.sheetTitle}>Explore Your Trip</Text>
+          <View style={styles.optionsContainer}>
+            {[
+              {
+                label: 'Daily Itinerary',
+                icon: <SVG.Itinerary width={24} height={24} fill="#007AFF" />,
+                action: () => {
+                  navigation.navigate(SCREEN.DAYBYDAY, { tripId });
+                  bottomSheetRef.current?.close();
+                }
+              },
+              {
+                label: 'Cool Facts',
+                icon: <SVG.Light width={24} height={24} fill="#F59E0B" />,
+                action: () => {
+                  navigation.navigate(SCREEN.FUNFACTS, { tripId });
+                  bottomSheetRef.current?.close();
+                }
+              },
+              {
+                label: 'Chat with AI',
+                icon: <SVG.Ai width={24} height={24} fill="#00A3FF" />,
+                action: handleChatbotPress,
+              },
+              {
+                label: 'Find Hotels',
+                icon: <SVG.Hotel width={24} height={24} fill="#EF4444" />,
+                action: handleOpenHotelAffiliateLink,
+              },
+              {
+                label: 'Book Flights',
+                icon: <SVG.TakeOff width={24} height={24} fill="#10B981" />,
+                action: () => {
+                  navigation.navigate(SCREEN.BOOKING, { tripId });
+                  bottomSheetRef.current?.close();
+                }
+              },
+            ].map(({ label, icon, action }, index) => {
+              const scale = useRef(new Animated.Value(1)).current;
+
+              const onPressIn = () => {
+                Animated.spring(scale, {
+                  toValue: 0.95,
+                  useNativeDriver: true,
+                }).start();
+              };
+
+              const onPressOut = () => {
+                Animated.spring(scale, {
+                  toValue: 1,
+                  useNativeDriver: true,
+                }).start();
+              };
+
+              return (
+                <Animated.View
+                  key={index}
+                  style={[styles.optionCard, { opacity: optionFadeAnims[index], transform: [{ scale }] }]}
+                >
+                  <TouchableOpacity
+                    style={styles.optionButton}
+                    onPress={() => handleOptionPress(action)}
+                    onPressIn={onPressIn}
+                    onPressOut={onPressOut}
+                    activeOpacity={1}
+                  >
+                    {icon}
+                    <Text style={styles.optionText}>{label}</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </LinearGradient>
       </RBSheet>
     </View>
   );
@@ -653,25 +718,39 @@ const styles = StyleSheet.create({
   },
   sheetContent: {
     flex: 1,
-    padding: wp(5),
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   sheetTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: COLOR.dark,
     marginBottom: hp(2),
     textAlign: 'center',
   },
-  sheetButton: {
+  optionsContainer: {
+    flex: 1,
+    paddingHorizontal: wp(5),
+  },
+  optionCard: {
+    backgroundColor: '#F7F7F7',
+    borderRadius: 12,
+    marginVertical: hp(0.75),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: hp(1.5),
+    padding: wp(4),
     gap: wp(3),
-    borderBottomWidth: 1,
-    borderBottomColor: COLOR.lightGray,
   },
-  sheetButtonText: {
+  optionText: {
     fontSize: 16,
+    fontWeight: '600',
     color: COLOR.dark,
   },
   fab: {
