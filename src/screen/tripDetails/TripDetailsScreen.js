@@ -50,14 +50,14 @@ const TripDetailsScreen = ({ navigation }) => {
   const [itinerary, setItinerary] = useState([]);
   const [loadingItinerary, setLoadingItinerary] = useState(true);
   const mapRef = useRef(null);
-
   const optionFadeAnims = [
     useFadeIn(),
     useFadeIn(),
     useFadeIn(),
     useFadeIn(),
-    useFadeIn(),
+    useFadeIn()
   ];
+  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -82,19 +82,11 @@ const TripDetailsScreen = ({ navigation }) => {
       try {
         const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/unsplash?destination=${trip.destination}`);
         const data = await response.json();
-        const imageUrl = data.results[0]?.urls?.small;
-        setTripImageUrl(imageUrl);
-      } catch (error) {
-        console.error('Error fetching trip image:', error);
-      }
+        setTripImageUrl(data.results[0]?.urls?.small);
+      } catch (error) { }
     };
     if (trip?.destination) fetchTripImage();
   }, [trip?.destination]);
-
-  const handleChatbotPress = () => {
-    bottomSheetRef.current?.close();
-    navigation.navigate(SCREEN.CHATBOT, { tripId });
-  };
 
   useEffect(() => {
     if (!user?.uid || !tripId) return;
@@ -103,12 +95,12 @@ const TripDetailsScreen = ({ navigation }) => {
       .doc(user.uid)
       .collection('trips')
       .doc(tripId)
-      .onSnapshot((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          setTrip(data);
-        }
-      }, (error) => console.error('❌ Fehler beim Live-Update des Trips:', error));
+      .onSnapshot(
+        doc => {
+          if (doc.exists) {
+            setTrip(doc.data());
+          }
+        }, (error) => console.error('❌ Fehler beim Live-Update des Trips:', error));
     return () => unsubscribe();
   }, [user?.uid, tripId]);
 
@@ -141,7 +133,6 @@ const TripDetailsScreen = ({ navigation }) => {
           longitudeDelta: 0.05,
         });
       } catch (error) {
-        console.error('❌ Geocoding failed:', error);
         Toast.show({ type: 'error', text1: 'Failed to load map' });
       } finally {
         setLoadingMap(false);
@@ -161,26 +152,19 @@ const TripDetailsScreen = ({ navigation }) => {
           .get();
         const data = snapshot.data();
         if (data) setTrip(data);
-      } catch (error) {
-        console.error('❌ Fehler beim Laden des Trips:', error);
-      }
+      } catch (error) { }
     };
     if (user?.uid && tripId) fetchTripDetails();
   }, [user?.uid, tripId]);
-
-  const [weather, setWeather] = useState(null);
 
   const fetchAttractions = async () => {
     setLoadingAttractions(true);
     if (!region?.latitude || !region?.longitude) return;
     try {
-      const response = await fetch(
-        `https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}`
-      );
+      const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}`);
       const data = await response.json();
       setAttractions(data.results.slice(0, 10));
     } catch (err) {
-      console.error('❌ Fehler beim Laden der Sehenswürdigkeiten:', err);
     } finally {
       setLoadingAttractions(false);
     }
@@ -207,7 +191,6 @@ const TripDetailsScreen = ({ navigation }) => {
         setWeather({ condition: data.current.condition.text, icon: data.current.condition.icon, temp: data.current.temp_c });
       }
     } catch (err) {
-      console.error('❌ Fehler beim Wetterabruf (Proxy):', err);
       Toast.show({ type: 'error', text1: 'Failed to load weather' });
     } finally {
       setLoadingWeather(false);
@@ -216,42 +199,31 @@ const TripDetailsScreen = ({ navigation }) => {
 
   const regenerateItinerary = async () => {
     if (!trip || !region) {
-      console.log('⏩ Skipping itinerary regeneration: trip or region not ready');
       setLoadingItinerary(false);
       return;
     }
 
     setLoadingItinerary(true);
-    console.log("🔁 Regenerating itinerary...");
-    console.log("📍 Region:", region);
-    console.log("🛫 Trip dates:", getDateString(trip.startDate), getDateString(trip.endDate));
-
-    // Timeout to prevent hanging
     const timeout = setTimeout(() => {
       if (loadingItinerary) {
-        console.error('❌ Itinerary fetch timed out');
         Toast.show({ type: 'error', text1: 'Itinerary fetch timed out' });
         setItinerary([]);
         setLoadingItinerary(false);
       }
-    }, 15000); // 15 seconds timeout
+    }, 15000);
 
     try {
       const url = `https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${region.latitude}&lng=${region.longitude}&tripId=${tripId}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`;
-      console.log("📡 Calling:", url);
-
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("✅ Raw itinerary response:", data);
-
       if (data.itinerary && Array.isArray(data.itinerary)) {
-        // Validate each itinerary item
-        const validItinerary = data.itinerary.filter(item => {
-          const isValid = item.attraction &&
+        const validItinerary = data.itinerary.filter(
+          item =>
+            item.attraction &&
             typeof item.attraction.lat === 'number' &&
             typeof item.attraction.lng === 'number' &&
             !isNaN(item.attraction.lat) &&
@@ -260,26 +232,20 @@ const TripDetailsScreen = ({ navigation }) => {
             item.startTime &&
             item.endTime &&
             item.travelDistance &&
-            item.travelDuration;
-          if (!isValid) {
-            console.warn('⚠️ Invalid itinerary item:', item);
-          }
-          return isValid;
-        });
+            item.travelDuration
+        );
 
         if (validItinerary.length === 0) {
           throw new Error('No valid itinerary items found after validation');
         }
 
-        console.log("✅ Valid itinerary items:", validItinerary.length);
         setItinerary(validItinerary);
       } else {
-        throw new Error('Invalid itinerary data received: itinerary is not an array or is missing');
+        throw new Error('Invalid itinerary data received');
       }
     } catch (error) {
-      console.error("❌ Error generating itinerary:", error);
       Toast.show({ type: 'error', text1: 'Failed to generate itinerary', text2: error.message });
-      setItinerary([]); // Reset to empty array on error
+      setItinerary([]);
     } finally {
       clearTimeout(timeout);
       setLoadingItinerary(false);
@@ -293,7 +259,7 @@ const TripDetailsScreen = ({ navigation }) => {
     }
   }, [region, trip?.startDate]);
 
-  const getDateString = (timestamp) => {
+  const getDateString = timestamp => {
     if (!timestamp?.toDate) return '';
     return timestamp.toDate().toISOString().split('T')[0];
   };
@@ -307,62 +273,77 @@ const TripDetailsScreen = ({ navigation }) => {
     return { from: getDateString(startDate), to: getDateString({ toDate: () => limitedEnd }) };
   };
 
-  useEffect(() => {
-    if (region && trip?.startDate) fetchWeather(region.latitude, region.longitude, getDateString(trip.startDate));
-  }, [region, trip?.startDate]);
-
   const regenerateAiPlan = async () => {
     if (!trip) return;
     const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
-    await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({ aiPlan: null, funFacts: [] });
+    await firestore()
+      .collection('users')
+      .doc(user.uid)
+      .collection('trips')
+      .doc(tripId)
+      .update({ aiPlan: null, funFacts: [] });
 
     try {
       const [newPlan, funFactsResponse] = await Promise.all([
-        callChatGptForResponse(getTripPrompt(trip, from, to), ""),
-        callChatGptForResponse(getFunFactsPrompt(trip.destination), "")
+        callChatGptForResponse(getTripPrompt(trip, from, to), ''),
+        callChatGptForResponse(getFunFactsPrompt(trip.destination), ''),
       ]);
       const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
-      await firestore().collection('users').doc(user.uid).collection('trips').doc(tripId).update({
-        aiPlan: newPlan,
-        funFacts
-      });
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .update({ aiPlan: newPlan, funFacts });
       setTrip(prev => ({ ...prev, aiPlan: newPlan, funFacts }));
     } catch (error) {
-      console.error('❌ Fehler beim Neugenerieren des Plans oder Fun Facts:', error);
       Toast.show({ type: 'error', text1: 'Failed to regenerate plan or fun facts' });
     }
   };
 
-  const formatDate = (timestamp) => {
+  const formatDate = timestamp => {
     if (!timestamp?.toDate) return '';
     return timestamp.toDate().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  const getCompanionEmoji = (companion) => {
+  const getCompanionEmoji = companion => {
     switch ((companion || '').toLowerCase()) {
-      case 'partner': return '❤️';
-      case 'familie': case 'family': return '👨‍👩‍👧‍👦';
-      case 'freunde': case 'friends': return '🧑‍🤝‍🧑';
-      case 'kollegen': case 'colleagues': return '💼';
-      case 'allein': case 'alone': return '👤';
-      default: return '👥';
+      case 'partner':
+        return '❤️';
+      case 'familie':
+      case 'family':
+        return '👨‍👩‍👧‍👦';
+      case 'freunde':
+      case 'friends':
+        return '🧑‍🤝‍🧑';
+      case 'kollegen':
+      case 'colleagues':
+        return '💼';
+      case 'allein':
+      case 'alone':
+        return '👤';
+      default:
+        return '👥';
     }
   };
 
   const handleOptionsPress = useCallback(() => {
-    if (bottomSheetRef.current) {
-      bottomSheetRef.current.open();
-    } else console.error('RBSheet ref is not initialized');
+    bottomSheetRef.current?.open();
   }, []);
 
   const handleEditTripPress = () => {
     navigation.navigate(SCREEN.DESTINATION, { tripId });
   };
 
-  const handleOptionPress = (action) => {
+  const handleOptionPress = action => {
     ReactNativeHapticFeedback.trigger('impactLight');
     action();
+  };
+
+  const handleChatbotPress = () => {
+    bottomSheetRef.current?.close();
+    navigation.navigate(SCREEN.CHATBOT, { tripId });
   };
 
   return (
@@ -370,21 +351,19 @@ const TripDetailsScreen = ({ navigation }) => {
       <SafeAreaView />
       <AppHeader
         leftComp={
-          <TouchableOpacity onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
-            navigation.navigate(SCREEN.TRIPS);
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+              navigation.navigate(SCREEN.TRIPS);
+            }}>
             <SVG.BackIcon fill={COLOR.dark} />
           </TouchableOpacity>
         }
-        title='Trip Details'
+        title="Trip Details"
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
 
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {loadingWeather ? (
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.infoCard}>
@@ -396,14 +375,9 @@ const TripDetailsScreen = ({ navigation }) => {
         ) : trip ? (
           <View style={styles.infoCardWithImage}>
             <FastImage source={{ uri: tripImageUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-            <LinearGradient
-              colors={['rgba(0, 0, 0, 1)', 'transparent']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={StyleSheet.absoluteFillObject}
-            />
+            <LinearGradient colors={['rgba(0, 0, 0, 1)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFillObject} />
             <View style={styles.infoContent}>
-              <Animated.View style={[styles.infoTextContainer, { opacity: infoFadeAnim }]}>
+              <Animated.View style={[styles.infoText, { opacity: infoFadeAnim }]}>
                 <Label style={styles.infoDestination}>{trip.destination}</Label>
                 <Label style={styles.infoDate}>
                   {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
@@ -411,12 +385,16 @@ const TripDetailsScreen = ({ navigation }) => {
                 {weather && (
                   <View style={styles.infoRow}>
                     <Label style={styles.weatherIcon}>🌤</Label>
-                    <Label style={styles.infoText}>{weather.condition} · {weather.temp}°C</Label>
+                    <Label style={styles.infoText}>
+                      {weather.condition} · {weather.temp}°C
+                    </Label>
                   </View>
                 )}
                 <View style={styles.infoRow}>
                   <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
-                  <Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label>
+                  <Label style={styles.infoText}>
+                    {trip.companion} · {trip.numberOfPersons || '1'} person
+                  </Label>
                 </View>
               </Animated.View>
               <TouchableOpacity style={styles.editButton} onPress={handleEditTripPress}>
@@ -432,51 +410,57 @@ const TripDetailsScreen = ({ navigation }) => {
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.map} />
           </SkeletonPlaceholder>
-        ) : region && (
-          <Animated.View style={{ opacity: mapFadeAnim }}>
-            <View style={{ height: 250, marginBottom: hp(2) }}>
-              <MapView ref={mapRef} style={StyleSheet.absoluteFillObject} provider="google" region={region} showsUserLocation showsMyLocationButton rotateEnabled>
-                <Marker coordinate={region} title={trip.destination} />
-                {attractions.map((place, index) => (
-                  <Marker key={index} coordinate={{ latitude: place.geometry.location.lat, longitude: place.geometry.location.lng }} title={place.name} description={place.vicinity}>
-                    <Callout tooltip onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
-                      <View
-                        style={{
-                          backgroundColor: 'white',
-                          paddingBottom: 10,
-                          width: 200,
-                          alignItems: 'center',
-                          borderRadius: 8
-                        }}>
-                        {place.photos?.[0]?.photo_reference ? <Image source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}` }} style={{ width: 200, height: 100, borderRadius: 8 }} resizeMode="cover" /> : <Text>No Image</Text>}
-                        <Text style={{ fontWeight: 'bold', marginTop: 8 }}>
-                          {place.name}
-                        </Text>
-                        <Text
-                          style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>{place.vicinity}</Text>
-                        {place.opening_hours?.open_now !== undefined &&
-                          <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>
-                            {place.opening_hours.open_now ? 'Open Now' : 'Closed'}
-                          </Text>}
-                      </View>
-                    </Callout>
-                  </Marker>
-                ))}
-              </MapView>
-            </View>
-          </Animated.View>
+        ) : (
+          region && (
+            <Animated.View style={{ opacity: mapFadeAnim }}>
+              <View style={{ height: 250, marginBottom: hp(2) }}>
+                <MapView
+                  ref={mapRef}
+                  style={StyleSheet.absoluteFillObject}
+                  provider="google"
+                  region={region}
+                  showsUserLocation
+                  showsMyLocationButton
+                  rotateEnabled>
+                  <Marker coordinate={region} title={trip.destination} />
+                  {attractions.map((place, index) => (
+                    <Marker
+                      key={index}
+                      coordinate={{ latitude: place.geometry.location.lat, longitude: place.geometry.location.lng }}
+                      title={place.name}
+                      description={place.vicinity}>
+                      <Callout tooltip onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
+                        <View style={{ backgroundColor: 'white', paddingBottom: 10, width: 200, alignItems: 'center', borderRadius: 8 }}>
+                          {place.photos?.[0]?.photo_reference ? (
+                            <Image
+                              source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}` }}
+                              style={{ width: 200, height: 100, borderRadius: 8 }}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <Text>No Image</Text>
+                          )}
+                          <Text style={{ fontWeight: 'bold', marginTop: 8 }}>{place.name}</Text>
+                          <Text style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>{place.vicinity}</Text>
+                          {place.opening_hours?.open_now !== undefined && (
+                            <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>
+                              {place.opening_hours.open_now ? 'Open Now' : 'Closed'}
+                            </Text>
+                          )}
+                        </View>
+                      </Callout>
+                    </Marker>
+                  ))}
+                </MapView>
+              </View>
+            </Animated.View>
+          )
         )}
 
         {loadingAttractions ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.attractionsContainer}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
             {[...Array(3)].map((_, index) => (
-              <SkeletonPlaceholder
-                key={index}
-                borderRadius={16}>
+              <SkeletonPlaceholder key={index} borderRadius={16}>
                 <View style={styles.attractionCard}>
                   <View style={styles.attractionImage} />
                   <View style={{ height: 16, width: '80%', marginTop: 8 }} />
@@ -487,38 +471,40 @@ const TripDetailsScreen = ({ navigation }) => {
             ))}
           </ScrollView>
         ) : (
-          <Animated.View
-            style={{ opacity: attractionsFadeAnim }}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.attractionsContainer}>
+          <Animated.View style={{ opacity: attractionsFadeAnim }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
               {attractions.map((place, index) => (
                 <TouchableOpacity
                   key={index}
                   activeOpacity={1}
-                  onPress={() => { const loc = place.geometry.location; mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800); }} style={styles.attractionCard}>
-                  {place.photos?.[0]?.photo_reference ?
+                  onPress={() => {
+                    const loc = place.geometry.location;
+                    mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800);
+                  }}
+                  style={styles.attractionCard}>
+                  {place.photos?.[0]?.photo_reference ? (
                     <View style={{ position: 'relative' }}>
                       <FastImage
                         source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }}
                         style={styles.attractionImage}
                         resizeMode={FastImage.resizeMode.cover}
                         onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
-                        onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))} />
-                      {!loadedImages[place.place_id] &&
-                        <ActivityIndicator
-                          style={{ position: 'absolute', top: 60, alignSelf: 'center' }}
-                          size="small"
-                          color={COLOR.dark}
-                        />}
-                    </View> : <View style={styles.noImageBox}>
+                        onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
+                      />
+                      {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}
+                    </View>
+                  ) : (
+                    <View style={styles.noImageBox}>
                       <Text style={styles.noImageText}>Kein Bild</Text>
-                    </View>}
+                    </View>
+                  )}
                   <View style={styles.placeDetailsContainer}>
                     <Text style={styles.attractionName}>{place.name}</Text>
                     <Text style={styles.attractionRating}>
-                      {place.types?.[0] ? (() => { const type = place.types[0].replace('_', ' '); return type.charAt(0).toUpperCase() + type.slice(1); })() : 'Attraction'}
+                      {place.types?.[0] ? (() => {
+                        const type = place.types[0].replace('_', ' ');
+                        return type.charAt(0).toUpperCase() + type.slice(1);
+                      })() : 'Attraction'}
                     </Text>
                     <Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text>
                     <TouchableOpacity
@@ -528,10 +514,17 @@ const TripDetailsScreen = ({ navigation }) => {
                         Toast.show({ type: 'success', text1: 'Address copied!' });
                       }}>
                       <Text style={styles.attractionAddress}>📍 {place.vicinity}</Text>
-                    </TouchableOpacity>{place.opening_hours?.open_now !== undefined && <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}</Text>}
+                    </TouchableOpacity>
+                    {place.opening_hours?.open_now !== undefined && (
+                      <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>
+                        🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}
+                      </Text>
+                    )}
                     <Text
                       style={styles.attractionLink}
-                      onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>🔗 See on Google Maps</Text>
+                      onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
+                      🔗 See on Google Maps
+                    </Text>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -540,15 +533,8 @@ const TripDetailsScreen = ({ navigation }) => {
         )}
       </ScrollView>
 
-      <Animated.View
-        style={
-          [styles.fab, { transform: [{ scale: fabScale }] }]}>
-        <TouchableOpacity
-          onPress={handleOptionsPress}
-          activeOpacity={0.8}
-          style={styles.fabInner}
-        >
-          {/* <Photo src={IMAGES.Eagle2} style={styles.image} contain /> */}
+      <Animated.View style={[styles.fab, { transform: [{ scale: fabScale }] }]}>
+        <TouchableOpacity onPress={handleOptionsPress} activeOpacity={0.8} style={styles.fabInner}>
           <SVG.Eagle width={28} height={28} />
         </TouchableOpacity>
       </Animated.View>
@@ -569,18 +555,11 @@ const TripDetailsScreen = ({ navigation }) => {
             elevation: 12,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
-          }
+          },
         }}
-        customModalProps={{
-          animationType: 'slide',
-          statusBarTranslucent: true
-        }}
-        customAvoidingViewProps={{ enabled: false }}
-      >
-        <LinearGradient
-          colors={['#FFFFFF', '#F1F5F9']}
-          style={styles.sheetContent}
-        >
+        customModalProps={{ animationType: 'slide', statusBarTranslucent: true }}
+        customAvoidingViewProps={{ enabled: false }}>
+        <LinearGradient colors={['#FFFFFF', '#F1F5F9']} style={styles.sheetContent}>
           <Text style={styles.sheetTitle}>Explore Your Trip</Text>
           <View style={styles.optionsContainer}>
             {[
@@ -589,22 +568,14 @@ const TripDetailsScreen = ({ navigation }) => {
                 icon: <SVG.Itinerary width={24} height={24} fill="#007AFF" />,
                 action: () => {
                   if (loadingItinerary) {
-                    Toast.show({
-                      type: 'info',
-                      text1: 'Generating itinerary...',
-                      text2: 'Please wait a few seconds and try again.',
-                    });
+                    Toast.show({ type: 'info', text1: 'Generating itinerary...', text2: 'Please wait a few seconds and try again.' });
                   } else if (itinerary.length > 0) {
                     navigation.navigate(SCREEN.DAYBYDAY, { tripId, itinerary });
                   } else {
-                    Toast.show({
-                      type: 'error',
-                      text1: 'No itinerary available',
-                      text2: 'Please try again later.',
-                    });
+                    Toast.show({ type: 'error', text1: 'No itinerary available', text2: 'Please try again later.' });
                   }
                   bottomSheetRef.current?.close();
-                }
+                },
               },
               {
                 label: 'Cool Facts',
@@ -612,7 +583,7 @@ const TripDetailsScreen = ({ navigation }) => {
                 action: () => {
                   navigation.navigate(SCREEN.FUNFACTS, { tripId });
                   bottomSheetRef.current?.close();
-                }
+                },
               },
               {
                 label: 'Chat with AI',
@@ -633,37 +604,22 @@ const TripDetailsScreen = ({ navigation }) => {
                 action: () => {
                   navigation.navigate(SCREEN.BOOKING, { tripId });
                   bottomSheetRef.current?.close();
-                }
+                },
               },
             ].map(({ label, icon, action }, index) => {
               const scale = useRef(new Animated.Value(1)).current;
 
               const onPressIn = () => {
-                Animated.spring(scale, {
-                  toValue: 0.95,
-                  useNativeDriver: true,
-                }).start();
+                Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
               };
 
               const onPressOut = () => {
-                Animated.spring(scale, {
-                  toValue: 1,
-                  useNativeDriver: true,
-                }).start();
+                Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
               };
 
               return (
-                <Animated.View
-                  key={index}
-                  style={[styles.optionCard, { opacity: optionFadeAnims[index], transform: [{ scale }] }]}
-                >
-                  <TouchableOpacity
-                    style={styles.optionButton}
-                    onPress={() => handleOptionPress(action)}
-                    onPressIn={onPressIn}
-                    onPressOut={onPressOut}
-                    activeOpacity={1}
-                  >
+                <Animated.View key={index} style={[styles.optionCard, { opacity: optionFadeAnims[index], transform: [{ scale }] }]}>
+                  <TouchableOpacity style={styles.optionButton} onPress={() => handleOptionPress(action)} onPressIn={onPressIn} onPressOut={onPressOut} activeOpacity={1}>
                     {icon}
                     <Text style={styles.optionText}>{label}</Text>
                   </TouchableOpacity>
@@ -676,6 +632,7 @@ const TripDetailsScreen = ({ navigation }) => {
     </View>
   );
 };
+
 export default TripDetailsScreen;
 
 const styles = StyleSheet.create({
@@ -796,7 +753,7 @@ const styles = StyleSheet.create({
     top: 15,
     right: 15,
     backgroundColor: 'rgba(30, 58, 138, 0.8)',
-    borderRadius: "50%",
+    borderRadius: '50%',
     padding: wp(3),
   },
   sheetContent: {
@@ -864,11 +821,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 10,
-  },
-  image: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
   },
   loadingText: {
     textAlign: 'center',

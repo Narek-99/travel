@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Pressable, Text, ScrollView, Linking, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Pressable, Text, ScrollView, Linking } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
@@ -16,15 +16,12 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('Received itinerary:', itinerary); // Debug: Log the itinerary data
-
-    // Timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       if (loading) {
         setError('Loading timed out. Please try again.');
         setLoading(false);
       }
-    }, 10000); // 10 seconds timeout
+    }, 10000);
 
     if (!itinerary || !Array.isArray(itinerary) || itinerary.length === 0) {
       setError('No itinerary data available.');
@@ -34,21 +31,19 @@ const DayByDayPlanScreen = ({ navigation }) => {
     }
 
     try {
-      // Validate itinerary structure
-      const invalidItems = itinerary.filter(item =>
-        !item.attraction ||
-        typeof item.attraction.lat !== 'number' ||
-        typeof item.attraction.lng !== 'number' ||
-        isNaN(item.attraction.lat) ||
-        isNaN(item.attraction.lng)
+      const invalidItems = itinerary.filter(
+        item =>
+          !item.attraction ||
+          typeof item.attraction.lat !== 'number' ||
+          typeof item.attraction.lng !== 'number' ||
+          isNaN(item.attraction.lat) ||
+          isNaN(item.attraction.lng)
       );
 
       if (invalidItems.length > 0) {
-        console.warn('Invalid itinerary items:', invalidItems);
         throw new Error('Invalid coordinates in itinerary.');
       }
 
-      // Calculate region to fit all itinerary points
       const latitudes = itinerary.map(item => item.attraction.lat);
       const longitudes = itinerary.map(item => item.attraction.lng);
 
@@ -60,14 +55,13 @@ const DayByDayPlanScreen = ({ navigation }) => {
       const newRegion = {
         latitude: (minLat + maxLat) / 2,
         longitude: (minLng + maxLng) / 2,
-        latitudeDelta: Math.max((maxLat - minLat) * 1.5, 0.05), // Ensure a minimum delta
+        latitudeDelta: Math.max((maxLat - minLat) * 1.5, 0.05),
         longitudeDelta: Math.max((maxLng - minLng) * 1.5, 0.05),
       };
 
       setRegion(newRegion);
       setLoading(false);
     } catch (err) {
-      console.error('Error calculating region:', err);
       setError('Failed to load itinerary map: ' + err.message);
       setLoading(false);
     } finally {
@@ -96,10 +90,11 @@ const DayByDayPlanScreen = ({ navigation }) => {
       <SafeAreaView />
       <AppHeader
         leftComp={
-          <Pressable onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
-            navigation.goBack();
-          }}>
+          <Pressable
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+              navigation.goBack();
+            }}>
             <SVG.BackIcon fill={COLOR.dark} />
           </Pressable>
         }
@@ -107,10 +102,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: hp(5), paddingTop: hp(2) }}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={{ paddingBottom: hp(5), paddingTop: hp(2) }} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Day 1: Optimized Route</Text>
 
         {loading ? (
@@ -135,14 +127,12 @@ const DayByDayPlanScreen = ({ navigation }) => {
                 region={region}
                 showsUserLocation
                 showsMyLocationButton
-                rotateEnabled
-              >
+                rotateEnabled>
                 {itinerary.map((item, index) => (
                   <Marker
                     key={index}
                     coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
-                    title={item.attraction.name}
-                  >
+                    title={item.attraction.name}>
                     <Callout>
                       <View style={{ width: 200, alignItems: 'center', padding: 5 }}>
                         <Text style={{ fontWeight: 'bold' }}>{item.attraction.name}</Text>
@@ -165,13 +155,18 @@ const DayByDayPlanScreen = ({ navigation }) => {
                 <Text style={styles.order}>#{item.order}</Text>
                 <View style={styles.details}>
                   <Text style={styles.placeText}>{item.attraction.name}</Text>
-                  <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
-                  <Text style={styles.ratingText}>⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)</Text>
-                  <Text style={styles.travelText}>🧭 {item.travelDistance} · ⏱ {item.travelDuration}</Text>
+                  <Text style={styles.timeText}>
+                    {item.startTime} - {item.endTime}
+                  </Text>
+                  <Text style={styles.ratingText}>
+                    ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
+                  </Text>
+                  <Text style={styles.travelText}>
+                    🧭 {item.travelDistance} · ⏱ {item.travelDuration}
+                  </Text>
                   <Text
                     style={styles.directionsText}
-                    onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
-                  >
+                    onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}>
                     Directions
                   </Text>
                 </View>
