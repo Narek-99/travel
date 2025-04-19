@@ -3,7 +3,7 @@ import { SafeAreaView, StyleSheet, View, ScrollView, Image, Text, Linking, Touch
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
-import { Label, AppHeader, Photo } from '../../components';
+import { Label, AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
@@ -16,9 +16,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import { callChatGptForResponse } from '../../apis/ChatGptApi';
-import { getTripPrompt, getFunFactsPrompt } from '../../apis/Prompts';
-import { IMAGES } from '../../assets/images';
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -37,7 +34,6 @@ const TripDetailsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const { tripId } = route.params;
   const [region, setRegion] = useState(null);
-  const scrollViewRef = useRef();
   const [trip, setTrip] = useState(null);
   const [previousTrip, setPreviousTrip] = useState(null);
   const [attractions, setAttractions] = useState([]);
@@ -51,6 +47,9 @@ const TripDetailsScreen = ({ navigation }) => {
   const [tripImageUrl, setTripImageUrl] = useState(null);
   const bottomSheetRef = useRef(null);
   const fabScale = useRef(new Animated.Value(1)).current;
+  const [itinerary, setItinerary] = useState([]);
+  const [loadingItinerary, setLoadingItinerary] = useState(true);
+  const mapRef = useRef(null);
 
   const optionFadeAnims = [
     useFadeIn(),
@@ -143,6 +142,7 @@ const TripDetailsScreen = ({ navigation }) => {
         });
       } catch (error) {
         console.error('❌ Geocoding failed:', error);
+        Toast.show({ type: 'error', text1: 'Failed to load map' });
       } finally {
         setLoadingMap(false);
       }
@@ -169,7 +169,6 @@ const TripDetailsScreen = ({ navigation }) => {
   }, [user?.uid, tripId]);
 
   const [weather, setWeather] = useState(null);
-  const mapRef = React.useRef();
 
   const fetchAttractions = async () => {
     setLoadingAttractions(true);
@@ -209,26 +208,90 @@ const TripDetailsScreen = ({ navigation }) => {
       }
     } catch (err) {
       console.error('❌ Fehler beim Wetterabruf (Proxy):', err);
+      Toast.show({ type: 'error', text1: 'Failed to load weather' });
     } finally {
       setLoadingWeather(false);
     }
   };
 
-  const createGoogleHotelsLink = (destination, numberOfPersons = 2) => {
-    const destinationQuery = encodeURIComponent(destination);
-    return `https://www.google.com/travel/hotels/search?destination=${destinationQuery}&adults=${numberOfPersons}`;
-  };
+  const regenerateItinerary = async () => {
+    if (!trip || !region) {
+      console.log('⏩ Skipping itinerary regeneration: trip or region not ready');
+      setLoadingItinerary(false);
+      return;
+    }
 
-  const handleOpenHotelAffiliateLink = async () => {
-    if (!trip) return;
+    setLoadingItinerary(true);
+    console.log("🔁 Regenerating itinerary...");
+    console.log("📍 Region:", region);
+    console.log("🛫 Trip dates:", getDateString(trip.startDate), getDateString(trip.endDate));
+
+    // Timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      if (loadingItinerary) {
+        console.error('❌ Itinerary fetch timed out');
+        Toast.show({ type: 'error', text1: 'Itinerary fetch timed out' });
+        setItinerary([]);
+        setLoadingItinerary(false);
+      }
+    }, 15000); // 15 seconds timeout
+
     try {
-      const affiliateLink = createGoogleHotelsLink(trip.destination, trip.numberOfPersons || 2);
-      Linking.openURL(affiliateLink);
+      const url = `https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${region.latitude}&lng=${region.longitude}&tripId=${tripId}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`;
+      console.log("📡 Calling:", url);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("✅ Raw itinerary response:", data);
+
+      if (data.itinerary && Array.isArray(data.itinerary)) {
+        // Validate each itinerary item
+        const validItinerary = data.itinerary.filter(item => {
+          const isValid = item.attraction &&
+            typeof item.attraction.lat === 'number' &&
+            typeof item.attraction.lng === 'number' &&
+            !isNaN(item.attraction.lat) &&
+            !isNaN(item.attraction.lng) &&
+            item.attraction.name &&
+            item.startTime &&
+            item.endTime &&
+            item.travelDistance &&
+            item.travelDuration;
+          if (!isValid) {
+            console.warn('⚠️ Invalid itinerary item:', item);
+          }
+          return isValid;
+        });
+
+        if (validItinerary.length === 0) {
+          throw new Error('No valid itinerary items found after validation');
+        }
+
+        console.log("✅ Valid itinerary items:", validItinerary.length);
+        setItinerary(validItinerary);
+      } else {
+        throw new Error('Invalid itinerary data received: itinerary is not an array or is missing');
+      }
     } catch (error) {
-      console.error('❌ Error opening hotel link:', error);
-      Toast.show({ type: 'error', text1: 'Failed to open hotel link' });
+      console.error("❌ Error generating itinerary:", error);
+      Toast.show({ type: 'error', text1: 'Failed to generate itinerary', text2: error.message });
+      setItinerary([]); // Reset to empty array on error
+    } finally {
+      clearTimeout(timeout);
+      setLoadingItinerary(false);
     }
   };
+
+  useEffect(() => {
+    if (region && trip?.startDate) {
+      fetchWeather(region.latitude, region.longitude, getDateString(trip.startDate));
+      regenerateItinerary();
+    }
+  }, [region, trip?.startDate]);
 
   const getDateString = (timestamp) => {
     if (!timestamp?.toDate) return '';
@@ -308,22 +371,24 @@ const TripDetailsScreen = ({ navigation }) => {
       <AppHeader
         leftComp={
           <TouchableOpacity onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true }); navigation.navigate(SCREEN.TRIPS);
+            ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+            navigation.navigate(SCREEN.TRIPS);
           }}>
             <SVG.BackIcon fill={COLOR.dark} />
-          </TouchableOpacity>}
+          </TouchableOpacity>
+        }
         title='Trip Details'
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
 
       <ScrollView
-        ref={scrollViewRef}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {loadingWeather ? (
           <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.infoCard}><View style={{ width: 180, height: 25, marginBottom: 10 }} />
+            <View style={styles.infoCard}>
+              <View style={{ width: 180, height: 25, marginBottom: 10 }} />
               <View style={{ width: 120, height: 18, marginBottom: 8 }} />
               <View style={{ width: 160, height: 18 }} />
             </View>
@@ -338,36 +403,32 @@ const TripDetailsScreen = ({ navigation }) => {
               style={StyleSheet.absoluteFillObject}
             />
             <View style={styles.infoContent}>
-              <Animated.View
-                style={
-                  [styles.infoTextContainer, { opacity: infoFadeAnim }]
-                }
-              >
-                <Label style={styles.infoDestination}>
-                  {trip.destination}
-                </Label>
+              <Animated.View style={[styles.infoTextContainer, { opacity: infoFadeAnim }]}>
+                <Label style={styles.infoDestination}>{trip.destination}</Label>
                 <Label style={styles.infoDate}>
                   {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
                 </Label>
-                {weather &&
+                {weather && (
                   <View style={styles.infoRow}>
                     <Label style={styles.weatherIcon}>🌤</Label>
                     <Label style={styles.infoText}>{weather.condition} · {weather.temp}°C</Label>
-                  </View>}
+                  </View>
+                )}
                 <View style={styles.infoRow}>
                   <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
                   <Label style={styles.infoText}>{trip.companion} · {trip.numberOfPersons || '1'} person</Label>
                 </View>
               </Animated.View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={handleEditTripPress}>
+              <TouchableOpacity style={styles.editButton} onPress={handleEditTripPress}>
                 <SVG.Edit fill={COLOR.white} width={20} height={20} />
               </TouchableOpacity>
             </View>
           </View>
-        ) : <Text style={styles.loadingText}>Loading trip details...</Text>}
-        {loadingMap ? (
+        ) : (
+          <Text style={styles.loadingText}>Loading trip details...</Text>
+        )}
+
+        {loadingMap || loadingItinerary ? (
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.map} />
           </SkeletonPlaceholder>
@@ -527,7 +588,21 @@ const TripDetailsScreen = ({ navigation }) => {
                 label: 'Daily Itinerary',
                 icon: <SVG.Itinerary width={24} height={24} fill="#007AFF" />,
                 action: () => {
-                  navigation.navigate(SCREEN.DAYBYDAY, { tripId });
+                  if (loadingItinerary) {
+                    Toast.show({
+                      type: 'info',
+                      text1: 'Generating itinerary...',
+                      text2: 'Please wait a few seconds and try again.',
+                    });
+                  } else if (itinerary.length > 0) {
+                    navigation.navigate(SCREEN.DAYBYDAY, { tripId, itinerary });
+                  } else {
+                    Toast.show({
+                      type: 'error',
+                      text1: 'No itinerary available',
+                      text2: 'Please try again later.',
+                    });
+                  }
                   bottomSheetRef.current?.close();
                 }
               },
@@ -547,7 +622,10 @@ const TripDetailsScreen = ({ navigation }) => {
               {
                 label: 'Find Hotels',
                 icon: <SVG.Hotel width={24} height={24} fill="#EF4444" />,
-                action: handleOpenHotelAffiliateLink,
+                action: () => {
+                  const link = `https://www.google.com/travel/hotels/search?destination=${encodeURIComponent(trip.destination)}&adults=${trip.numberOfPersons || 2}`;
+                  Linking.openURL(link);
+                },
               },
               {
                 label: 'Book Flights',
