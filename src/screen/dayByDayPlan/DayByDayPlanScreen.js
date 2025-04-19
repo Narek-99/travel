@@ -18,6 +18,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const mapFadeAnim = useRef(new Animated.Value(0)).current;
+  const mapRef = useRef(null);
 
   useEffect(() => {
     if (!groupedItinerary || !Array.isArray(groupedItinerary)) {
@@ -137,6 +138,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
         <>
           <Animated.View style={[styles.mapContainer, { opacity: mapFadeAnim }]}>
             <MapView
+              ref={mapRef}
               style={styles.map}
               provider="google"
               region={region}
@@ -154,8 +156,17 @@ const DayByDayPlanScreen = ({ navigation }) => {
                   coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
                   title={item.attraction.name}
                   pinColor={index + 1 === 1 ? 'teal' : 'red'}>
-                  <Callout>
+                  <Callout tooltip>
                     <View style={styles.calloutContainer}>
+                      {item.attraction.photo ? (
+                        <Image
+                          source={{ uri: item.attraction.photo }}
+                          style={styles.calloutImage}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <Text>No Image</Text>
+                      )}
                       <Text style={styles.calloutTitle}>{item.attraction.name}</Text>
                       <Text style={styles.calloutText}>
                         ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
@@ -200,7 +211,20 @@ const DayByDayPlanScreen = ({ navigation }) => {
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
               {dailyItineraries[selectedDayIndex].items.map((item, index) => (
-                <View key={index} style={styles.card}>
+                <Pressable
+                  key={index}
+                  style={styles.card}
+                  onPress={() => {
+                    mapRef.current?.animateToRegion(
+                      {
+                        latitude: item.attraction.lat,
+                        longitude: item.attraction.lng,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                      },
+                      800
+                    );
+                  }}>
                   <View style={styles.orderContainer}>
                     <Text style={styles.order}>#{item.order}</Text>
                     <Text style={styles.dayText}>Day</Text>
@@ -232,7 +256,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
                       <Text style={styles.directionsText}>Directions</Text>
                     </Pressable>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           </View>
@@ -433,14 +457,20 @@ const styles = StyleSheet.create({
   calloutContainer: {
     width: 200,
     alignItems: 'center',
-    padding: 8,
+    paddingBottom: 10,
     backgroundColor: COLOR.white,
+    borderRadius: 8,
+  },
+  calloutImage: {
+    width: 200,
+    height: 100,
     borderRadius: 8,
   },
   calloutTitle: {
     fontWeight: '700',
     fontSize: 14,
     color: COLOR.dark,
+    marginTop: 8,
     marginBottom: 4,
   },
   calloutText: {
