@@ -271,14 +271,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 15,
     padding: wp(4),
-    marginHorizontal: wp(5),
-    marginBottom: hp(2),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    minHeight: hp(20),
   },
   order: {
     fontSize: 18,
@@ -289,30 +286,27 @@ const styles = StyleSheet.create({
   details: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingVertical: hp(1),
+    paddingBottom: hp(3),
+    gap: hp(0.5)
   },
   placeText: {
     fontSize: 16,
     fontWeight: '700',
     color: COLOR.dark,
-    marginBottom: hp(0.5),
   },
   timeText: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: hp(0.5),
     fontWeight: '500',
   },
   ratingText: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: hp(0.5),
     fontWeight: '500',
   },
   travelText: {
     fontSize: 14,
     color: '#4B5563',
-    marginBottom: hp(1),
     fontWeight: '500',
   },
   directionsButton: {
@@ -322,6 +316,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(3),
     alignSelf: 'flex-start',
     marginTop: hp(1),
+    marginBottom: hp(1)
   },
   directionsText: {
     fontSize: 14,
