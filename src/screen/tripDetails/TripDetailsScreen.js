@@ -570,7 +570,7 @@ const TripDetailsScreen = ({ navigation }) => {
                   if (loadingItinerary) {
                     Toast.show({ type: 'info', text1: 'Generating itinerary...', text2: 'Please wait a few seconds and try again.' });
                   } else if (itinerary.length > 0) {
-                    navigation.navigate(SCREEN.DAYBYDAY, { tripId, itinerary });
+                    navigation.navigate(SCREEN.DAYBYDAY, { tripId, itinerary, trip });
                   } else {
                     Toast.show({ type: 'error', text1: 'No itinerary available', text2: 'Please try again later.' });
                   }
