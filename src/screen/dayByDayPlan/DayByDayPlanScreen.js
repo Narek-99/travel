@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, SafeAreaView, View, Pressable, Text, ScrollView, Linking, Dimensions, Animated } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Pressable, Text, ScrollView, Linking, Animated } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
@@ -25,7 +25,6 @@ const DayByDayPlanScreen = ({ navigation }) => {
       setLoading(false);
       return;
     }
-
     setDailyItineraries(groupedItinerary);
   }, [groupedItinerary]);
 
@@ -36,7 +35,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
       return;
     }
 
-    setError(null); // Clear previous error
+    setError(null);
     setLoading(true);
 
     const timeout = setTimeout(() => {
@@ -56,7 +55,6 @@ const DayByDayPlanScreen = ({ navigation }) => {
     try {
       const latitudes = selectedItems.map(item => item.attraction.lat);
       const longitudes = selectedItems.map(item => item.attraction.lng);
-
       const minLat = Math.min(...latitudes);
       const maxLat = Math.max(...latitudes);
       const minLng = Math.min(...longitudes);
@@ -190,7 +188,8 @@ const DayByDayPlanScreen = ({ navigation }) => {
                   onPress={() => {
                     setSelectedDayIndex(index);
                     setError(null);
-                  }} style={[styles.dayTab, selectedDayIndex === index && styles.dayTabSelected]}>
+                  }}
+                  style={[styles.dayTab, selectedDayIndex === index && styles.dayTabSelected]}>
                   <Text style={[styles.dayTabText, selectedDayIndex === index && styles.dayTabTextSelected]}>
                     {formatDayLabel(day.date)}
                   </Text>
@@ -279,7 +278,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    minHeight: hp(20), // Ensure enough height for content
+    minHeight: hp(20),
   },
   order: {
     fontSize: 18,
@@ -289,8 +288,8 @@ const styles = StyleSheet.create({
   },
   details: {
     flex: 1,
-    justifyContent: 'space-between', // Distribute space evenly
-    paddingVertical: hp(1), // Add vertical padding
+    justifyContent: 'space-between',
+    paddingVertical: hp(1),
   },
   placeText: {
     fontSize: 16,
@@ -322,7 +321,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp(1),
     paddingHorizontal: wp(3),
     alignSelf: 'flex-start',
-    marginTop: hp(1), // Ensure space above the button
+    marginTop: hp(1),
   },
   directionsText: {
     fontSize: 14,
