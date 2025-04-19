@@ -32,6 +32,9 @@ import TakeOff from './takeoff.svg'
 import AiBirn from './aiBirn.svg'
 import Copy from './copy.svg'
 import Eagle2 from './eagle2.svg'
+import Clock from './clock.svg'
+import Car from './car.svg'
+import Star from './star.svg'
 
 export const SVG = {
     BackIcon,
@@ -67,5 +70,8 @@ export const SVG = {
     TakeOff,
     AiBirn,
     Copy,
-    Eagle2
+    Eagle2,
+    Clock,
+    Car,
+    Star
 }

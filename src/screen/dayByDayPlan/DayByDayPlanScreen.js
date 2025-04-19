@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, SafeAreaView, View, Pressable, Text, ScrollView, Linking, Animated } from 'react-native';
+import { StyleSheet, View, Pressable, Text, ScrollView, Linking, Animated, Image, Dimensions } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { AppHeader } from '../../components';
-import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
+import { COLOR, hp, wp } from '../../enums/StyleGuide';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import LinearGradient from 'react-native-linear-gradient';
+
+const { height } = Dimensions.get('window');
 
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
@@ -113,74 +113,75 @@ const DayByDayPlanScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView />
-      <AppHeader
-        leftComp={
-          <Pressable
-            onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
-              navigation.goBack();
-            }}>
-            <SVG.BackIcon fill={COLOR.dark} />
-          </Pressable>
-        }
-        title="Day-by-Day Plan"
-        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
-      />
-
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {loading ? (
-          <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.mapSkeleton} />
+      {loading ? (
+        <SkeletonPlaceholder borderRadius={0}>
+          <View style={styles.mapSkeleton} />
+          <View style={styles.daySelectorContainer}>
             {[...Array(3)].map((_, i) => (
-              <View key={i} style={styles.card}>
-                <View style={{ height: 20, width: '60%', marginBottom: 6 }} />
-                <View style={{ height: 14, width: '80%', marginBottom: 4 }} />
-                <View style={{ height: 14, width: '50%' }} />
+              <View key={i} style={styles.dayTabSkeleton} />
+            ))}
+          </View>
+          <View style={styles.attractionsContainer}>
+            {[...Array(3)].map((_, i) => (
+              <View key={i} style={styles.cardSkeleton}>
+                <View style={styles.imageSkeleton} />
+                <View style={{ height: 20, width: '60%', marginTop: 10 }} />
+                <View style={{ height: 14, width: '80%', marginTop: 4 }} />
               </View>
             ))}
-          </SkeletonPlaceholder>
-        ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : region && dailyItineraries[selectedDayIndex]?.items?.length > 0 ? (
-          <>
-            <Animated.View style={[styles.mapContainer, { opacity: mapFadeAnim }]}>
-              <MapView
-                style={styles.map}
-                provider="google"
-                region={region}
-                showsUserLocation
-                showsMyLocationButton
-                rotateEnabled>
+          </View>
+        </SkeletonPlaceholder>
+      ) : error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : region && dailyItineraries[selectedDayIndex]?.items?.length > 0 ? (
+        <>
+          <Animated.View style={[styles.mapContainer, { opacity: mapFadeAnim }]}>
+            <MapView
+              style={styles.map}
+              provider="google"
+              region={region}
+              showsUserLocation
+              showsMyLocationButton
+              rotateEnabled>
+              <Marker
+                coordinate={{ latitude: region.latitude, longitude: region.longitude }}
+                title="Starting Point"
+                pinColor="blue"
+              />
+              {dailyItineraries[selectedDayIndex].items.map((item, index) => (
                 <Marker
-                  coordinate={{ latitude: region.latitude, longitude: region.longitude }}
-                  title="Starting Point"
-                  pinColor="blue"
-                />
-                {dailyItineraries[selectedDayIndex].items.map((item, index) => (
-                  <Marker
-                    key={index}
-                    coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
-                    title={item.attraction.name}>
-                    <Callout>
-                      <View style={styles.calloutContainer}>
-                        <Text style={styles.calloutTitle}>{item.attraction.name}</Text>
-                        <Text style={styles.calloutText}>
-                          ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
-                        </Text>
-                      </View>
-                    </Callout>
-                  </Marker>
-                ))}
-                <Polyline
-                  coordinates={getRouteCoordinates()}
-                  strokeColor="#1E90FF"
-                  strokeWidth={3}
-                  lineDashPattern={[10, 10]}
-                />
-              </MapView>
-            </Animated.View>
+                  key={index}
+                  coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
+                  title={item.attraction.name}
+                  pinColor={index + 1 === 1 ? 'teal' : 'red'}>
+                  <Callout>
+                    <View style={styles.calloutContainer}>
+                      <Text style={styles.calloutTitle}>{item.attraction.name}</Text>
+                      <Text style={styles.calloutText}>
+                        ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
+                      </Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              ))}
+              <Polyline
+                coordinates={getRouteCoordinates()}
+                strokeColor="#1E90FF"
+                strokeWidth={3}
+                lineDashPattern={[10, 10]}
+              />
+            </MapView>
+            <Pressable
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+                navigation.goBack();
+              }}
+              style={styles.backButton}>
+              <SVG.BackIcon fill={COLOR.white} />
+            </Pressable>
+          </Animated.View>
 
+          <View style={styles.bottomContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daySelectorContainer}>
               {dailyItineraries.map((day, index) => (
                 <Pressable
@@ -197,27 +198,48 @@ const DayByDayPlanScreen = ({ navigation }) => {
               ))}
             </ScrollView>
 
-            {dailyItineraries[selectedDayIndex].items.map((item, index) => (
-              <LinearGradient key={index} colors={['#FFFFFF', '#F1F5F9']} style={styles.card}>
-                <Text style={styles.order}>#{item.order}</Text>
-                <View style={styles.details}>
-                  <Text style={styles.placeText}>{item.attraction.name}</Text>
-                  <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
-                  <Text style={styles.ratingText}>⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)</Text>
-                  <Text style={styles.travelText}>🧭 {item.travelDistance} · ⏱ {item.travelDuration}</Text>
-                  <Pressable
-                    onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
-                    style={styles.directionsButton}>
-                    <Text style={styles.directionsText}>Directions</Text>
-                  </Pressable>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
+              {dailyItineraries[selectedDayIndex].items.map((item, index) => (
+                <View key={index} style={styles.card}>
+                  <View style={styles.orderContainer}>
+                    <Text style={styles.order}>#{item.order}</Text>
+                    <Text style={styles.dayText}>Day</Text>
+                  </View>
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: item.attraction.photo || 'https://via.placeholder.com/80' }}
+                      style={styles.attractionImage}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View style={styles.details}>
+                    <Text style={styles.placeText}>{item.attraction.name}</Text>
+                    <View style={styles.reviewContainer}>
+                      <SVG.Star width={16} height={16} fill="#FBA047" />
+                      <Text style={styles.ratingText}>{item.attraction.rating} ({item.attraction.reviews} Reviews)</Text>
+                    </View>
+                    <View style={styles.timeContainer}>
+                      <SVG.Clock width={16} height={16} fill="#1E90FF" />
+                      <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+                    </View>
+                    <View style={styles.travelContainer}>
+                      <SVG.Car width={16} height={16} fill="#4B5563" />
+                      <Text style={styles.travelText}>{item.travelDuration}</Text>
+                    </View>
+                    <Pressable
+                      onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
+                      style={styles.directionsButton}>
+                      <Text style={styles.directionsText}>Directions</Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </LinearGradient>
-            ))}
-          </>
-        ) : (
-          <Text style={styles.emptyText}>No itinerary available for this day.</Text>
-        )}
-      </ScrollView>
+              ))}
+            </ScrollView>
+          </View>
+        </>
+      ) : (
+        <Text style={styles.emptyText}>No itinerary available for this day.</Text>
+      )}
     </View>
   );
 };
@@ -229,8 +251,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7FAFC',
   },
-  scrollContainer: {
-    paddingBottom: hp(5),
+  mapContainer: {
+    flex: 1,
+    width: '100%',
+    height: height,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  mapSkeleton: {
+    width: '100%',
+    height: height,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: "50%",
+    padding: 5,
+  },
+  bottomContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
   },
   daySelectorContainer: {
     paddingHorizontal: wp(5),
@@ -254,52 +300,101 @@ const styles = StyleSheet.create({
   dayTabTextSelected: {
     color: COLOR.white,
   },
-  mapContainer: {
-    height: hp(40),
-    width: '100%',
-    marginBottom: hp(2),
+  dayTabSkeleton: {
+    width: 120,
+    height: 40,
+    borderRadius: 20,
+    marginRight: wp(2),
   },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  mapSkeleton: {
-    height: hp(40),
-    width: '100%',
-    marginBottom: hp(2),
+  attractionsContainer: {
+    paddingHorizontal: wp(5),
+    paddingBottom: hp(3),
   },
   card: {
-    flexDirection: 'row',
+    width: 280,
+    backgroundColor: COLOR.white,
     borderRadius: 15,
-    padding: wp(4),
+    marginRight: wp(3),
+    padding: wp(3),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
-  order: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4B5EAA',
+  cardSkeleton: {
+    width: 280,
+    height: 200,
+    borderRadius: 15,
     marginRight: wp(3),
   },
+  orderContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    zIndex: 1,
+  },
+  order: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLOR.white,
+    marginRight: 4,
+  },
+  dayText: {
+    fontSize: 12,
+    color: COLOR.white,
+  },
+  imageContainer: {
+    width: '100%',
+    height: 120,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  attractionImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageSkeleton: {
+    width: '100%',
+    height: 120,
+    borderRadius: 10,
+  },
   details: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingBottom: hp(3),
+    paddingTop: hp(1),
+    paddingBottom: hp(1),
+    flexDirection: "column",
     gap: hp(0.5)
   },
   placeText: {
     fontSize: 16,
     fontWeight: '700',
     color: COLOR.dark,
+    marginBottom: hp(1),
   },
-  timeText: {
+  ratingText: {
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',
   },
-  ratingText: {
+  timeContainer: {
+    flexDirection: 'row',
+    gap: wp(1)
+  },
+  reviewContainer: {
+    flexDirection: 'row',
+    gap: wp(1)
+  },
+  travelContainer: {
+    flexDirection: 'row',
+    gap: wp(1)
+  },
+  timeText: {
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',
@@ -316,7 +411,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(3),
     alignSelf: 'flex-start',
     marginTop: hp(1),
-    marginBottom: hp(1)
   },
   directionsText: {
     fontSize: 14,
