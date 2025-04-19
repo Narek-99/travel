@@ -227,7 +227,6 @@ const DayByDayPlanScreen = ({ navigation }) => {
                   }}>
                   <View style={styles.orderContainer}>
                     <Text style={styles.order}>#{item.order}</Text>
-                    <Text style={styles.dayText}>Day</Text>
                   </View>
                   <View style={styles.imageContainer}>
                     <Image
@@ -359,16 +358,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: "50%",
+    padding: wp(2),
     zIndex: 1,
   },
   order: {
     fontSize: 14,
     fontWeight: 'bold',
     color: COLOR.white,
-    marginRight: 4,
   },
   dayText: {
     fontSize: 12,
