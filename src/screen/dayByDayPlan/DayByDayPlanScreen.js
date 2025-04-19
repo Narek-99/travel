@@ -9,11 +9,9 @@ import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
 
-const { width } = Dimensions.get('window');
-
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
-  const { itinerary, trip } = route.params;
+  const { itinerary: groupedItinerary, trip } = route.params;
   const [dailyItineraries, setDailyItineraries] = useState([]);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [region, setRegion] = useState(null);
@@ -22,59 +20,42 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const mapFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const fadeIn = () => {
-      Animated.timing(mapFadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    };
-    if (!loading) fadeIn();
-  }, [loading]);
+    if (!groupedItinerary || !Array.isArray(groupedItinerary)) {
+      setError('No itinerary data available.');
+      setLoading(false);
+      return;
+    }
+
+    setDailyItineraries(groupedItinerary);
+  }, [groupedItinerary]);
 
   useEffect(() => {
+    if (!dailyItineraries.length || !dailyItineraries[selectedDayIndex]) {
+      setError('No itinerary data for this day.');
+      setLoading(false);
+      return;
+    }
+
+    setError(null); // Clear previous error
+    setLoading(true);
+
     const timeout = setTimeout(() => {
-      if (loading) {
-        setError('Loading timed out. Please try again.');
-        setLoading(false);
-      }
+      setError('Loading timed out. Please try again.');
+      setLoading(false);
     }, 10000);
 
-    if (!itinerary || !Array.isArray(itinerary) || itinerary.length === 0 || !trip) {
-      setError('No itinerary data available.');
+    const selectedItems = dailyItineraries[selectedDayIndex].items || [];
+
+    if (selectedItems.length === 0) {
+      setError('No itinerary available for this day.');
       setLoading(false);
       clearTimeout(timeout);
       return;
     }
 
     try {
-      const days = calculateDays(trip.startDate, trip.endDate);
-      const itinerariesByDay = splitItineraryByDay(itinerary, days.length);
-      setDailyItineraries(itinerariesByDay);
-
-      const selectedItinerary = itinerariesByDay[selectedDayIndex] || [];
-      if (selectedItinerary.length === 0) {
-        setError('No itinerary available for the selected day.');
-        setLoading(false);
-        clearTimeout(timeout);
-        return;
-      }
-
-      const invalidItems = selectedItinerary.filter(
-        item =>
-          !item.attraction ||
-          typeof item.attraction.lat !== 'number' ||
-          typeof item.attraction.lng !== 'number' ||
-          isNaN(item.attraction.lat) ||
-          isNaN(item.attraction.lng)
-      );
-
-      if (invalidItems.length > 0) {
-        throw new Error('Invalid coordinates in itinerary.');
-      }
-
-      const latitudes = selectedItinerary.map(item => item.attraction.lat);
-      const longitudes = selectedItinerary.map(item => item.attraction.lng);
+      const latitudes = selectedItems.map(item => item.attraction.lat);
+      const longitudes = selectedItems.map(item => item.attraction.lng);
 
       const minLat = Math.min(...latitudes);
       const maxLat = Math.max(...latitudes);
@@ -90,61 +71,47 @@ const DayByDayPlanScreen = ({ navigation }) => {
 
       setRegion(newRegion);
       setLoading(false);
+      clearTimeout(timeout);
     } catch (err) {
-      setError('Failed to load itinerary map: ' + err.message);
+      setError('Failed to calculate map region.');
       setLoading(false);
-    } finally {
       clearTimeout(timeout);
     }
-  }, [itinerary, selectedDayIndex, trip]);
+  }, [dailyItineraries, selectedDayIndex]);
 
-  const calculateDays = (startDate, endDate) => {
-    const start = startDate.toDate();
-    const end = endDate.toDate();
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    const maxDays = Math.min(diffDays, 7);
-
-    const days = [];
-    for (let i = 0; i < maxDays; i++) {
-      const day = new Date(start);
-      day.setDate(start.getDate() + i);
-      days.push(day);
+  useEffect(() => {
+    if (!loading) {
+      Animated.timing(mapFadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
     }
-    return days;
-  };
-
-  const splitItineraryByDay = (itinerary, numDays) => {
-    const itineraries = Array(numDays).fill().map(() => []);
-    itinerary.forEach((item, index) => {
-      const dayIndex = Math.min(Math.floor(index / (itinerary.length / numDays)), numDays - 1);
-      itineraries[dayIndex].push({ ...item, order: itineraries[dayIndex].length + 1 });
-    });
-    return itineraries;
-  };
+  }, [loading]);
 
   const getRouteCoordinates = () => {
-    if (!region || !dailyItineraries[selectedDayIndex] || dailyItineraries[selectedDayIndex].length === 0) return [];
+    const items = dailyItineraries[selectedDayIndex]?.items || [];
+    if (!region || items.length === 0) return [];
 
-    const coordinates = [];
-    dailyItineraries[selectedDayIndex].forEach((item, index) => {
-      if (index === 0) {
-        coordinates.push({ latitude: region.latitude, longitude: region.longitude });
-      }
-      coordinates.push({ latitude: item.attraction.lat, longitude: item.attraction.lng });
+    const coordinates = items.map(item => ({
+      latitude: item.attraction.lat,
+      longitude: item.attraction.lng,
+    }));
+
+    return coordinates.length > 1
+      ? [{ latitude: region.latitude, longitude: region.longitude }, ...coordinates, { latitude: region.latitude, longitude: region.longitude }]
+      : coordinates;
+  };
+
+  const formatDayLabel = dateString => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
     });
-    if (dailyItineraries[selectedDayIndex].length > 0) {
-      coordinates.push({ latitude: region.latitude, longitude: region.longitude });
-    }
-    return coordinates;
   };
-
-  const formatDayLabel = date => {
-    const options = { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' };
-    return date.toLocaleDateString('en-GB', options).replace(/,/, '');
-  };
-
-  const days = trip ? calculateDays(trip.startDate, trip.endDate) : [];
 
   return (
     <View style={styles.container}>
@@ -177,7 +144,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
           </SkeletonPlaceholder>
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
-        ) : region && dailyItineraries[selectedDayIndex]?.length > 0 ? (
+        ) : region && dailyItineraries[selectedDayIndex]?.items?.length > 0 ? (
           <>
             <Animated.View style={[styles.mapContainer, { opacity: mapFadeAnim }]}>
               <MapView
@@ -187,7 +154,12 @@ const DayByDayPlanScreen = ({ navigation }) => {
                 showsUserLocation
                 showsMyLocationButton
                 rotateEnabled>
-                {dailyItineraries[selectedDayIndex].map((item, index) => (
+                <Marker
+                  coordinate={{ latitude: region.latitude, longitude: region.longitude }}
+                  title="Starting Point"
+                  pinColor="blue"
+                />
+                {dailyItineraries[selectedDayIndex].items.map((item, index) => (
                   <Marker
                     key={index}
                     coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
@@ -210,54 +182,32 @@ const DayByDayPlanScreen = ({ navigation }) => {
                 />
               </MapView>
             </Animated.View>
-            {days.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.daySelectorContainer}>
-                {days.map((day, index) => (
-                  <Pressable
-                    key={index}
-                    onPress={() => setSelectedDayIndex(index)}
-                    style={[
-                      styles.dayTab,
-                      selectedDayIndex === index && styles.dayTabSelected,
-                    ]}>
-                    <Text
-                      style={[
-                        styles.dayTabText,
-                        selectedDayIndex === index && styles.dayTabTextSelected,
-                      ]}>
-                      {formatDayLabel(day)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            )}
 
-            {dailyItineraries[selectedDayIndex].map((item, index) => (
-              <LinearGradient
-                key={index}
-                colors={['#FFFFFF', '#F1F5F9']}
-                style={styles.card}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daySelectorContainer}>
+              {dailyItineraries.map((day, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => {
+                    setSelectedDayIndex(index);
+                    setError(null);
+                  }} style={[styles.dayTab, selectedDayIndex === index && styles.dayTabSelected]}>
+                  <Text style={[styles.dayTabText, selectedDayIndex === index && styles.dayTabTextSelected]}>
+                    {formatDayLabel(day.date)}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            {dailyItineraries[selectedDayIndex].items.map((item, index) => (
+              <LinearGradient key={index} colors={['#FFFFFF', '#F1F5F9']} style={styles.card}>
                 <Text style={styles.order}>#{item.order}</Text>
                 <View style={styles.details}>
                   <Text style={styles.placeText}>{item.attraction.name}</Text>
-                  <Text style={styles.timeText}>
-                    {item.startTime} - {item.endTime}
-                  </Text>
-                  <Text style={styles.ratingText}>
-                    ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
-                  </Text>
-                  <Text style={styles.travelText}>
-                    🧭 {item.travelDistance} · ⏱ {item.travelDuration}
-                  </Text>
+                  <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+                  <Text style={styles.ratingText}>⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)</Text>
+                  <Text style={styles.travelText}>🧭 {item.travelDistance} · ⏱ {item.travelDuration}</Text>
                   <Pressable
-                    onPress={() =>
-                      Linking.openURL(
-                        `https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`
-                      )
-                    }
+                    onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
                     style={styles.directionsButton}>
                     <Text style={styles.directionsText}>Directions</Text>
                   </Pressable>
@@ -279,25 +229,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F7FAFC',
-  },
-  headerGradient: {
-    paddingTop: hp(5),
-    paddingBottom: hp(2),
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: wp(5),
-  },
-  backButton: {
-    padding: wp(2),
-  },
-  headerTitle: {
-    ...TEXT_STYLE.smallTitleBold,
-    color: COLOR.white,
-    fontSize: 20,
-    flex: 1,
-    textAlign: 'center',
   },
   scrollContainer: {
     paddingBottom: hp(5),
@@ -348,6 +279,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
+    minHeight: hp(20), // Ensure enough height for content
   },
   order: {
     fontSize: 18,
@@ -357,37 +289,40 @@ const styles = StyleSheet.create({
   },
   details: {
     flex: 1,
+    justifyContent: 'space-between', // Distribute space evenly
+    paddingVertical: hp(1), // Add vertical padding
   },
   placeText: {
     fontSize: 16,
     fontWeight: '700',
     color: COLOR.dark,
-    marginBottom: 6,
+    marginBottom: hp(0.5),
   },
   timeText: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 6,
+    marginBottom: hp(0.5),
     fontWeight: '500',
   },
   ratingText: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 6,
+    marginBottom: hp(0.5),
     fontWeight: '500',
   },
   travelText: {
     fontSize: 14,
     color: '#4B5563',
-    marginBottom: 8,
+    marginBottom: hp(1),
     fontWeight: '500',
   },
   directionsButton: {
     backgroundColor: '#1E90FF',
     borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(3),
     alignSelf: 'flex-start',
+    marginTop: hp(1), // Ensure space above the button
   },
   directionsText: {
     fontSize: 14,

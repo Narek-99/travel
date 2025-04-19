@@ -215,42 +215,50 @@ const TripDetailsScreen = ({ navigation }) => {
     try {
       const url = `https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${region.latitude}&lng=${region.longitude}&tripId=${tripId}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`;
       const response = await fetch(url);
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
       if (data.itinerary && Array.isArray(data.itinerary)) {
-        const validItinerary = data.itinerary.filter(
-          item =>
-            item.attraction &&
-            typeof item.attraction.lat === 'number' &&
-            typeof item.attraction.lng === 'number' &&
-            !isNaN(item.attraction.lat) &&
-            !isNaN(item.attraction.lng) &&
-            item.attraction.name &&
-            item.startTime &&
-            item.endTime &&
-            item.travelDistance &&
-            item.travelDuration
+        const allItems = data.itinerary.flatMap(day => (day.items || []));
+        const validItems = allItems.filter(item =>
+          item &&
+          item.attraction &&
+          typeof item.attraction.lat === 'number' &&
+          typeof item.attraction.lng === 'number' &&
+          item.attraction.name &&
+          item.startTime &&
+          item.endTime &&
+          item.travelDistance &&
+          item.travelDuration
         );
 
-        if (validItinerary.length === 0) {
+        if (validItems.length === 0) {
+          console.warn('❌ No valid items after validation. Example raw item:', allItems[0]);
           throw new Error('No valid itinerary items found after validation');
         }
 
-        setItinerary(validItinerary);
+        setItinerary(allItems); // Store all valid items
       } else {
         throw new Error('Invalid itinerary data received');
       }
+
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Failed to generate itinerary', text2: error.message });
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to generate itinerary',
+        text2: error.message,
+      });
+      console.error('🧨 Itinerary generation error:', error);
       setItinerary([]);
     } finally {
       clearTimeout(timeout);
       setLoadingItinerary(false);
     }
   };
+
 
   useEffect(() => {
     if (region && trip?.startDate) {
@@ -570,7 +578,17 @@ const TripDetailsScreen = ({ navigation }) => {
                   if (loadingItinerary) {
                     Toast.show({ type: 'info', text1: 'Generating itinerary...', text2: 'Please wait a few seconds and try again.' });
                   } else if (itinerary.length > 0) {
-                    navigation.navigate(SCREEN.DAYBYDAY, { tripId, itinerary, trip });
+                    const groupedItinerary = itinerary.reduce((acc, item) => {
+                      const existing = acc.find((group) => group.date === item.date);
+                      if (existing) {
+                        existing.items.push(item);
+                      } else {
+                        acc.push({ date: item.date, items: [item] });
+                      }
+                      return acc;
+                    }, []);
+
+                    navigation.navigate(SCREEN.DAYBYDAY, { tripId, itinerary: groupedItinerary, trip });
                   } else {
                     Toast.show({ type: 'error', text1: 'No itinerary available', text2: 'Please try again later.' });
                   }
