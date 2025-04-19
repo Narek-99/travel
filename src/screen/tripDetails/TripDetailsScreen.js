@@ -50,13 +50,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const [itinerary, setItinerary] = useState([]);
   const [loadingItinerary, setLoadingItinerary] = useState(true);
   const mapRef = useRef(null);
-  const optionFadeAnims = [
-    useFadeIn(),
-    useFadeIn(),
-    useFadeIn(),
-    useFadeIn(),
-    useFadeIn()
-  ];
+  const optionFadeAnims = Array(5).fill().map(() => useFadeIn());
   const [weather, setWeather] = useState(null);
 
   useEffect(() => {
@@ -95,12 +89,11 @@ const TripDetailsScreen = ({ navigation }) => {
       .doc(user.uid)
       .collection('trips')
       .doc(tripId)
-      .onSnapshot(
-        doc => {
-          if (doc.exists) {
-            setTrip(doc.data());
-          }
-        }, (error) => console.error('❌ Fehler beim Live-Update des Trips:', error));
+      .onSnapshot(doc => {
+        if (doc.exists) {
+          setTrip(doc.data());
+        }
+      });
     return () => unsubscribe();
   }, [user?.uid, tripId]);
 
@@ -236,29 +229,25 @@ const TripDetailsScreen = ({ navigation }) => {
         );
 
         if (validItems.length === 0) {
-          console.warn('❌ No valid items after validation. Example raw item:', allItems[0]);
           throw new Error('No valid itinerary items found after validation');
         }
 
-        setItinerary(allItems); // Store all valid items
+        setItinerary(allItems);
       } else {
         throw new Error('Invalid itinerary data received');
       }
-
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Failed to generate itinerary',
         text2: error.message,
       });
-      console.error('🧨 Itinerary generation error:', error);
       setItinerary([]);
     } finally {
       clearTimeout(timeout);
       setLoadingItinerary(false);
     }
   };
-
 
   useEffect(() => {
     if (region && trip?.startDate) {
@@ -317,22 +306,16 @@ const TripDetailsScreen = ({ navigation }) => {
 
   const getCompanionEmoji = companion => {
     switch ((companion || '').toLowerCase()) {
-      case 'partner':
-        return '❤️';
+      case 'partner': return '❤️';
       case 'familie':
-      case 'family':
-        return '👨‍👩‍👧‍👦';
+      case 'family': return '👨‍👩‍👧‍👦';
       case 'freunde':
-      case 'friends':
-        return '🧑‍🤝‍🧑';
+      case 'friends': return '🧑‍🤝‍🧑';
       case 'kollegen':
-      case 'colleagues':
-        return '💼';
+      case 'colleagues': return '💼';
       case 'allein':
-      case 'alone':
-        return '👤';
-      default:
-        return '👥';
+      case 'alone': return '👤';
+      default: return '👥';
     }
   };
 
@@ -762,9 +745,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     position: 'relative',
-  },
-  infoTextContainer: {
-    flex: 1,
   },
   editButton: {
     position: 'absolute',
