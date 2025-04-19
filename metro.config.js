@@ -15,7 +15,8 @@ const config = {
   },
   resolver: {
     assetExts: assetExts.filter((ext) => ext !== "svg"),
-    sourceExts: [...sourceExts, "svg"]
+    sourceExts: [...sourceExts, "svg"],
+    useWatchman: false, // ⛔️ Disable Watchman to avoid macOS permission issues
   }
 };
 
