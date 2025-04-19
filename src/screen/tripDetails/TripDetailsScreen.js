@@ -156,7 +156,7 @@ const TripDetailsScreen = ({ navigation }) => {
     try {
       const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}`);
       const data = await response.json();
-      setAttractions(data.results.slice(0, 10));
+      setAttractions(data.results.slice(0, 15));
     } catch (err) {
     } finally {
       setLoadingAttractions(false);
