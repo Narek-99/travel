@@ -211,51 +211,60 @@ const DayByDayPlanScreen = ({ navigation }) => {
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
               {dailyItineraries[selectedDayIndex].items.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={styles.card}
-                  onPress={() => {
-                    mapRef.current?.animateToRegion(
-                      {
-                        latitude: item.attraction.lat,
-                        longitude: item.attraction.lng,
-                        latitudeDelta: 0.01,
-                        longitudeDelta: 0.01,
-                      },
-                      800
-                    );
-                  }}>
-                  <View style={styles.orderContainer}>
-                    <Text style={styles.order}>#{item.order}</Text>
-                  </View>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: item.attraction.photo || 'https://via.placeholder.com/80' }}
-                      style={styles.attractionImage}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View style={styles.details}>
-                    <Text style={styles.placeText}>{item.attraction.name}</Text>
-                    <View style={styles.reviewContainer}>
-                      <SVG.Star width={16} height={16} fill="#FBA047" />
-                      <Text style={styles.ratingText}>{item.attraction.rating} ({item.attraction.reviews} Reviews)</Text>
+                <React.Fragment key={index}>
+                  <Pressable
+                    style={styles.card}
+                    onPress={() => {
+                      mapRef.current?.animateToRegion(
+                        {
+                          latitude: item.attraction.lat,
+                          longitude: item.attraction.lng,
+                          latitudeDelta: 0.01,
+                          longitudeDelta: 0.01,
+                        },
+                        800
+                      );
+                    }}>
+                    <View style={styles.orderContainer}>
+                      <Text style={styles.order}>#{item.order}</Text>
                     </View>
-                    <View style={styles.timeContainer}>
-                      <SVG.Clock width={16} height={16} fill="#1E90FF" />
-                      <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: item.attraction.photo || 'https://via.placeholder.com/80' }}
+                        style={styles.attractionImage}
+                        resizeMode="cover"
+                      />
                     </View>
-                    <View style={styles.travelContainer}>
-                      <SVG.Car width={16} height={16} fill="#4B5563" />
-                      <Text style={styles.travelText}>{item.travelDuration}</Text>
+                    <View style={styles.details}>
+                      <Text style={styles.placeText}>{item.attraction.name}</Text>
+                      <View style={styles.reviewContainer}>
+                        <SVG.Star width={14} height={14} fill="#FBA047" />
+                        <Text style={styles.ratingText}>{item.attraction.rating} ({item.attraction.reviews} Reviews)</Text>
+                      </View>
+                      <View style={styles.timeContainer}>
+                        <SVG.Clock width={14} height={14} fill="#1E90FF" />
+                        <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+                      </View>
+                      <Pressable
+                        onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
+                        style={styles.directionsButton}>
+                        <Text style={styles.directionsText}>Directions</Text>
+                      </Pressable>
                     </View>
-                    <Pressable
-                      onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
-                      style={styles.directionsButton}>
-                      <Text style={styles.directionsText}>Directions</Text>
-                    </Pressable>
-                  </View>
-                </Pressable>
+                  </Pressable>
+                  {index < dailyItineraries[selectedDayIndex].items.length - 1 && (
+                    <View style={styles.travelInfoContainer}>
+                      <View style={styles.travelContainer}>
+                        <SVG.Car width={14} height={14} fill="#4B5563" />
+                        <Text style={styles.travelText}>{item.travelDistance}</Text>
+                      </View>
+                      <View style={styles.travelContainer}>
+                        <SVG.Clock width={14} height={14} fill="#4B5563" />
+                        <Text style={styles.travelText}>{item.travelDuration}</Text>
+                      </View>
+                    </View>
+                  )}
+                </React.Fragment>
               ))}
             </ScrollView>
           </View>
@@ -332,13 +341,15 @@ const styles = StyleSheet.create({
   attractionsContainer: {
     paddingHorizontal: wp(5),
     paddingBottom: hp(3),
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   card: {
-    width: 280,
+    width: 220,
     backgroundColor: COLOR.white,
-    borderRadius: 15,
-    marginRight: wp(3),
-    padding: wp(3),
+    borderRadius: 12,
+    marginRight: wp(2),
+    padding: wp(2),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -346,24 +357,24 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardSkeleton: {
-    width: 280,
-    height: 200,
-    borderRadius: 15,
-    marginRight: wp(3),
+    width: 220,
+    height: 180,
+    borderRadius: 12,
+    marginRight: wp(2),
   },
   orderContainer: {
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 8,
+    left: 8,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: "50%",
-    padding: wp(2),
+    padding: wp(1.5),
     zIndex: 1,
   },
   order: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     color: COLOR.white,
   },
@@ -373,8 +384,8 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 120,
-    borderRadius: 10,
+    height: 80,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   attractionImage: {
@@ -383,58 +394,69 @@ const styles = StyleSheet.create({
   },
   imageSkeleton: {
     width: '100%',
-    height: 120,
-    borderRadius: 10,
+    height: 80,
+    borderRadius: 8,
   },
   details: {
-    paddingTop: hp(1),
-    paddingBottom: hp(1),
+    paddingTop: hp(0.5),
+    paddingBottom: hp(0.5),
     flexDirection: "column",
-    gap: hp(0.5)
+    gap: hp(0.3),
+    flex: 1,
   },
   placeText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: COLOR.dark,
-    marginBottom: hp(1),
+    marginBottom: hp(0.5),
   },
   ratingText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#6B7280',
     fontWeight: '500',
   },
   timeContainer: {
     flexDirection: 'row',
-    gap: wp(1)
+    gap: wp(1),
   },
   reviewContainer: {
     flexDirection: 'row',
-    gap: wp(1)
+    gap: wp(1),
   },
   travelContainer: {
     flexDirection: 'row',
-    gap: wp(1)
+    gap: wp(1),
+    alignItems: 'center',
+  },
+  travelInfoContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: wp(2),
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: wp(2)
   },
   timeText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#6B7280',
     fontWeight: '500',
   },
   travelText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#4B5563',
     fontWeight: '500',
   },
   directionsButton: {
     backgroundColor: '#1E90FF',
-    borderRadius: 8,
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(3),
+    borderRadius: 6,
+    paddingVertical: hp(0.5),
+    paddingHorizontal: wp(2),
     alignSelf: 'flex-start',
-    marginTop: hp(1),
+    marginTop: hp(0.5),
   },
   directionsText: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLOR.white,
     fontWeight: '600',
   },
