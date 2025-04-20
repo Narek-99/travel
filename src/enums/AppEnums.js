@@ -28,7 +28,8 @@ export const SCREEN = {
   HOTELBOOKING: "HotelBookingScreen",
   DAYBYDAY: "DayByDayPlanScreen",
   CHATBOT: "ChatbotScreen",
-  FUNFACTS: "FunFactsScreen"
+  FUNFACTS: "FunFactsScreen",
+  HELP: "HelpScreen"
 }
 
 export const FIREBASE_COLLECTIONS = {

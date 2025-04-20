@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { FIREBASE_COLLECTIONS, SCREEN, USER_STATUS } from '../enums/AppEnums';
-import { HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, ChatbotScreen, TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, WishesScreen, ActivitiesScreen, DatesScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen, Onboarding1Screen, SettingScreen, SubscriptionScreen } from '../screen';
+import { HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, ChatbotScreen, TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, WishesScreen, ActivitiesScreen, DatesScreen, HelpScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen, Onboarding1Screen, SettingScreen, SubscriptionScreen } from '../screen';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KEYS } from '../utils/Keys';
@@ -91,7 +91,10 @@ const RootNavigation = () => {
             <Stack.Screen name={SCREEN.FUNFACTS} component={FunFactsScreen} />
           </>
         ) : (
-          <Stack.Screen name={SCREEN.ONBOARDING1} component={Onboarding1Screen} />
+          <>
+            <Stack.Screen name={SCREEN.ONBOARDING1} component={Onboarding1Screen} />
+            <Stack.Screen name={SCREEN.HELP} component={HelpScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

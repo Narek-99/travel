@@ -191,9 +191,9 @@ const styles = StyleSheet.create({
   headlineContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align items on both ends
-    width: '100%', // Ensure the container takes full width
-    paddingHorizontal: 10, // Optional: for inner spacing
+    justifyContent: "space-between",
+    width: '100%',
+    paddingHorizontal: 10,
     gap: wp(2),
     marginTop: hp(2)
   },

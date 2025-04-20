@@ -35,6 +35,7 @@ import Eagle2 from './eagle2.svg'
 import Clock from './clock.svg'
 import Car from './car.svg'
 import Star from './star.svg'
+import Heart from './heart.svg'
 
 export const SVG = {
     BackIcon,
@@ -73,5 +74,6 @@ export const SVG = {
     Eagle2,
     Clock,
     Car,
-    Star
+    Star,
+    Heart
 }

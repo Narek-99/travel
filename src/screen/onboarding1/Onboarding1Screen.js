@@ -10,29 +10,13 @@ import { getDocumentData, saveData } from '../../services/FirebaseMethods';
 import { setUser } from '../../redux/action/Action';
 import { useDispatch, useSelector } from 'react-redux';
 import useRating from '../../utils/useRating';
+import { SCREEN } from '../../enums/AppEnums';
 
 const hapticOptions = {
   enableVibrateFallback: true,
 };
 
 const Onboarding1Screen = ({ navigation }) => {
-
-  const user = useSelector(({ appReducer }) => appReducer.user);
-  const dispatch = useDispatch();
-  const { showRating } = useRating();
-
-  const handleUserStatusUpdate = async () => {
-    try {
-      const updatedData = { userStatus: USER_STATUS.OLD };
-      await saveData(FIREBASE_COLLECTIONS.USERS, user?.uid, updatedData);
-      const updatedUserData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, user?.uid);
-      dispatch(setUser(updatedUserData));
-      setTimeout(() => showRating(), 2000);
-
-    } catch (error) {
-      console.log('Error updating user status:', error);
-    }
-  };
   return (
     <View style={styles.screenContainer}>
       <Photo src={IMAGES.Onboarding1} style={styles.image} contain />
@@ -41,7 +25,6 @@ const Onboarding1Screen = ({ navigation }) => {
 
         <Label style={styles.titleText}>{En.onboarding1Title}</Label>
         {/* <Label style={styles.subtitleText}>{En.onboarding1Subtitle}</Label> */}
-
       </View>
 
       <Button
@@ -50,7 +33,7 @@ const Onboarding1Screen = ({ navigation }) => {
         textStyle={styles.buttonText}
         onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-          handleUserStatusUpdate();
+          navigation.navigate(SCREEN.HELP);
         }}
       />
     </View>
@@ -86,9 +69,10 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: '#3B82F6',
+    borderRadius: 50,
     marginTop: 'auto',
-    marginBottom: hp(3),
-    marginHorizontal: wp(2),
+    marginBottom: hp(5),
+    marginHorizontal: wp(5),
   },
   buttonText: {
     color: 'white',

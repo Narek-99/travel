@@ -1,7 +1,7 @@
 import { StyleSheet, View, Pressable, Linking, SafeAreaView, Animated, Easing } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { AppHeader, Button, Label, LeftComponent } from '../../components';
-import { COLOR, commonStyles, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
+import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
 import { subscriptionPlans } from '../../assets/data/DummyData';
@@ -20,7 +20,6 @@ const SubscriptionScreen = (props) => {
   const from = params?.from;
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [expandedIndex, setExpandedIndex] = useState(1);
-  const [packge, setPackge] = useState(subscriptionPlans[0]);
   const [loading, setLoading] = useState(false);
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const { showRating } = useRating();
@@ -46,8 +45,7 @@ const SubscriptionScreen = (props) => {
 
   const handleSelect = (index, item) => {
     setSelectedIndex(index);
-    setExpandedIndex(index); // Always keep the selected plan expanded
-    setPackge(item);
+    setExpandedIndex(index);
   };
 
   const openPrivacyPolicy = () => {
@@ -67,7 +65,7 @@ const SubscriptionScreen = (props) => {
 
       if (purchaseSuccess) {
         navigation.navigate(SCREEN.TRIPS);
-        setTimeout(() => showRating(), 500);
+        setTimeout(() => showRating(true), 1000); // Force show after subscription
       } else {
         console.log("Purchase was canceled or failed.");
       }
@@ -84,7 +82,7 @@ const SubscriptionScreen = (props) => {
     "Personalized Weather-Based Recommendations & Attractions",
     "Smart AI Travel Assistant",
     "Fun Facts & City Secrets",
-  ]
+  ];
 
   return (
     <View style={styles.container}>
