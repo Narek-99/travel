@@ -40,15 +40,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLOR.lightGray,
     backgroundColor: COLOR.black,
-    paddingVertical: hp(1),  // Add padding to ensure vertical spacing
+    paddingVertical: hp(1),
   },
   input: {
     flex: 1,
     ...TEXT_STYLE.text,
     color: COLOR.white,
     paddingLeft: wp(4),
-    paddingVertical: 0,   // Reset paddingVertical to prevent conflict
-    textAlignVertical: 'center',  // Ensures text stays vertically centered
+    paddingVertical: 0,
+    textAlignVertical: 'center',
   },
   RightIconContainer: {
     marginRight: '4%',
