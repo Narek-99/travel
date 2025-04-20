@@ -11,7 +11,7 @@ const { height } = Dimensions.get('window');
 
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
-  const { itinerary: groupedItinerary, trip } = route.params;
+  const { itinerary: groupedItinerary } = route.params;
   const [dailyItineraries, setDailyItineraries] = useState([]);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [region, setRegion] = useState(null);

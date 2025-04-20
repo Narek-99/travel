@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -20,6 +20,7 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import useRating from '../../utils/useRating';
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -29,7 +30,15 @@ const TripsScreen = ({ navigation }) => {
   const [tripImages, setTripImages] = useState({});
   const [loadingImages, setLoadingImages] = useState({});
   const [lastFetchedDestinations, setLastFetchedDestinations] = useState({});
+  const { showRating } = useRating();
+  const hasShownRating = useRef(false);
 
+  useEffect(() => {
+    if (!hasShownRating.current) {
+      showRating();
+      hasShownRating.current = true;
+    }
+  }, [showRating]);
   const fetchTripImage = async (destination, tripId) => {
     if (tripImages[tripId] && lastFetchedDestinations[tripId] === destination) return;
 

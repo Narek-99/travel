@@ -1,4 +1,3 @@
-import { StyleSheet, Text, View } from 'react-native';
 import React, { useEffect } from 'react';
 import RootNavigation from './src/navigation/RootNavigation';
 import { Provider } from 'react-redux';
@@ -33,5 +32,3 @@ const App = () => {
 };
 
 export default App;
-
-const styles = StyleSheet.create({});

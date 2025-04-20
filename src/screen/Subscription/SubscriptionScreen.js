@@ -65,7 +65,7 @@ const SubscriptionScreen = (props) => {
 
       if (purchaseSuccess) {
         navigation.navigate(SCREEN.TRIPS);
-        setTimeout(() => showRating(true), 1000); // Force show after subscription
+        setTimeout(() => showRating(true), 500);
       } else {
         console.log("Purchase was canceled or failed.");
       }

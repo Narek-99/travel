@@ -21,7 +21,7 @@ const HelpScreen = ({ navigation }) => {
 
   const handleUserStatusUpdate = async () => {
     try {
-      await showRating(); // Normal call, respects cooldown and in-session checks
+      await showRating();
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const updatedData = { userStatus: USER_STATUS.OLD };
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(5),
   },
   image: {
-    width: wp(40),
+    width: wp(50),
     height: wp(30),
     marginBottom: hp(3)
   },
