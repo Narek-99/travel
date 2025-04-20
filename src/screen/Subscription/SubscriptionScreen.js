@@ -80,7 +80,7 @@ const SubscriptionScreen = (props) => {
     "Unlimited Trips to Any City Worldwide",
     "Best Flight & Hotel Deals",
     "Personalized Weather-Based Recommendations & Attractions",
-    "Smart AI Travel Assistant",
+    "Smart AI Travel Chatbot Assistant",
     "Fun Facts & City Secrets",
   ];
 

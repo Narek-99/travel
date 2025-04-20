@@ -18,6 +18,15 @@ const hapticOptions = {
   enableVibrateFallback: true,
 };
 
+// Fallback list of major cities to ensure they're included in search results
+const MAJOR_CITIES = [
+  { id: 'major_paris_fr', city: 'Paris', country: 'France', population: 2148000, type: 'CITY' },
+  { id: 'major_rome_it', city: 'Rome', country: 'Italy', population: 2873000, type: 'CITY' },
+  { id: 'major_london_uk', city: 'London', country: 'United Kingdom', population: 8982000, type: 'CITY' },
+  { id: 'major_newyork_us', city: 'New York', country: 'United States', population: 8336000, type: 'CITY' },
+  { id: 'major_tokyo_jp', city: 'Tokyo', country: 'Japan', population: 37400068, type: 'CITY' },
+];
+
 const DestinationScreen = ({ navigation }) => {
   const { tripData, setTripData, resetTrip } = useTripStore();
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -59,12 +68,40 @@ const DestinationScreen = ({ navigation }) => {
 
   const getCities = async (searchQuery) => {
     try {
-      const response = await axios.get('https://openai-proxy-gilt-three.vercel.app/api/cities?namePrefix=' + searchQuery);
-      const filteredCities = response.data.data.filter(city => city.type === 'CITY' && Number(city.population) > 5000);
-      setSuggestions(filteredCities);
+      // Fetch cities from the API
+      const response = await axios.get(`https://openai-proxy-gilt-three.vercel.app/api/cities?namePrefix=${searchQuery}`);
+      let filteredCities = response.data.data.filter(city => city.type === 'CITY');
+
+      // Combine API results with major cities
+      const searchQueryLower = searchQuery.toLowerCase();
+      const matchingMajorCities = MAJOR_CITIES.filter(city =>
+        city.city.toLowerCase().startsWith(searchQueryLower)
+      );
+
+      // Merge and sort by population (descending) to prioritize major cities
+      const allCities = [...matchingMajorCities, ...filteredCities];
+      allCities.sort((a, b) => (b.population || 0) - (a.population || 0));
+
+      // Remove duplicates (prefer major cities)
+      const uniqueCities = [];
+      const seen = new Set();
+      for (const city of allCities) {
+        const key = `${city.city}-${city.country}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueCities.push(city);
+        }
+      }
+
+      setSuggestions(uniqueCities);
     } catch (error) {
       console.error('🌍 Fehler beim Abrufen der Städte (Proxy):', error);
-      setSuggestions([]);
+      // Fallback to major cities if API fails
+      const searchQueryLower = searchQuery.toLowerCase();
+      const matchingMajorCities = MAJOR_CITIES.filter(city =>
+        city.city.toLowerCase().startsWith(searchQueryLower)
+      );
+      setSuggestions(matchingMajorCities);
     }
   };
 

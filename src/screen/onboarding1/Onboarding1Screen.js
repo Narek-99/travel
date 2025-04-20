@@ -54,12 +54,18 @@ const styles = StyleSheet.create({
   titleText: {
     ...TEXT_STYLE.title,
     fontWeight: '600',
-    color: "#3B82F6",
+    color: '#FFFFFF', // Changed to white for better contrast
+    textShadowColor: 'rgba(0, 0, 0, 0.75)', // Added shadow for readability
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
     marginVertical: hp(1),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: "#3B82F6",
+    color: "#FFFFFF", // Changed to white for better contrast
+    textShadowColor: 'rgba(0, 0, 0, 0.5)', // Added shadow for readability
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   image: {
     ...StyleSheet.absoluteFillObject,
