@@ -230,7 +230,7 @@ const TripsScreen = ({ navigation }) => {
           <View style={styles.emptyContainer}>
             <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
             <Text style={styles.emptyTitle}>No trips yet!</Text>
-            <Text style={styles.emptySubtitle}>Let’s plan your first adventure.</Text>
+            <Text style={styles.emptySubtitle}>Let’s plan your first trip!</Text>
           </View>
         ) : (
           <SwipeListView
@@ -336,10 +336,14 @@ const styles = StyleSheet.create({
     marginBottom: hp(1),
   },
   emptySubtitle: {
-    color: '#3B82F6',
+    color: COLOR.accent, // #FEA300
     fontSize: 18,
     fontWeight: '500',
     textAlign: 'center',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.08)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1.5,
   },
   tripCard: {
     backgroundColor: COLOR.darkGrey,
