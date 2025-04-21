@@ -1,5 +1,4 @@
 import { SafeAreaView, StyleSheet, View, Text, Pressable } from 'react-native';
-import React from 'react';
 import { Button, Photo } from '../../components';
 import { IMAGES } from '../../assets/images';
 import { En } from '../../locales/En';
@@ -11,6 +10,8 @@ import { SVG } from '../../assets/svgs';
 import { FIREBASE_COLLECTIONS, USER_STATUS } from '../../enums/AppEnums';
 import { getDocumentData, saveData } from '../../services/FirebaseMethods';
 import { setUser } from '../../redux/action/Action';
+import { Animated } from 'react-native';
+import React, { useRef, useEffect } from 'react';
 
 const hapticOptions = { enableVibrateFallback: true };
 
@@ -18,6 +19,24 @@ const HelpScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const dispatch = useDispatch();
   const { showRating } = useRating();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.05,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const handleUserStatusUpdate = async () => {
     try {
@@ -46,7 +65,9 @@ const HelpScreen = ({ navigation }) => {
         </Pressable>
       </View>
       <View style={styles.contentContainer}>
-        <Photo src={IMAGES.Heart} style={styles.image} contain />
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <Photo src={IMAGES.Heart} style={styles.image} contain />
+        </Animated.View>
         <Text style={styles.headline}>Help Us Grow</Text>
         <Text style={styles.subtext}>
           Show your appreciation by leaving a review in the App Store.
@@ -113,15 +134,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(5),
   },
   nextButton: {
-    backgroundColor: COLOR.white,
-    borderWidth: 1,
-    borderColor: COLOR.black,
+    backgroundColor: COLOR.primary,
+    borderWidth: 0,
     borderRadius: 50,
     marginBottom: hp(5),
-
   },
   buttonText: {
-    color: COLOR.black,
+    color: COLOR.accent,
     fontSize: 16,
     fontWeight: '600',
   },
