@@ -1,10 +1,9 @@
 import { StyleSheet, View, Pressable, Linking, SafeAreaView, Animated, Easing, ScrollView } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
-import { AppHeader, Button, Label, LeftComponent } from '../../components';
+import { AppHeader, Button, Label } from '../../components';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
-import { subscriptionPlans } from '../../assets/data/DummyData';
 import { useSubscriptions } from '../../contexts/subscriptionContext';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useRating from '../../utils/useRating';
@@ -14,17 +13,52 @@ const options = {
   enableVibrateFallback: true,
 };
 
+// Configurable offer end date
+const OFFER_END_DATE = new Date('2025-04-30');
+
 const SubscriptionScreen = (props) => {
   const { navigation, route } = props;
   const { SUB_IDS, handlePurchase, getAvailablePurchase, subsciptionList, isProductListLoading } = useSubscriptions();
   const { params } = route || {};
   const from = params?.from;
-  const [selectedIndex, setSelectedIndex] = useState(2); // Default to lifetime option
-  const [expandedIndex, setExpandedIndex] = useState(2);
+
+  const currentDate = new Date();
+  const isOfferActive = currentDate <= OFFER_END_DATE;
+
+  const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex);
+  const [expandedIndex, setExpandedIndex] = useState(defaultSelectedIndex);
   const [loading, setLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
   const pulseAnimation = useRef(new Animated.Value(1)).current;
+  const countdownAnimation = useRef(new Animated.Value(1)).current;
   const { showRating } = useRating();
 
+  const updatedPlans = [
+    {
+      text: "Yearly",
+      price: "$79.99",
+      time: "Year",
+    },
+    {
+      text: "Monthly",
+      price: "$12.99",
+      time: "Month",
+    },
+  ];
+
+  if (isOfferActive) {
+    updatedPlans.push({
+      text: "Lifetime",
+      price: "100% Free For Lifetime",
+      time: `The Offer Ends in ${timeLeft.days} Day${timeLeft.days !== 1 ? 's' : ''} & ${timeLeft.hours} Hour${timeLeft.hours !== 1 ? 's' : ''}.`,
+      badge: "Limited Offer",
+    });
+  }
+
+  const defaultSelectedIndex = isOfferActive ? updatedPlans.findIndex(p => p.text === "Lifetime") : 0;
+
+
+  // Animation for the main button
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -43,6 +77,41 @@ const SubscriptionScreen = (props) => {
       ])
     ).start();
   }, [pulseAnimation]);
+
+  // Animation for the countdown text
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(countdownAnimation, {
+          toValue: 1.1,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(countdownAnimation, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [countdownAnimation]);
+
+  // Calculate time left for the offer
+  useEffect(() => {
+    const endDate = OFFER_END_DATE;
+    const now = new Date();
+    const timeDiff = endDate - now;
+    if (timeDiff > 0) {
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      setTimeLeft({ days, hours });
+    } else {
+      setTimeLeft({ days: 0, hours: 0 });
+    }
+  }, []);
+
 
   const handleSelect = (index, item) => {
     setSelectedIndex(index);
@@ -83,19 +152,6 @@ const SubscriptionScreen = (props) => {
     "Personalized Weather-Based Recommendations & Attractions",
     "Smart AI Travel Chatbot Assistant",
     "Fun Facts & City Secrets",
-  ];
-
-  const currentDate = new Date('2025-04-21');
-  const offerEndDate = new Date('2025-04-30');
-  const isOfferActive = currentDate <= offerEndDate;
-
-  const updatedPlans = [
-    ...subscriptionPlans,
-    {
-      text: "Lifetime",
-      price: isOfferActive ? "FREE" : "$199.99",
-      time: isOfferActive ? "Until May 30" : "One-Time",
-    },
   ];
 
   return (
@@ -169,33 +225,37 @@ const SubscriptionScreen = (props) => {
                   </Label>
                   {item.text === "Yearly" ? (
                     <View style={styles.saveBadge}>
-                      <Label style={styles.badgeText}>Save 87%</Label>
+                      <Label style={styles.badgeText}>Save 49%</Label>
                     </View>
-                  ) : item.text === "Monthly" ? (
-                    <View style={styles.saveBadge2}>
-                      <Label style={styles.badgeText}>Most Popular</Label>
-                    </View>
-                  ) : (
+                  ) : item.text === "Monthly" ? null : (
                     <View style={styles.lifetimeBadge}>
-                      <Label style={styles.badgeText}>Limited Offer!</Label>
+                      <Label style={styles.badgeText}>
+                        {isOfferActive ? "Limited Offer" : "One-Time Buy"}
+                      </Label>
                     </View>
                   )}
                 </View>
-                <Label style={[styles.planPrice, isLifetime && styles.lifetimePlanPrice]}>
-                  {isLifetime && isOfferActive
-                    ? "FREE Until May 30"
-                    : subscription
-                      ? subscription.localizedPrice
-                      : item.price}
-                  /{item.time}
-                </Label>
+                <View>
+                  <Label style={[styles.planPrice, isLifetime && styles.lifetimePlanPrice]}>
+                    {item.price}{!isLifetime && `/${item.time}`}
+                  </Label>
+                  {isLifetime && isOfferActive && (
+                    <Animated.View style={{ transform: [{ scale: countdownAnimation }] }}>
+                      <Label style={styles.countdownText}>
+                        {item.time}
+                      </Label>
+                    </Animated.View>
+                  )}
+                </View>
               </Pressable>
             );
           })}
         </View>
         <View style={styles.footerContainer}>
           {selectedIndex === 2 && isOfferActive && (
-            <Label style={styles.noPaymentText}>No Payment Until May 30!</Label>
+            <Label style={styles.noPaymentText}>
+              No Subscription, No Payment
+            </Label>
           )}
 
           <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
@@ -210,10 +270,10 @@ const SubscriptionScreen = (props) => {
                 disabled={isProductListLoading}
                 text={
                   selectedIndex === 2 && isOfferActive
-                    ? "Get Lifetime Free Now!"
+                    ? "Get Free Forever!"
                     : selectedIndex === 0
-                      ? 'Try Premium Now!'
-                      : "TRY FREE NOW!"
+                      ? "Start Yearly!"
+                      : "Start Monthly!"
                 }
                 textStyle={styles.subscribeButtonText}
                 style={{ backgroundColor: 'transparent' }}
@@ -320,7 +380,6 @@ const styles = StyleSheet.create({
   lifetimePlanView: {
     backgroundColor: '#FFF7E6',
     borderColor: COLOR.accent,
-    borderWidth: 1.5,
   },
   planHeader: {
     flexDirection: 'row',
@@ -367,6 +426,18 @@ const styles = StyleSheet.create({
   lifetimePlanPrice: {
     color: COLOR.accent,
     fontWeight: '600',
+  },
+  countdownText: {
+    color: '#EF4444',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: hp(0.3),
+  },
+  freeClarification: {
+    color: COLOR.gray,
+    fontSize: 10,
+    fontWeight: '400',
+    marginTop: hp(0.3),
   },
   footerContainer: {
     paddingHorizontal: wp(5),
