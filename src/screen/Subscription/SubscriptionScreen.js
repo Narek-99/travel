@@ -8,6 +8,7 @@ import { subscriptionPlans } from '../../assets/data/DummyData';
 import { useSubscriptions } from '../../contexts/subscriptionContext';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useRating from '../../utils/useRating';
+import LinearGradient from 'react-native-linear-gradient';
 
 const options = {
   enableVibrateFallback: true
@@ -117,7 +118,7 @@ const SubscriptionScreen = (props) => {
           <Label style={styles.benefitsTitle}>What You Get:</Label>
           {benefits.map((it, index) => (
             <View key={index} style={styles.featureItem}>
-              <SVG.Done fill="black" />
+              <SVG.Done />
               <Label style={styles.featureText}>{it}</Label>
             </View>
           ))}
@@ -158,14 +159,22 @@ const SubscriptionScreen = (props) => {
         })}
 
         <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
-          <Button
-            isLoading={loading}
-            text={selectedIndex === 0 ? 'Try Premium Now!' : "TRY FREE NOW!"}
+          <LinearGradient
+            colors={['#002953', '#3B82F6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={styles.subscribeButton}
-            textStyle={styles.subscribeButtonText}
-            onPress={handleSubscription}
-          />
+          >
+            <Button
+              isLoading={loading}
+              text={selectedIndex === 0 ? 'Try Premium Now!' : "TRY FREE NOW!"}
+              textStyle={styles.subscribeButtonText}
+              style={{ backgroundColor: 'transparent' }}
+              onPress={handleSubscription}
+            />
+          </LinearGradient>
         </Animated.View>
+
 
         {selectedIndex === 1 && (
           <Label style={styles.noPaymentText}>No Payment Now!</Label>
@@ -255,7 +264,7 @@ const styles = StyleSheet.create({
     borderRadius: hp(1),
   },
   saveBadge2: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: COLOR.accent,
     paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
     borderRadius: hp(1),
@@ -295,8 +304,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   subscribeButton: {
-    marginTop: hp(4),
-    backgroundColor: '#3B82F6',
+    marginTop: hp(3),
     borderRadius: hp(1.5),
   },
   subscribeButtonText: {
