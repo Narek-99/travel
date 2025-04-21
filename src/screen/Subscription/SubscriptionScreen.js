@@ -116,7 +116,7 @@ const SubscriptionScreen = (props) => {
         <View style={styles.benefitsContainer}>
           <Label style={styles.benefitsTitle}>What You Get:</Label>
           {benefits.map((it, index) => (
-            <View style={styles.featureItem}>
+            <View key={index} style={styles.featureItem}>
               <SVG.Done fill="black" />
               <Label style={styles.featureText}>{it}</Label>
             </View>

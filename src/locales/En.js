@@ -21,6 +21,7 @@ export const En = {
     "AppName": "Travel AI",
     "messagePlaceholder": "Message ChatGPT",
     "yearly": "Yearly",
+    "monthly": "Monthly",
     "unlimitedAccess": "Unlimited Access",
     "weekly": "Weekly",
     "monthly": "Monthly",

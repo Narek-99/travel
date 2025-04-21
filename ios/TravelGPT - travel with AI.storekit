@@ -9,7 +9,7 @@
       }
     ]
   },
-  "identifier" : "951A1AAE",
+  "identifier" : "0FCDB875",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -20,7 +20,7 @@
     "_applicationInternalID" : "6743438080",
     "_developerTeamID" : "BMZCWCDGYJ",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 765318187.00664604,
+    "_lastSynchronizedDate" : 766872633.60287094,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [
@@ -88,10 +88,38 @@
           ],
           "displayPrice" : "12.99",
           "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "6744872657",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly Premium Access",
+              "displayName" : "Monthly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.travel.ai.monthly.1",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly_1",
+          "subscriptionGroupID" : "21661027",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "12.99",
+          "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6744124471",
           "introductoryOffer" : {
-            "internalID" : "65CE1A10",
+            "internalID" : "59028832",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P3D"

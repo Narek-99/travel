@@ -22,9 +22,9 @@ export const subscriptionPlans = [
         iconActive: <SVG.CircleFill fill="black" />,
     },
     {
-        text: En.weekly,
-        time: 'week',
-        price: "$12.99 /",
+        text: En.monthly,
+        time: 'month',
+        price: "$12.99 //",
         planText: "Plan Unlimited Trips",
         cityText: "Explore Every City Worldwide",
         attractionText: "Personalized Attractions",
