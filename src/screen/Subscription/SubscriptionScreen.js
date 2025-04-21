@@ -85,12 +85,10 @@ const SubscriptionScreen = (props) => {
     "Fun Facts & City Secrets",
   ];
 
-  // Check if the current date is before May 30, 2025
-  const currentDate = new Date('2025-04-21'); // System date
-  const offerEndDate = new Date('2025-05-30');
+  const currentDate = new Date('2025-04-21');
+  const offerEndDate = new Date('2025-04-30');
   const isOfferActive = currentDate <= offerEndDate;
 
-  // Updated subscription plans with Lifetime option
   const updatedPlans = [
     ...subscriptionPlans,
     {
@@ -118,15 +116,17 @@ const SubscriptionScreen = (props) => {
             <SVG.BackIcon fill={COLOR.primary} />
           </Pressable>
         }
-        rightComp={<Pressable
-          onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', options);
-            getAvailablePurchase();
-          }}
-          style={styles.restoreButton}
-        >
-          <Label style={styles.note}>Restore Purchases</Label>
-        </Pressable>}
+        rightComp={
+          <Pressable
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', options);
+              getAvailablePurchase();
+            }}
+            style={styles.restoreButton}
+          >
+            <Label style={styles.note}>Restore Purchases</Label>
+          </Pressable>
+        }
       />
 
       <ScrollView
@@ -134,7 +134,6 @@ const SubscriptionScreen = (props) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.innerContainer}>
-
           <Label style={styles.screenText}>Unlock Premium Access</Label>
 
           <View style={styles.benefitsContainer}>
@@ -193,6 +192,11 @@ const SubscriptionScreen = (props) => {
               </Pressable>
             );
           })}
+        </View>
+        <View style={styles.footerContainer}>
+          {selectedIndex === 2 && isOfferActive && (
+            <Label style={styles.noPaymentText}>No Payment Until May 30!</Label>
+          )}
 
           <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
             <LinearGradient
@@ -217,11 +221,6 @@ const SubscriptionScreen = (props) => {
               />
             </LinearGradient>
           </Animated.View>
-
-          {selectedIndex === 2 && isOfferActive && (
-            <Label style={styles.noPaymentText}>No Payment Until May 30!</Label>
-          )}
-
           <View style={styles.legalLinks}>
             <Pressable
               onPress={() => {
@@ -255,7 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.background,
   },
   scrollContent: {
-    paddingBottom: hp(6),
+    paddingBottom: hp(2),
   },
   innerContainer: {
     paddingHorizontal: wp(5),
@@ -274,29 +273,31 @@ const styles = StyleSheet.create({
   },
   benefitsContainer: {
     backgroundColor: '#F1F5F9',
-    padding: wp(4),
+    padding: wp(3),
     borderRadius: hp(2),
+    marginBottom: hp(1),
   },
   benefitsTitle: {
     ...TEXT_STYLE.textBold,
     color: COLOR.primary,
-    marginBottom: hp(1),
+    marginBottom: hp(0.5),
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: hp(1.2),
+    marginBottom: hp(0.8),
   },
   featureText: {
     marginLeft: wp(2),
     ...TEXT_STYLE.text,
     color: COLOR.primary,
+    fontSize: 13,
   },
   planView: {
     backgroundColor: COLOR.white,
-    borderRadius: hp(2),
-    padding: wp(4),
-    marginVertical: hp(1),
+    borderRadius: hp(1.5),
+    padding: wp(3),
+    marginVertical: hp(0.5),
     ...Platform.select({
       android: { elevation: 3 },
       ios: {
@@ -310,16 +311,16 @@ const styles = StyleSheet.create({
   selectedPlanView: {
     backgroundColor: '#E8F0FE',
     borderColor: '#3B82F6',
-    borderWidth: 2,
+    borderWidth: 1.5,
   },
   expandedPlanView: {
-    borderBottomLeftRadius: hp(2),
-    borderBottomRightRadius: hp(2),
+    borderBottomLeftRadius: hp(1.5),
+    borderBottomRightRadius: hp(1.5),
   },
   lifetimePlanView: {
     backgroundColor: '#FFF7E6',
     borderColor: COLOR.accent,
-    borderWidth: 2,
+    borderWidth: 1.5,
   },
   planHeader: {
     flexDirection: 'row',
@@ -329,65 +330,76 @@ const styles = StyleSheet.create({
   planTitle: {
     ...TEXT_STYLE.smallTitleBold,
     color: COLOR.primary,
+    fontSize: 16,
   },
   lifetimePlanTitle: {
     color: COLOR.primary,
   },
   saveBadge: {
     backgroundColor: COLOR.success,
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(0.5),
-    borderRadius: hp(1),
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.3),
+    borderRadius: hp(0.8),
   },
   saveBadge2: {
     backgroundColor: COLOR.accent,
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(0.5),
-    borderRadius: hp(1),
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.3),
+    borderRadius: hp(0.8),
   },
   lifetimeBadge: {
     backgroundColor: COLOR.accent,
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(0.5),
-    borderRadius: hp(1),
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.3),
+    borderRadius: hp(0.8),
   },
   badgeText: {
     ...TEXT_STYLE.smallTextSemiBold,
     color: COLOR.white,
+    fontSize: 10,
   },
   planPrice: {
     ...TEXT_STYLE.bigText,
     color: COLOR.gray,
-    marginTop: hp(1),
+    marginTop: hp(0.5),
+    fontSize: 14,
   },
   lifetimePlanPrice: {
     color: COLOR.accent,
     fontWeight: '600',
   },
+  footerContainer: {
+    paddingHorizontal: wp(5),
+    paddingVertical: hp(3),
+    backgroundColor: COLOR.background,
+  },
   subscribeButton: {
-    marginTop: hp(3),
     borderRadius: hp(1.5),
+    marginVertical: hp(1),
   },
   subscribeButtonText: {
     ...TEXT_STYLE.bigTextSemiBold,
     color: COLOR.white,
     textAlign: 'center',
+    fontSize: 15,
   },
   noPaymentText: {
     textAlign: 'center',
     color: COLOR.accent,
     ...TEXT_STYLE.textSemiBold,
-    marginTop: hp(1),
+    marginBottom: hp(1),
+    fontSize: 13,
   },
   legalLinks: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(2),
+    marginTop: hp(1),
   },
   legalText: {
     ...TEXT_STYLE.smallTextMedium,
     color: COLOR.gray,
+    fontSize: 10,
   },
   legalSeparator: {
     marginHorizontal: wp(2),
