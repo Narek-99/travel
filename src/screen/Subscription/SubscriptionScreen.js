@@ -118,7 +118,15 @@ const SubscriptionScreen = (props) => {
             <SVG.BackIcon fill={COLOR.primary} />
           </Pressable>
         }
-        centerComp={<LeftComponent />}
+        rightComp={<Pressable
+          onPress={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', options);
+            getAvailablePurchase();
+          }}
+          style={styles.restoreButton}
+        >
+          <Label style={styles.note}>Restore Purchases</Label>
+        </Pressable>}
       />
 
       <ScrollView
@@ -126,15 +134,7 @@ const SubscriptionScreen = (props) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.innerContainer}>
-          <Pressable
-            onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', options);
-              getAvailablePurchase();
-            }}
-            style={styles.restoreButton}
-          >
-            <Label style={styles.note}>Restore Purchases</Label>
-          </Pressable>
+
           <Label style={styles.screenText}>Unlock Premium Access</Label>
 
           <View style={styles.benefitsContainer}>
@@ -260,10 +260,6 @@ const styles = StyleSheet.create({
   innerContainer: {
     paddingHorizontal: wp(5),
   },
-  restoreButton: {
-    alignSelf: 'flex-end',
-    marginTop: hp(1),
-  },
   note: {
     ...TEXT_STYLE.smallText,
     color: COLOR.gray,
@@ -280,7 +276,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     padding: wp(4),
     borderRadius: hp(2),
-    marginBottom: hp(1),
   },
   benefitsTitle: {
     ...TEXT_STYLE.textBold,
@@ -374,7 +369,7 @@ const styles = StyleSheet.create({
     borderRadius: hp(1.5),
   },
   subscribeButtonText: {
-    ...TEXT_STYLE.textSemiBold,
+    ...TEXT_STYLE.bigTextSemiBold,
     color: COLOR.white,
     textAlign: 'center',
   },
