@@ -9,18 +9,32 @@
       }
     ]
   },
-  "identifier" : "0FCDB875",
+  "identifier" : "CB7EA3E6",
   "nonRenewingSubscriptions" : [
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "0.0",
+      "familyShareable" : false,
+      "internalID" : "6744899658",
+      "localizations" : [
+        {
+          "description" : "Free Unlimited Lifetime Access",
+          "displayName" : "Unlimited Lifetime Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.travel.ai.lifetime",
+      "referenceName" : "Life Time Offer",
+      "type" : "NonConsumable"
+    }
   ],
   "settings" : {
     "_applicationInternalID" : "6743438080",
     "_developerTeamID" : "BMZCWCDGYJ",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 766872633.60287094,
+    "_lastSynchronizedDate" : 766946972.50743198,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [
@@ -119,7 +133,7 @@
           "groupNumber" : 1,
           "internalID" : "6744124471",
           "introductoryOffer" : {
-            "internalID" : "59028832",
+            "internalID" : "524E9678",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P3D"

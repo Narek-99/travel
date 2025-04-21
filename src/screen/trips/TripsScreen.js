@@ -21,6 +21,8 @@ import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useRating from '../../utils/useRating';
+import { useSubscriptions } from '../../contexts/subscriptionContext';
+
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -30,8 +32,9 @@ const TripsScreen = ({ navigation }) => {
   const [tripImages, setTripImages] = useState({});
   const [loadingImages, setLoadingImages] = useState({});
   const [lastFetchedDestinations, setLastFetchedDestinations] = useState({});
-  const { showRating } = useRating();
   const hasShownRating = useRef(false);
+  const { isSubscribed, isProductListLoading, getAvailablePurchase } = useSubscriptions();
+  const { showRating } = useRating();
 
   useEffect(() => {
     if (!hasShownRating.current) {
@@ -100,8 +103,11 @@ const TripsScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (user?.uid) fetchTrips();
-    }, [user?.uid, fetchTrips])
+      if (user?.uid) {
+        fetchTrips();
+        getAvailablePurchase();
+      }
+    }, [user?.uid])
   );
 
   useEffect(() => {
@@ -175,7 +181,7 @@ const TripsScreen = ({ navigation }) => {
   const handleAddTripNavigation = () => {
     if (isSubscriptionLoading) return;
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    if (user?.subscription === false) {
+    if (!isSubscribed && !isProductListLoading) {
       navigation.navigate(SCREEN.SUBSCRIPTION);
     } else {
       navigation.navigate(SCREEN.DESTINATION);
@@ -212,7 +218,7 @@ const TripsScreen = ({ navigation }) => {
               <Pressable style={styles.gptPlusButton} onPress={handlePremiumPress}>
                 <SVG.Flash fill="#3B82F6" />
                 <Label style={{ color: '#3B82F6', fontWeight: 700 }}>
-                  {user?.subscription ? "  Premium" : "  Get Premium"}
+                  {isSubscribed || isProductListLoading ? "  Premium" : "  Get Premium"}
                 </Label>
               </Pressable>
             )}

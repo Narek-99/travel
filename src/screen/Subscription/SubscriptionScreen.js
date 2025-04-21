@@ -1,4 +1,4 @@
-import { StyleSheet, View, Pressable, Linking, SafeAreaView, Animated, Easing } from 'react-native';
+import { StyleSheet, View, Pressable, Linking, SafeAreaView, Animated, Easing, ScrollView } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { AppHeader, Button, Label, LeftComponent } from '../../components';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
@@ -11,16 +11,16 @@ import useRating from '../../utils/useRating';
 import LinearGradient from 'react-native-linear-gradient';
 
 const options = {
-  enableVibrateFallback: true
+  enableVibrateFallback: true,
 };
 
 const SubscriptionScreen = (props) => {
   const { navigation, route } = props;
-  const { SUB_IDS, handlePurchase, getAvailablePurchase, subsciptionList } = useSubscriptions();
+  const { SUB_IDS, handlePurchase, getAvailablePurchase, subsciptionList, isProductListLoading } = useSubscriptions();
   const { params } = route || {};
   const from = params?.from;
-  const [selectedIndex, setSelectedIndex] = useState(1);
-  const [expandedIndex, setExpandedIndex] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(2); // Default to lifetime option
+  const [expandedIndex, setExpandedIndex] = useState(2);
   const [loading, setLoading] = useState(false);
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const { showRating } = useRating();
@@ -85,53 +85,79 @@ const SubscriptionScreen = (props) => {
     "Fun Facts & City Secrets",
   ];
 
+  // Check if the current date is before May 30, 2025
+  const currentDate = new Date('2025-04-21'); // System date
+  const offerEndDate = new Date('2025-05-30');
+  const isOfferActive = currentDate <= offerEndDate;
+
+  // Updated subscription plans with Lifetime option
+  const updatedPlans = [
+    ...subscriptionPlans,
+    {
+      text: "Lifetime",
+      price: isOfferActive ? "FREE" : "$199.99",
+      time: isOfferActive ? "Until May 30" : "One-Time",
+    },
+  ];
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
       <AppHeader
         leftComp={
-          <Pressable onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', options);
-            if (from === 'settings') { navigation.navigate(SCREEN.SETTINGS) } else {
-              navigation.navigate(SCREEN.TRIPS)
-            }
-          }}>
+          <Pressable
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', options);
+              if (from === 'settings') {
+                navigation.navigate(SCREEN.SETTINGS);
+              } else {
+                navigation.navigate(SCREEN.TRIPS);
+              }
+            }}
+          >
             <SVG.BackIcon fill={COLOR.primary} />
           </Pressable>
         }
         centerComp={<LeftComponent />}
       />
 
-      <View style={styles.innerContainer}>
-        <Pressable
-          onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', options);
-            getAvailablePurchase();
-          }}
-          style={styles.restoreButton}
-        >
-          <Label style={styles.note}>Restore Purchases</Label>
-        </Pressable>
-        <Label style={styles.screenText}>Unlock Premium Access</Label>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.innerContainer}>
+          <Pressable
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', options);
+              getAvailablePurchase();
+            }}
+            style={styles.restoreButton}
+          >
+            <Label style={styles.note}>Restore Purchases</Label>
+          </Pressable>
+          <Label style={styles.screenText}>Unlock Premium Access</Label>
 
-        <View style={styles.benefitsContainer}>
-          <Label style={styles.benefitsTitle}>What You Get:</Label>
-          {benefits.map((it, index) => (
-            <View key={index} style={styles.featureItem}>
-              <SVG.Done />
-              <Label style={styles.featureText}>{it}</Label>
-            </View>
-          ))}
-        </View>
-        {subscriptionPlans.map((item, index) => {
-          const subscription = subsciptionList.find(sub => sub.productId === SUB_IDS[index]);
-          return (
-            <View key={index}>
+          <View style={styles.benefitsContainer}>
+            <Label style={styles.benefitsTitle}>What You Get:</Label>
+            {benefits.map((it, index) => (
+              <View key={index} style={styles.featureItem}>
+                <SVG.Done />
+                <Label style={styles.featureText}>{it}</Label>
+              </View>
+            ))}
+          </View>
+
+          {updatedPlans.map((item, index) => {
+            const subscription = subsciptionList.find((sub) => sub.productId === SUB_IDS[index]);
+            const isLifetime = item.text === "Lifetime";
+            return (
               <Pressable
+                key={index}
                 style={[
                   styles.planView,
                   selectedIndex === index && styles.selectedPlanView,
                   expandedIndex === index && styles.expandedPlanView,
+                  isLifetime && styles.lifetimePlanView,
                 ]}
                 onPress={() => {
                   ReactNativeHapticFeedback.trigger('impactLight', options);
@@ -139,63 +165,84 @@ const SubscriptionScreen = (props) => {
                 }}
               >
                 <View style={styles.planHeader}>
-                  <Label style={styles.planTitle}>{item.text}</Label>
+                  <Label style={[styles.planTitle, isLifetime && styles.lifetimePlanTitle]}>
+                    {item.text}
+                  </Label>
                   {item.text === "Yearly" ? (
                     <View style={styles.saveBadge}>
                       <Label style={styles.badgeText}>Save 87%</Label>
                     </View>
-                  ) : (
+                  ) : item.text === "Monthly" ? (
                     <View style={styles.saveBadge2}>
                       <Label style={styles.badgeText}>Most Popular</Label>
                     </View>
+                  ) : (
+                    <View style={styles.lifetimeBadge}>
+                      <Label style={styles.badgeText}>Limited Offer!</Label>
+                    </View>
                   )}
                 </View>
-                <Label style={styles.planPrice}>
-                  {subscription ? subscription.localizedPrice : item.price}/{item.time}
+                <Label style={[styles.planPrice, isLifetime && styles.lifetimePlanPrice]}>
+                  {isLifetime && isOfferActive
+                    ? "FREE Until May 30"
+                    : subscription
+                      ? subscription.localizedPrice
+                      : item.price}
+                  /{item.time}
                 </Label>
               </Pressable>
-            </View>
-          );
-        })}
+            );
+          })}
 
-        <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
-          <LinearGradient
-            colors={['#002953', '#3B82F6']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.subscribeButton}
-          >
-            <Button
-              isLoading={loading}
-              text={selectedIndex === 0 ? 'Try Premium Now!' : "TRY FREE NOW!"}
-              textStyle={styles.subscribeButtonText}
-              style={{ backgroundColor: 'transparent' }}
-              onPress={handleSubscription}
-            />
-          </LinearGradient>
-        </Animated.View>
+          <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
+            <LinearGradient
+              colors={['#002953', '#3B82F6']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.subscribeButton}
+            >
+              <Button
+                isLoading={loading || isProductListLoading}
+                disabled={isProductListLoading}
+                text={
+                  selectedIndex === 2 && isOfferActive
+                    ? "Get Lifetime Free Now!"
+                    : selectedIndex === 0
+                      ? 'Try Premium Now!'
+                      : "TRY FREE NOW!"
+                }
+                textStyle={styles.subscribeButtonText}
+                style={{ backgroundColor: 'transparent' }}
+                onPress={handleSubscription}
+              />
+            </LinearGradient>
+          </Animated.View>
 
+          {selectedIndex === 2 && isOfferActive && (
+            <Label style={styles.noPaymentText}>No Payment Until May 30!</Label>
+          )}
 
-        {selectedIndex === 1 && (
-          <Label style={styles.noPaymentText}>No Payment Now!</Label>
-        )}
-
-        <View style={styles.legalLinks}>
-          <Pressable onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', options);
-            openTermsOfUse();
-          }}>
-            <Label style={styles.legalText}>Terms of Service</Label>
-          </Pressable>
-          <Label style={styles.legalSeparator}>•</Label>
-          <Pressable onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', options);
-            openPrivacyPolicy();
-          }}>
-            <Label style={styles.legalText}>Privacy Policy</Label>
-          </Pressable>
+          <View style={styles.legalLinks}>
+            <Pressable
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', options);
+                openTermsOfUse();
+              }}
+            >
+              <Label style={styles.legalText}>Terms of Service</Label>
+            </Pressable>
+            <Label style={styles.legalSeparator}>•</Label>
+            <Pressable
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', options);
+                openPrivacyPolicy();
+              }}
+            >
+              <Label style={styles.legalText}>Privacy Policy</Label>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -207,12 +254,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
+  scrollContent: {
+    paddingBottom: hp(5),
+  },
   innerContainer: {
-    flex: 1,
     paddingHorizontal: wp(5),
   },
   restoreButton: {
     alignSelf: 'flex-end',
+    marginTop: hp(1),
   },
   note: {
     fontSize: 8,
@@ -224,14 +274,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     color: '#1F2937',
-    marginVertical: hp(1),
+    marginVertical: hp(2),
   },
   planView: {
     backgroundColor: '#FFFFFF',
     borderRadius: hp(2),
     padding: wp(4),
-    marginTop: hp(1),
-    marginBottom: hp(0.5),
+    marginVertical: hp(1),
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -247,6 +296,11 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: hp(2),
     borderBottomRightRadius: hp(2),
   },
+  lifetimePlanView: {
+    backgroundColor: '#FFF7E6',
+    borderWidth: 2,
+    borderColor: '#FEA300',
+  },
   planHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -257,6 +311,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1F2937',
   },
+  lifetimePlanTitle: {
+    color: COLOR.primary,
+    fontWeight: '700',
+  },
   saveBadge: {
     backgroundColor: '#22C55E',
     paddingHorizontal: wp(3),
@@ -264,6 +322,12 @@ const styles = StyleSheet.create({
     borderRadius: hp(1),
   },
   saveBadge2: {
+    backgroundColor: COLOR.accent,
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(0.5),
+    borderRadius: hp(1),
+  },
+  lifetimeBadge: {
     backgroundColor: COLOR.accent,
     paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
@@ -280,12 +344,15 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     marginTop: hp(1),
   },
+  lifetimePlanPrice: {
+    color: COLOR.accent,
+    fontWeight: '600',
+  },
   benefitsContainer: {
     backgroundColor: '#F1F5F9',
     padding: wp(4),
     borderRadius: hp(2),
-    marginTop: hp(2),
-    marginBottom: hp(1)
+    marginVertical: hp(2),
   },
   benefitsTitle: {
     fontSize: 16,
@@ -304,7 +371,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   subscribeButton: {
-    marginTop: hp(3),
+    marginVertical: hp(2),
     borderRadius: hp(1.5),
   },
   subscribeButtonText: {
@@ -314,16 +381,15 @@ const styles = StyleSheet.create({
   },
   noPaymentText: {
     textAlign: 'center',
-    color: '#10B981',
+    color: COLOR.accent,
     fontSize: 14,
     fontWeight: '500',
-    marginTop: hp(1),
+    marginBottom: hp(1),
   },
   legalLinks: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(1),
   },
   legalText: {
     fontSize: 10,

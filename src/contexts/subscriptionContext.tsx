@@ -1,180 +1,224 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { Platform } from 'react-native'
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import {
-    initConnection,
-    endConnection,
-    flushFailedPurchasesCachedAsPendingAndroid,
-    getSubscriptions,
-    getAvailablePurchases,
-    requestSubscription,
-    purchaseUpdatedListener,
-    finishTransaction
-} from 'react-native-iap'
+  initConnection,
+  endConnection,
+  flushFailedPurchasesCachedAsPendingAndroid,
+  getSubscriptions,
+  getAvailablePurchases,
+  requestSubscription,
+  requestPurchase,
+  getProducts,
+  purchaseUpdatedListener,
+  finishTransaction,
+  Purchase,
+  Product,
+  Subscription,
+} from 'react-native-iap';
 
-export const SubscriptionContext = createContext({
-    isSubscribed: false,
-    SUB_IDS: ['com.travel.ai.yearly.1', 'com.travel.ai.monthly.1'],
-    setisSubscribed: (val: boolean) => { },
-    subsciptionList: [],
-    handlePurchase: (val: 'com.travel.ai.yearly.1' | 'com.travel.ai.monthly.1'  ) => { },
-    getAvailablePurchase: () => { }
-})
+interface SubscriptionContextType {
+  isSubscribed: boolean;
+  SUB_IDS: string[];
+  setisSubscribed: (val: boolean) => void;
+  subsciptionList: (Product | Subscription)[];
+  handlePurchase: (id: string) => Promise<boolean>;
+  getAvailablePurchase: () => Promise<void>;
+  isProductListLoading: boolean;
+}
 
-export const useSubscriptions = () => useContext(SubscriptionContext)
+export const SubscriptionContext = createContext<SubscriptionContextType>({
+  isSubscribed: false,
+  SUB_IDS: [
+    'com.travel.ai.yearly.1',
+    'com.travel.ai.monthly.1',
+    'com.travel.ai.lifetime',
+  ],
+  setisSubscribed: () => {},
+  subsciptionList: [],
+  handlePurchase: async () => false,
+  getAvailablePurchase: async () => {},
+  isProductListLoading: true,
+});
 
-export const SubscriptionProvider = ({ children }: any) => {
-    const [isSubscribed, setisSubscribed] = useState<any>(false)
-    const [subsciptionList, setsubsciptionList] = useState<any>([])
-    const [loading, setLoading] = useState(false)
-    const SUB_IDS = ['com.travel.ai.yearly.1', 'com.travel.ai.monthly.1']
+export const useSubscriptions = () => useContext(SubscriptionContext);
 
-    const getSubs = async () => {
-        try {
-            const res = await getSubscriptions({ skus: SUB_IDS })
-            setsubsciptionList(res)
-        } catch (error: any) {
-            console.error('Error getting subscriptions:', error.message || error)
-        }
+export const SubscriptionProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isSubscribed, setisSubscribed] = useState(false);
+  const [subsciptionList, setsubsciptionList] = useState<(Product | Subscription)[]>([]);
+  const [isProductListLoading, setIsProductListLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const SUB_IDS = [
+    'com.travel.ai.yearly.1',
+    'com.travel.ai.monthly.1',
+    'com.travel.ai.lifetime',
+  ];
+
+  const getSubs = async () => {
+    try {
+      setIsProductListLoading(true);
+      const subscriptions = await getSubscriptions({ skus: SUB_IDS.slice(0, 2) });
+      const lifetime = await getProducts({ skus: [SUB_IDS[2]] });
+      const combined = [...subscriptions, ...lifetime];
+      setsubsciptionList(combined);
+    } catch (error) {
+      console.error('Error fetching IAP products:', error);
+      setsubsciptionList([]);
+    } finally {
+      setIsProductListLoading(false);
     }
+  };
 
-    const validateReceipt = async (receipt: any) => {
-        const productionURL = 'https://buy.itunes.apple.com/verifyReceipt';
-        const sandboxURL = 'https://sandbox.itunes.apple.com/verifyReceipt';
-        const requestBody = JSON.stringify({
-            'receipt-data': receipt,
-            'password': 'e087ae2a1b524706abb1441a025f6827',
+  const validateReceipt = async (receipt: string) => {
+    const productionURL = 'https://buy.itunes.apple.com/verifyReceipt';
+    const sandboxURL = 'https://sandbox.itunes.apple.com/verifyReceipt';
+    const requestBody = JSON.stringify({
+      'receipt-data': receipt,
+      'password': 'e087ae2a1b524706abb1441a025f6827',
+    });
+
+    try {
+      let response = await fetch(productionURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody,
+      });
+
+      let result = await response.json();
+
+      if (result.status === 21007) {
+        response = await fetch(sandboxURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
         });
+        result = await response.json();
+      }
 
-        try {
-            let response = await fetch(productionURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: requestBody,
-            });
+      return result;
+    } catch (error) {
+      console.error('Receipt validation error:', error);
+      throw error;
+    }
+  };
 
-            let result = await response.json();
+  const handlePurchase = async (id: string) => {
+    setLoading(true);
+    try {
+      if (!subsciptionList.length) {
+        await getSubs();
+      }
 
-            if (result.status === 21007) {
-                response = await fetch(sandboxURL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: requestBody,
-                });
+      const selectedSub = subsciptionList.find((sub) => sub.productId === id);
 
-                result = await response.json();
-            }
+      if (!selectedSub) {
+        throw new Error(`Product ${id} not found`);
+      }
 
-            return result;
-        } catch (error: any) {
-            console.error("Error during receipt validation:", error.message || error);
-            throw error;
+      if (id === 'com.travel.ai.lifetime') {
+        await requestPurchase({ sku: selectedSub.productId });
+      } else {
+        await requestSubscription({ sku: selectedSub.productId });
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Purchase error:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasSubscription = (userPurchases: Purchase[], availableSubs: (Product | Subscription)[]) => {
+    for (const purchase of userPurchases) {
+      if (purchase.productId === 'com.travel.ai.lifetime' && purchase.transactionReceipt) {
+        if (new Date() <= new Date('2025-05-30')) return true;
+      }
+
+      if (
+        availableSubs.some(
+          (available) =>
+            purchase.productId === available.productId && purchase.transactionReceipt
+        )
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const getAvailablePurchase = async () => {
+    try {
+      const subscriptions = await getSubscriptions({ skus: SUB_IDS.slice(0, 2) });
+      const lifetime = await getProducts({ skus: [SUB_IDS[2]] });
+      const combinedList = [...subscriptions, ...lifetime];
+
+      setsubsciptionList(combinedList);
+
+      const purchases = await getAvailablePurchases({
+        alsoPublishToEventListener: false,
+        onlyIncludeActiveItems: true,
+        automaticallyFinishRestoredTransactions: false,
+      });
+
+      const subscribed = hasSubscription(purchases, combinedList);
+      setisSubscribed(subscribed);
+    } catch (error) {
+      console.error('Error checking purchases:', error);
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await initConnection();
+        if (Platform.OS === 'android') {
+          await flushFailedPurchasesCachedAsPendingAndroid();
         }
+        await getSubs();
+        await getAvailablePurchase();
+      } catch (error) {
+        console.error('Store init error:', error);
+      }
     };
 
-    const handlePurchase = async (id: 'com.travel.ai.yearly.1' | 'com.travel.ai.monthly.1'  ) => {
-        console.log('Purchasing...');
-        setLoading(true);
+    init();
+
+    const purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase: Purchase) => {
+      const receipt = purchase.transactionReceipt;
+      if (receipt) {
         try {
-            if (subsciptionList?.length > 0) {
-                const SelectedSub = subsciptionList.find((sub: any) => sub?.productId === id);
-    
-                const res = await requestSubscription({
-                    sku: SelectedSub?.productId,
-                });
-                console.log('Purchase result:', res);
-                setisSubscribed(true);
-                getAvailablePurchase();
-                console.log('Subscription purchased successfully.');
-                return true;  // Return true on success
-            }
-        } catch (error: any) {
-            console.error('Purchase error:', error.message || error);
-            return false;  // Return false on error
-        } finally {
-            setLoading(false);
+          const validation = await validateReceipt(receipt);
+          if (validation.status === 0) {
+            await finishTransaction({ purchase, isConsumable: false });
+            await getAvailablePurchase();
+          }
+        } catch (error) {
+          console.error('Transaction error:', error);
         }
+      }
+    });
+
+    return () => {
+      purchaseUpdateSubscription.remove();
+      endConnection();
     };
+  }, []);
 
-    const hasSubscription = (userSubscriptions: any, availableSubscriptions: any) => {
-        for (let userSub of userSubscriptions) {
-            for (let availableSub of availableSubscriptions) {
-                if (userSub.productId === availableSub.productId && userSub.transactionReceipt) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    const getAvailablePurchase = async () => {
-        try {
-            const subscriptions = await getSubscriptions({ skus: SUB_IDS });
-            const purchases = await getAvailablePurchases({
-                alsoPublishToEventListener: false,
-                onlyIncludeActiveItems: true,
-                automaticallyFinishRestoredTransactions: false,
-            });
-
-            const subscribed = hasSubscription(purchases, subscriptions);
-            setisSubscribed(subscribed);
-        } catch (error: any) {
-            console.error('Error getting available purchases:', error.message || error);
-        }
-    }
-
-    useEffect(() => {
-        const init = async () => {
-            try {
-                console.log('Connecting to store...');
-                await initConnection();
-                console.log('Connected to store.');
-                if (Platform.OS === 'android') {
-                    await flushFailedPurchasesCachedAsPendingAndroid();
-                }
-                await getSubs();
-                await getAvailablePurchase();
-            } catch (error: any) {
-                console.error('Error during initialization:', error.message || error);
-            }
-        }
-
-        init();
-
-        const purchaseUpdateSubscription = purchaseUpdatedListener(
-            async (purchase) => {
-                const receipt = purchase.transactionReceipt;
-                if (receipt) {
-                    try {
-                        const validationResponse = await validateReceipt(receipt);
-                        if (validationResponse.status === 0) { // Success
-                            await finishTransaction({ purchase, isConsumable: false });
-                            getAvailablePurchase();
-                        } else {
-                            console.error('Receipt validation failed:', validationResponse);
-                        }
-                    } catch (error: any) {
-                        console.error('Error during transaction completion:', error.message || error);
-                    }
-                }
-            });
-
-        return () => {
-            purchaseUpdateSubscription.remove();
-            endConnection();
-        };
-    }, []);
-
-    return (
-        <SubscriptionContext.Provider
-            value={{
-                isSubscribed,
-                SUB_IDS,
-                setisSubscribed,
-                handlePurchase,
-                subsciptionList,
-                getAvailablePurchase
-            }}>
-            {children}
-        </SubscriptionContext.Provider>
-    );
+  return (
+    <SubscriptionContext.Provider
+      value={{
+        isSubscribed,
+        SUB_IDS,
+        setisSubscribed,
+        handlePurchase,
+        subsciptionList,
+        getAvailablePurchase,
+        isProductListLoading,
+      }}
+    >
+      {children}
+    </SubscriptionContext.Provider>
+  );
 };

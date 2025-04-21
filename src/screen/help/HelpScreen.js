@@ -76,7 +76,7 @@ const HelpScreen = ({ navigation }) => {
       <View style={styles.submitContainer}>
         <Button
           style={styles.nextButton}
-          text={En.start}
+          text="Let's Go!"
           textStyle={styles.buttonText}
           onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
