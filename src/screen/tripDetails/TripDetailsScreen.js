@@ -397,56 +397,56 @@ const TripDetailsScreen = ({ navigation }) => {
           <Text style={styles.loadingText}>Loading trip details...</Text>
         )}
 
-        {loadingMap || loadingItinerary ? (
-          <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.map} />
-          </SkeletonPlaceholder>
-        ) : (
-          region && (
-            <Animated.View style={{ opacity: mapFadeAnim }}>
-              <View style={{ height: 250, marginBottom: hp(2) }}>
-                <MapView
-                  ref={mapRef}
-                  style={StyleSheet.absoluteFillObject}
-                  provider="google"
-                  region={region}
-                  showsUserLocation
-                  showsMyLocationButton
-                  rotateEnabled>
-                  <Marker coordinate={region} title={trip.destination} />
-                  {attractions.map((place, index) => (
-                    <Marker
-                      key={index}
-                      coordinate={{ latitude: place.geometry.location.lat, longitude: place.geometry.location.lng }}
-                      title={place.name}
-                      description={place.vicinity}>
-                      <Callout tooltip onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
-                        <View style={{ backgroundColor: 'white', paddingBottom: 10, width: 200, alignItems: 'center', borderRadius: 8 }}>
-                          {place.photos?.[0]?.photo_reference ? (
-                            <Image
-                              source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}` }}
-                              style={{ width: 200, height: 100, borderRadius: 8 }}
-                              resizeMode="cover"
-                            />
-                          ) : (
-                            <Text>No Image</Text>
-                          )}
-                          <Text style={{ fontWeight: 'bold', marginTop: 8 }}>{place.name}</Text>
-                          <Text style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>{place.vicinity}</Text>
-                          {place.opening_hours?.open_now !== undefined && (
-                            <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>
-                              {place.opening_hours.open_now ? 'Open Now' : 'Closed'}
-                            </Text>
-                          )}
-                        </View>
-                      </Callout>
-                    </Marker>
-                  ))}
-                </MapView>
+        <View style={styles.mapContainer}>
+          {loadingMap ? (
+            <SkeletonPlaceholder borderRadius={12}>
+              <View style={styles.mapSkeleton}>
+                <View style={styles.mapSkeletonInner} />
               </View>
+            </SkeletonPlaceholder>
+          ) : region ? (
+            <Animated.View style={{ opacity: mapFadeAnim }}>
+              <MapView
+                ref={mapRef}
+                style={styles.map}
+                provider="google"
+                region={region}
+                showsUserLocation
+                showsMyLocationButton
+                rotateEnabled>
+                <Marker coordinate={region} title={trip.destination} />
+                {attractions.map((place, index) => (
+                  <Marker
+                    key={index}
+                    coordinate={{ latitude: place.geometry.location.lat, longitude: place.geometry.location.lng }}
+                    title={place.name}
+                    description={place.vicinity}>
+                    <Callout tooltip onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
+                      <View style={{ backgroundColor: 'white', paddingBottom: 10, width: 200, alignItems: 'center', borderRadius: 8 }}>
+                        {place.photos?.[0]?.photo_reference ? (
+                          <Image
+                            source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}` }}
+                            style={{ width: 200, height: 100, borderRadius: 8 }}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <Text>No Image</Text>
+                        )}
+                        <Text style={{ fontWeight: 'bold', marginTop: 8 }}>{place.name}</Text>
+                        <Text style={{ fontSize: 12, color: 'gray', textAlign: 'center' }}>{place.vicinity}</Text>
+                        {place.opening_hours?.open_now !== undefined && (
+                          <Text style={{ marginTop: 4, color: place.opening_hours.open_now ? 'green' : 'red', fontWeight: '600' }}>
+                            {place.opening_hours.open_now ? 'Open Now' : 'Closed'}
+                          </Text>
+                        )}
+                      </View>
+                    </Callout>
+                  </Marker>
+                ))}
+              </MapView>
             </Animated.View>
-          )
-        )}
+          ) : null}
+        </View>
 
         {loadingAttractions ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
@@ -703,8 +703,24 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  mapContainer: {
+    // marginHorizontal: wp(5),
+    marginBottom: hp(2),
+  },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    height: 250,
+    borderRadius: 12,
+  },
+  mapSkeleton: {
+    height: 250,
+    marginHorizontal: wp(0),
+    marginBottom: hp(2),
+  },
+  mapSkeletonInner: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    backgroundColor: COLOR.lightGray,
   },
   attractionsContainer: {
     paddingHorizontal: wp(5),
@@ -747,7 +763,7 @@ export const styles = StyleSheet.create({
   attractionRating: {
     fontSize: 14,
     color: COLOR.mediumGray,
-    marginTop: 2,
+    marginTop: hp(0.5),
   },
   attractionAddress: {
     fontSize: 13,
@@ -767,6 +783,7 @@ export const styles = StyleSheet.create({
   },
   placeDetailsContainer: {
     paddingTop: hp(1),
+    gap: hp(0.5)
   },
   fab: {
     position: 'absolute',
