@@ -25,9 +25,6 @@ const SubscriptionScreen = (props) => {
   const currentDate = new Date();
   const isOfferActive = currentDate <= OFFER_END_DATE;
 
-  const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex);
-  const [expandedIndex, setExpandedIndex] = useState(defaultSelectedIndex);
-  const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const countdownAnimation = useRef(new Animated.Value(1)).current;
@@ -49,14 +46,17 @@ const SubscriptionScreen = (props) => {
   if (isOfferActive) {
     updatedPlans.push({
       text: "Lifetime",
-      price: "100% Free For Lifetime",
-      time: `The Offer Ends in ${timeLeft.days} Day${timeLeft.days !== 1 ? 's' : ''} & ${timeLeft.hours} Hour${timeLeft.hours !== 1 ? 's' : ''}.`,
+      price: "100% Free",
+      time: `⏳ Ends in ${timeLeft.days} Day${timeLeft.days !== 1 ? 's' : ''} & ${timeLeft.hours} Hour${timeLeft.hours !== 1 ? 's' : ''}`,
       badge: "Limited Offer",
     });
   }
 
   const defaultSelectedIndex = isOfferActive ? updatedPlans.findIndex(p => p.text === "Lifetime") : 0;
 
+  const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex);
+  const [expandedIndex, setExpandedIndex] = useState(defaultSelectedIndex);
+  const [loading, setLoading] = useState(false);
 
   // Animation for the main button
   useEffect(() => {
@@ -83,7 +83,7 @@ const SubscriptionScreen = (props) => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(countdownAnimation, {
-          toValue: 1.1,
+          toValue: 0.9,
           duration: 800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
@@ -111,7 +111,6 @@ const SubscriptionScreen = (props) => {
       setTimeLeft({ days: 0, hours: 0 });
     }
   }, []);
-
 
   const handleSelect = (index, item) => {
     setSelectedIndex(index);
@@ -254,7 +253,7 @@ const SubscriptionScreen = (props) => {
         <View style={styles.footerContainer}>
           {selectedIndex === 2 && isOfferActive && (
             <Label style={styles.noPaymentText}>
-              No Subscription, No Payment
+              No Fees. No Limits. Premium for Life
             </Label>
           )}
 
