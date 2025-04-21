@@ -65,13 +65,13 @@ const RootNavigation = () => {
   };
 
   return (
-    <LinearGradient colors={['#fff', '#fff']} style={{ flex: 1 }}>
+    <LinearGradient colors={[COLOR.white, COLOR.white]} style={{ flex: 1 }}>
       <AnimatedSplash
         isLoaded={!loading}
         logoImage={require('../assets/images/bootSplash.png')}
         logoHeight={150}
         logoWidth={150}
-        backgroundColor="white"
+        backgroundColor={COLOR.white}
         preload={true}
       >
         <NavigationContainer>

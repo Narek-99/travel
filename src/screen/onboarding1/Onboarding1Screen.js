@@ -5,11 +5,6 @@ import { IMAGES } from '../../assets/images';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import { FIREBASE_COLLECTIONS, USER_STATUS } from '../../enums/AppEnums';
-import { getDocumentData, saveData } from '../../services/FirebaseMethods';
-import { setUser } from '../../redux/action/Action';
-import { useDispatch, useSelector } from 'react-redux';
-import useRating from '../../utils/useRating';
 import { SCREEN } from '../../enums/AppEnums';
 
 const hapticOptions = {
@@ -41,11 +36,10 @@ const Onboarding1Screen = ({ navigation }) => {
 };
 
 export default Onboarding1Screen;
-
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLOR.white,
   },
   contentContainer: {
     paddingTop: '8%',
@@ -54,33 +48,34 @@ const styles = StyleSheet.create({
   titleText: {
     ...TEXT_STYLE.title,
     fontWeight: '600',
-    color: '#FFFFFF', // Changed to white for better contrast
-    textShadowColor: 'rgba(0, 0, 0, 0.75)', // Added shadow for readability
+    color: COLOR.white,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
     marginVertical: hp(1),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: "#FFFFFF", // Changed to white for better contrast
-    textShadowColor: 'rgba(0, 0, 0, 0.5)', // Added shadow for readability
+    color: COLOR.white,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
   image: {
     ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   continueButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: COLOR.primary,
     borderRadius: 50,
     marginTop: 'auto',
     marginBottom: hp(5),
     marginHorizontal: wp(5),
   },
   buttonText: {
-    color: 'white',
+    color: COLOR.accent,
+    fontWeight: '600',
   },
 });

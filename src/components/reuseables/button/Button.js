@@ -36,6 +36,5 @@ const styles = StyleSheet.create({
     titleStyle: {
         ...TEXT_STYLE.bigTextSemiBold,
         color: COLOR.darkBlue,
-        marginTop: hp(0.5)
     },
 })

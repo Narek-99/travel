@@ -10,15 +10,19 @@ export const ACTIVE_OPACITY = 0.8
 export const BACKDROP_OPACITY = 0.2
 
 export const COLOR = {
-    Charcoal: "#24293E",
-    lightBlue: "#8EBBFF",
-    white: "#F4F5FC",
-    lightGray: "#CCCCCC",
-    darkBlue: "#2F3855",
-    white2: "#dfe6e9",
-    black: '#000000'
+    white: '#FFFFFF',
+    background: '#F4F5FC',        // soft white
+    primary: '#002953',           // dark navy
+    accent: '#FEA300',            // orange
+    lightGray: '#CCCCCC',
+    gray: '#7D7D7D',
+    black: '#000000',
 
-}
+    // UI feedback colors
+    success: '#4CAF50',
+    warning: '#FFC107',
+    danger: '#F44336',
+};
 
 export const FONT = {
     title: 'Poppins-Bold',
