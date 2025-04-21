@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
   },
   expandedPlanView: {
-    borderBottomLeftRadius: hp(2), // Reset since we removed the dropdown
+    borderBottomLeftRadius: hp(2),
     borderBottomRightRadius: hp(2),
   },
   planHeader: {
