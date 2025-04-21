@@ -226,7 +226,11 @@ const SubscriptionScreen = (props) => {
                     <View style={styles.saveBadge}>
                       <Label style={styles.badgeText}>Save 49%</Label>
                     </View>
-                  ) : item.text === "Monthly" ? null : (
+                  ) : item.text === "Monthly" ? (
+                    <View style={styles.trialBadge}>
+                      <Label style={styles.badgeText}>3-DAY FREE TRIAL</Label>
+                    </View>
+                  ) : (
                     <View style={styles.lifetimeBadge}>
                       <Label style={styles.badgeText}>
                         {isOfferActive ? "Limited Offer" : "One-Time Buy"}
@@ -251,11 +255,15 @@ const SubscriptionScreen = (props) => {
           })}
         </View>
         <View style={styles.footerContainer}>
-          {selectedIndex === 2 && isOfferActive && (
+          {selectedIndex === 2 && isOfferActive ? (
             <Label style={styles.noPaymentText}>
               No Fees. No Limits. Premium for Life
             </Label>
-          )}
+          ) : selectedIndex === 1 ? (
+            <Label style={styles.noPaymentText}>
+              No Payment Now
+            </Label>
+          ) : null}
 
           <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
             <LinearGradient
@@ -272,7 +280,7 @@ const SubscriptionScreen = (props) => {
                     ? "Get Free Forever!"
                     : selectedIndex === 0
                       ? "Start Yearly!"
-                      : "Start Monthly!"
+                      : "Try For Free!"
                 }
                 textStyle={styles.subscribeButtonText}
                 style={{ backgroundColor: 'transparent' }}
@@ -399,7 +407,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp(0.3),
     borderRadius: hp(0.8),
   },
-  saveBadge2: {
+  trialBadge: {
     backgroundColor: COLOR.accent,
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.3),
