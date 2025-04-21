@@ -198,8 +198,8 @@ const DestinationScreen = ({ navigation }) => {
             <ProgressBar
               progress={progress}
               width={wp(80)}
-              height={hp(1)}
-              color="#1E3A8A"
+              height={hp(0.8)}
+              color={COLOR.primary}
               borderRadius={5}
             />
           </View>
@@ -271,7 +271,7 @@ const DestinationScreen = ({ navigation }) => {
           <Button
             style={[
               styles.nextButton,
-              { backgroundColor: isValidDestination ? '#002953' : '#CCCCCC' }
+              { backgroundColor: isValidDestination ? COLOR.primary : '#CCCCCC' }
             ]}
             text={En.next}
             textStyle={styles.buttonText}

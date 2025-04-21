@@ -124,8 +124,8 @@ const ActivitiesScreen = ({ navigation }) => {
           <ProgressBar
             progress={progress}
             width={wp(80)}
-            height={hp(1)}
-            color={COLOR.lightBlue}
+            height={hp(0.8)}
+            color={COLOR.primary}
             borderRadius={5}
           />
         </View>
@@ -169,7 +169,7 @@ const ActivitiesScreen = ({ navigation }) => {
         <Button
           style={[
             styles.nextButton,
-            { backgroundColor: selectedActivities.length === 0 ? '#CCCCCC' : '#002953' }
+            { backgroundColor: selectedActivities.length === 0 ? COLOR.lightGray : COLOR.primary }
           ]}
           text={En.next}
           textStyle={styles.buttonText}
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.lightBlue,
+    color: COLOR.primary,
     marginBottom: hp(1),
   },
   submitContainer: {

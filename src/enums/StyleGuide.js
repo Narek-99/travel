@@ -17,6 +17,7 @@ export const COLOR = {
     lightGray: '#CCCCCC',
     gray: '#7D7D7D',
     black: '#000000',
+    lightBlue: "#8EBBFF",
 
     // UI feedback colors
     success: '#4CAF50',

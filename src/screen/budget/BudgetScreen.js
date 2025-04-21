@@ -114,8 +114,8 @@ const BudgetScreen = ({ navigation }) => {
             <ProgressBar
               progress={progress}
               width={wp(80)}
-              height={hp(1)}
-              color={COLOR.lightBlue}
+              height={hp(0.8)}
+              color={COLOR.primary}
               borderRadius={5}
             />
           </View>
@@ -173,7 +173,7 @@ const BudgetScreen = ({ navigation }) => {
           <Button
             style={[
               styles.nextButton,
-              { backgroundColor: !selectedBudget || (selectedBudget === 'custom' && !customAmount) ? '#CCCCCC' : '#002953' } // Use isValidDestination to determine button color
+              { backgroundColor: !selectedBudget || (selectedBudget === 'custom' && !customAmount) ? COLOR.lightGray : COLOR.primary } // Use isValidDestination to determine button color
             ]}
             text={En.next}
             textStyle={styles.buttonText}
@@ -192,9 +192,9 @@ const styles = StyleSheet.create({
   headlineContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align items on both ends
-    width: '100%', // Ensure the container takes full width
-    paddingHorizontal: 10, // Optional: for inner spacing
+    justifyContent: "space-between",
+    width: '100%',
+    paddingHorizontal: 10,
     gap: wp(2),
     marginTop: hp(2)
   },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     alignItems: 'center',
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: COLOR.lightBlue,
   },
   selectedOption: {
     backgroundColor: COLOR.lightBlue,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.lightBlue,
+    color: COLOR.primary,
     marginBottom: hp(1),
   },
   submitContainer: {

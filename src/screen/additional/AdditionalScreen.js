@@ -169,8 +169,8 @@ const AdditionalScreen = ({ navigation }) => {
             <ProgressBar
               progress={progress}
               width={wp(80)}
-              height={hp(1)}
-              color="#1E3A8A"
+              height={hp(0.8)}
+              color={COLOR.primary}
               borderRadius={5}
             />
           </View>
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.lightBlue,
+    color: COLOR.primary,
     marginBottom: hp(1),
   },
   submitContainer: {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   nextButton: {
-    backgroundColor: '#002953',
+    backgroundColor: COLOR.primary,
     marginHorizontal: wp(2),
   },
   buttonText: {
