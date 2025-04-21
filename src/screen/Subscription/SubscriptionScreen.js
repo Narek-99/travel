@@ -252,10 +252,10 @@ export default SubscriptionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLOR.background,
   },
   scrollContent: {
-    paddingBottom: hp(5),
+    paddingBottom: hp(6),
   },
   innerContainer: {
     paddingHorizontal: wp(5),
@@ -265,32 +265,57 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
   },
   note: {
-    fontSize: 8,
-    color: '#4B5563',
-    fontWeight: '200',
+    ...TEXT_STYLE.smallText,
+    color: COLOR.gray,
+    fontWeight: '400',
   },
   screenText: {
-    fontSize: 28,
+    ...TEXT_STYLE.title,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#1F2937',
+    color: COLOR.primary,
     marginVertical: hp(2),
   },
+  benefitsContainer: {
+    backgroundColor: '#F1F5F9',
+    padding: wp(4),
+    borderRadius: hp(2),
+    marginBottom: hp(1),
+  },
+  benefitsTitle: {
+    ...TEXT_STYLE.textBold,
+    color: COLOR.primary,
+    marginBottom: hp(1),
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp(1.2),
+  },
+  featureText: {
+    marginLeft: wp(2),
+    ...TEXT_STYLE.text,
+    color: COLOR.primary,
+  },
   planView: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.white,
     borderRadius: hp(2),
     padding: wp(4),
     marginVertical: hp(1),
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...Platform.select({
+      android: { elevation: 3 },
+      ios: {
+        shadowColor: COLOR.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+    }),
   },
   selectedPlanView: {
     backgroundColor: '#E8F0FE',
-    borderWidth: 2,
     borderColor: '#3B82F6',
+    borderWidth: 2,
   },
   expandedPlanView: {
     borderBottomLeftRadius: hp(2),
@@ -298,8 +323,8 @@ const styles = StyleSheet.create({
   },
   lifetimePlanView: {
     backgroundColor: '#FFF7E6',
+    borderColor: COLOR.accent,
     borderWidth: 2,
-    borderColor: '#FEA300',
   },
   planHeader: {
     flexDirection: 'row',
@@ -307,16 +332,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   planTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
+    ...TEXT_STYLE.smallTitleBold,
+    color: COLOR.primary,
   },
   lifetimePlanTitle: {
     color: COLOR.primary,
-    fontWeight: '700',
   },
   saveBadge: {
-    backgroundColor: '#22C55E',
+    backgroundColor: COLOR.success,
     paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
     borderRadius: hp(1),
@@ -334,70 +357,45 @@ const styles = StyleSheet.create({
     borderRadius: hp(1),
   },
   badgeText: {
-    ...TEXT_STYLE.textSemiBold,
-    color: '#FFFFFF',
-    fontSize: 12,
+    ...TEXT_STYLE.smallTextSemiBold,
+    color: COLOR.white,
   },
   planPrice: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#4B5563',
+    ...TEXT_STYLE.bigText,
+    color: COLOR.gray,
     marginTop: hp(1),
   },
   lifetimePlanPrice: {
     color: COLOR.accent,
     fontWeight: '600',
   },
-  benefitsContainer: {
-    backgroundColor: '#F1F5F9',
-    padding: wp(4),
-    borderRadius: hp(2),
-    marginVertical: hp(2),
-  },
-  benefitsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: hp(1),
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: hp(1.5),
-  },
-  featureText: {
-    marginLeft: wp(2),
-    fontSize: 14,
-    color: '#1F2937',
-  },
   subscribeButton: {
-    marginVertical: hp(2),
+    marginTop: hp(3),
     borderRadius: hp(1.5),
   },
   subscribeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    ...TEXT_STYLE.textSemiBold,
+    color: COLOR.white,
+    textAlign: 'center',
   },
   noPaymentText: {
     textAlign: 'center',
     color: COLOR.accent,
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: hp(1),
+    ...TEXT_STYLE.textSemiBold,
+    marginTop: hp(1),
   },
   legalLinks: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: hp(2),
   },
   legalText: {
-    fontSize: 10,
-    color: '#6B7280',
-    fontWeight: '500',
+    ...TEXT_STYLE.smallTextMedium,
+    color: COLOR.gray,
   },
   legalSeparator: {
     marginHorizontal: wp(2),
-    color: '#6B7280',
+    color: COLOR.gray,
   },
 });
