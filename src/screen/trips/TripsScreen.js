@@ -231,13 +231,13 @@ const TripsScreen = ({ navigation }) => {
         }
       />
 
-      <Pressable onPress={handleAddTripNavigation} style={styles.contentContainer}>
+      <Pressable style={styles.contentContainer}>
         {trips.length === 0 ? (
-          <View style={styles.emptyContainer}>
+          <Pressable style={styles.emptyContainer} onPress={handleAddTripNavigation}>
             <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
             <Text style={styles.emptyTitle}>No trips yet!</Text>
             <Text style={styles.emptySubtitle}>Let’s plan your first trip!</Text>
-          </View>
+          </Pressable>
         ) : (
           <SwipeListView
             data={trips}
@@ -247,11 +247,7 @@ const TripsScreen = ({ navigation }) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.card}
-                onPress={() => {
-                  ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-                  navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id })
-                }
-                }
+                onPress={handleAddTripNavigation}
               >
                 <View style={styles.cardImageContainer}>
                   {loadingImages[item.id] || !tripImages[item.id] ? (
