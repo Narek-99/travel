@@ -57,7 +57,7 @@ const DatesScreen = ({ navigation }) => {
   }, [tripId]);
 
   const currentStep = 2;
-  const totalSteps = 8;
+  const totalSteps = 7;
   const progress = currentStep / totalSteps;
 
 

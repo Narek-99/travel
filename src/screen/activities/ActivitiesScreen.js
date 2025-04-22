@@ -18,13 +18,13 @@ const hapticOptions = {
 };
 
 const currentStep = 5;
-const totalSteps = 8;
+const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const activityOptions = [
   { label: '🎭 Culture & History', value: 'culture' },
   { label: '🌳 Nature', value: 'nature' },
-  { label: '🧗 Adventure & Thrills', value: 'adventure' },
+  { label: '💞 Romantic', value: 'romantic' },
   { label: '🌃 Nightlife', value: 'nightlife' },
   { label: '🧘‍♀️ Relaxation', value: 'relaxation' },
   { label: '🛍️ Shopping', value: 'shopping' },
@@ -111,7 +111,7 @@ const ActivitiesScreen = ({ navigation }) => {
 
     setTripData({ activities: selectedActivities });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    navigation.navigate(SCREEN.WISHES, { tripId });
+    navigation.navigate(SCREEN.PREFERENCES, { tripId });
   };
 
   return (

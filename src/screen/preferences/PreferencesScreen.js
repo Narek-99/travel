@@ -15,16 +15,16 @@ import Toast from 'react-native-toast-message';
 
 const hapticOptions = { enableVibrateFallback: true };
 
-const currentStep = 7;
-const totalSteps = 8;
+const currentStep = 6;
+const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const accommodationOptions = [
   { label: '🏨 Hotel', value: 'hotel' },
+  { label: '🏡 Airbnb', value: 'airbnb' },
   { label: '🏠 Vacation Apartment', value: 'vacationApartment' },
   { label: '🏨 Hostel', value: 'hostel' },
   { label: '⛺ Camping', value: 'camping' },
-  { label: '🏡 Airbnb', value: 'airbnb' },
   { label: '🌟 Luxury Hotel', value: 'luxuryHotel' },
   { label: '💸 Budget Options', value: 'budgetOptions' },
 ];

@@ -17,8 +17,7 @@ import { setUser } from '../redux/action/Action';
 import { useSubscriptions } from '../contexts/subscriptionContext';
 import {
   HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, ChatbotScreen,
-  TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, WishesScreen,
-  ActivitiesScreen, DatesScreen, HelpScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen,
+  TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, ActivitiesScreen, DatesScreen, HelpScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen,
   Onboarding1Screen, SettingScreen, SubscriptionScreen
 } from '../screen';
 
@@ -85,7 +84,6 @@ const RootNavigation = () => {
                 <Stack.Screen name={SCREEN.COMPANION} component={CompanionScreen} />
                 <Stack.Screen name={SCREEN.BUDGET} component={BudgetScreen} />
                 <Stack.Screen name={SCREEN.ACTIVITIES} component={ActivitiesScreen} />
-                <Stack.Screen name={SCREEN.WISHES} component={WishesScreen} />
                 <Stack.Screen name={SCREEN.PREFERENCES} component={PreferencesScreen} />
                 <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
                 <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />

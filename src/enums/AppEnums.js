@@ -21,7 +21,6 @@ export const SCREEN = {
   TRIPDETAILS: "TripDetailsScreen",
   SETTINGS: 'SettingScreen',
   ACTIVITIES: "ActivitiesScreen",
-  WISHES: "WishesScreen",
   PREFERENCES: "PreferencesScreen",
   ADDITIONAL: "AdditionalScreen",
   BOOKING: "BookingScreen",

@@ -26,7 +26,7 @@ const options = [
 ];
 
 const currentStep = 3;
-const totalSteps = 8;
+const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const CompanionScreen = ({ navigation }) => {

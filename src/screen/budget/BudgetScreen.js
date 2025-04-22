@@ -25,7 +25,7 @@ const budgetOptions = [
 ];
 
 const currentStep = 4;
-const totalSteps = 8;
+const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const BudgetScreen = ({ navigation }) => {

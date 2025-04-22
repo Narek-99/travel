@@ -19,7 +19,6 @@ User’s Trip Details to Strictly Follow:
 - **Traveling with:** ${tripData.companion}, ${tripData.persons || '1'} person(s)
 - **Budget:** ${tripData.budget || 'medium'}
 - **Preferred Activities:** ${tripData.activities?.join(', ') || 'no specific activities'}
-- **Special Wishes:** ${tripData.wishes?.join(', ') || 'none'}
 - **Accommodation Preferences:** ${tripData.accommodation?.join(', ') || 'no specific preferences'}
 - **Preferred Location within Destination:** ${tripData.location?.join(', ') || 'no specific location'}
 - **Additional Information:** ${tripData.additionalInfo || 'none'}

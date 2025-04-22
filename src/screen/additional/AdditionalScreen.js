@@ -15,8 +15,8 @@ import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
 import { getTripPrompt, getFunFactsPrompt } from '../../apis/Prompts';
 
-const currentStep = 8;
-const totalSteps = 8;
+const currentStep = 7;
+const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const AdditionalScreen = ({ navigation }) => {

@@ -40,7 +40,7 @@ const DestinationScreen = ({ navigation }) => {
   const [localCountry, setLocalCountry] = useState(tripData.country || '');
 
   const currentStep = 1;
-  const totalSteps = 8;
+  const totalSteps = 7;
   const progress = currentStep / totalSteps;
 
   useEffect(() => {
