@@ -85,14 +85,14 @@ const SettingScreen = ({ navigation }) => {
           </Pressable>
         )}
 
-        <Pressable style={styles.pressBtn} onPress={() => {
+        {/* <Pressable style={styles.pressBtn} onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', options);
           Share.share({
             url: "https://apps.apple.com/de/app/best-ai-assist-guru/id6737259052?l=en-GB",
           })
         }}>
           <Label style={styles.pressBtnText}>Share</Label>
-        </Pressable>
+        </Pressable> */}
         <Pressable style={styles.pressBtn} onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', options);
           handleSupportPress()
