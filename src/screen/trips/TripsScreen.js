@@ -155,7 +155,7 @@ const TripsScreen = ({ navigation }) => {
       maximumFractionDigits: 0,
     });
 
-    if (customAmount) {
+    if (budget === 'custom' && customAmount) {
       return `💰 Budget: ${formatter.format(customAmount)}`;
     }
 
@@ -167,8 +167,6 @@ const TripsScreen = ({ navigation }) => {
 
     return '💵 Medium Budget';
   };
-
-
 
   const deleteTrip = async (tripId) => {
     Alert.alert("Delete Trip", "Are you sure you want to delete this trip?", [
@@ -223,6 +221,11 @@ const TripsScreen = ({ navigation }) => {
       navigation.navigate(SCREEN.SUBSCRIPTION);
       ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     }
+  };
+
+  const handleEditTripPress = (tripId) => {
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+    navigation.navigate(SCREEN.DESTINATION, { tripId });
   };
 
   return (
@@ -311,6 +314,13 @@ const TripsScreen = ({ navigation }) => {
                       </View>
                     </View>
                   </LinearGradient>
+
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleEditTripPress(item.id)}
+                  >
+                    <SVG.Edit fill={COLOR.white} width={20} height={20} />
+                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.detailButton}
@@ -462,6 +472,7 @@ const styles = StyleSheet.create({
   },
   cardImageContainer: {
     height: 200,
+    position: 'relative', // Added to allow absolute positioning of the edit button
   },
   cardImage: {
     width: '100%',
@@ -508,6 +519,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 14,
+  },
+  editButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: COLOR.primary,
+    padding: wp(2.5),
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
