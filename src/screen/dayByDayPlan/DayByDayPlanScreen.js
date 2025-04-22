@@ -112,6 +112,23 @@ const DayByDayPlanScreen = ({ navigation }) => {
     });
   };
 
+  const renderCustomMarker = (order) => (
+    <View style={styles.markerWrapper}>
+      <View style={styles.markerCircle}>
+        <Text style={styles.markerText}>{order}</Text>
+      </View>
+    </View>
+  );
+
+  const renderStartMarker = () => (
+    <View style={styles.startMarkerWrapper}>
+      <View style={styles.pinCircle}>
+        <Text style={styles.pinIcon}>📍</Text>
+      </View>
+      <Text style={styles.pinLabel}>Start</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {loading ? (
@@ -147,15 +164,20 @@ const DayByDayPlanScreen = ({ navigation }) => {
               rotateEnabled>
               <Marker
                 coordinate={{ latitude: region.latitude, longitude: region.longitude }}
-                title="Starting Point"
-                pinColor="blue"
-              />
+                title="Starting Point">
+                {renderStartMarker()}
+                <Callout tooltip>
+                  <View style={styles.calloutContainer}>
+                    <Text style={styles.calloutTitle}>Start</Text>
+                  </View>
+                </Callout>
+              </Marker>
               {dailyItineraries[selectedDayIndex].items.map((item, index) => (
                 <Marker
                   key={index}
                   coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
-                  title={item.attraction.name}
-                  pinColor={index + 1 === 1 ? 'teal' : 'red'}>
+                  title={item.attraction.name}>
+                  {renderCustomMarker(item.order)}
                   <Callout tooltip>
                     <View style={styles.calloutContainer}>
                       {item.attraction.photo ? (
@@ -167,7 +189,9 @@ const DayByDayPlanScreen = ({ navigation }) => {
                       ) : (
                         <Text>No Image</Text>
                       )}
-                      <Text style={styles.calloutTitle}>{item.attraction.name}</Text>
+                      <Text style={styles.calloutTitle}>
+                        {item.attraction.name} {index === dailyItineraries[selectedDayIndex].items.length - 1 ? '(Ende)' : ''}
+                      </Text>
                       <Text style={styles.calloutText}>
                         ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
                       </Text>
@@ -177,9 +201,9 @@ const DayByDayPlanScreen = ({ navigation }) => {
               ))}
               <Polyline
                 coordinates={getRouteCoordinates()}
-                strokeColor="#1E90FF"
-                strokeWidth={3}
-                lineDashPattern={[10, 10]}
+                strokeColor={"#1E90FF"}
+                strokeWidth={5}
+                lineDashPattern={[20, 5]}
               />
             </MapView>
             <Pressable
@@ -493,4 +517,79 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
   },
+  customMarkerContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 999,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+  customMarkerText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLOR.white,
+  },
+  startMarkerContainer: {
+    backgroundColor: 'rgba(0, 128, 128, 0.8)',
+    borderRadius: 999,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+  startMarkerText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLOR.white,
+  },
+  markerWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  markerCircle: {
+    backgroundColor: '#2563EB',
+    borderRadius: 999,
+    padding: 6,
+    width: 35,
+    height: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLOR.white,
+    elevation: 4,
+  },
+
+  markerText: {
+    color: COLOR.white,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+
+  startMarkerWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  pinCircle: {
+    backgroundColor: '#10B981',
+    borderRadius: 999,
+    width: 35,
+    height: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLOR.white,
+    elevation: 4,
+  },
+
+  pinIcon: {
+    fontSize: 18,
+    color: COLOR.white,
+  },
+
+  pinLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 2,
+  },
+
 });
