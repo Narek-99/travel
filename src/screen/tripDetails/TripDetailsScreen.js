@@ -346,6 +346,7 @@ const TripDetailsScreen = ({ navigation }) => {
   }, []);
 
   const handleEditTripPress = () => {
+    ReactNativeHapticFeedback.trigger('impactLight');
     navigation.navigate(SCREEN.DESTINATION, { tripId });
   };
 
@@ -355,6 +356,7 @@ const TripDetailsScreen = ({ navigation }) => {
   };
 
   const handleChatbotPress = () => {
+    ReactNativeHapticFeedback.trigger('impactLight');
     bottomSheetRef.current?.close();
     navigation.navigate(SCREEN.CHATBOT, { tripId });
   };
