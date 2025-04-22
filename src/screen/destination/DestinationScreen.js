@@ -295,11 +295,7 @@ const DestinationScreen = ({ navigation }) => {
                 ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
                 resetTrip();
                 setIsValidDestination(false);
-                if (tripId) {
-                  navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
-                } else {
-                  navigation.navigate(SCREEN.TRIPS);
-                }
+                navigation.goBack();
               }}
             >
               <SVG.BackIcon fill="black" />
