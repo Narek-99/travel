@@ -160,27 +160,35 @@ const AdditionalScreen = ({ navigation }) => {
       <View style={styles.screenContainer}>
         <View style={styles.contentContainer}>
           <SafeAreaView />
-          <View style={styles.stepIndicatorContainer}>
-            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-            <ProgressBar
-              progress={progress}
-              width={wp(40)}
-              height={hp(0.5)}
-              color={COLOR.primary}
-              borderRadius={5}
-            />
-          </View>
           <View style={styles.headlineContainer}>
-            <Pressable onPress={() => navigation.goBack()}>
+            <Pressable style={styles.iconWrapper} onPress={() => navigation.goBack()}>
               <SVG.BackIcon fill="black" />
             </Pressable>
-            <Label style={styles.titleText}>{En.additionalTitle}</Label>
-            <View style={{ flex: 1 }} />
-            <Pressable onPress={() => tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId }) : navigation.navigate(SCREEN.TRIPS)}>
+
+            <View style={styles.centerWrapper}>
+              <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+              <ProgressBar
+                progress={progress}
+                width={wp(40)}
+                height={hp(0.5)}
+                color={COLOR.primary}
+                borderRadius={5}
+              />
+            </View>
+
+            <Pressable
+              style={styles.iconWrapper}
+              onPress={() =>
+                tripId
+                  ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
+                  : navigation.navigate(SCREEN.TRIPS)
+              }>
               <SVG.Close fill="black" />
             </Pressable>
           </View>
-          <Label style={styles.subtitleText}>{En.additionalSubtitle}</Label>
+
+          <Label style={styles.titleText}>{En.additionalTitle}</Label>
+
           <TextInput
             style={styles.textInput}
             onChangeText={(text) => setAdditionalInfo(text)}
@@ -272,4 +280,14 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
   },
+  iconWrapper: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
 });

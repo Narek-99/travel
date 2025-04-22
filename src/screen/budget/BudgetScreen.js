@@ -109,27 +109,35 @@ const BudgetScreen = ({ navigation }) => {
       <View style={styles.screenContainer}>
         <View style={styles.contentContainer}>
           <SafeAreaView />
-          <View style={styles.stepIndicatorContainer}>
-            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-            <ProgressBar
-              progress={progress}
-              width={wp(40)}
-              height={hp(0.5)}
-              color={COLOR.primary}
-              borderRadius={5}
-            />
-          </View>
           <View style={styles.headlineContainer}>
-            <Pressable onPress={() => navigation.goBack()}>
+            <Pressable style={styles.iconWrapper} onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              navigation.goBack();
+            }}>
               <SVG.BackIcon fill="black" />
             </Pressable>
-            <Label style={styles.titleText}>{En.budgetTitle}</Label>
-            <View style={{ flex: 1 }} />
-            <Pressable onPress={() => tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId }) : navigation.navigate(SCREEN.TRIPS)}>
+
+            <View style={styles.centerWrapper}>
+              <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+              <ProgressBar
+                progress={progress}
+                width={wp(40)}
+                height={hp(0.5)}
+                color={COLOR.primary}
+                borderRadius={5}
+              />
+            </View>
+
+            <Pressable style={styles.iconWrapper} onPress={() =>
+              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS)
+            }>
               <SVG.Close fill="black" />
             </Pressable>
           </View>
+
+          <Label style={styles.titleText}>{En.budgetTitle}</Label>
           <Label style={styles.subtitleText}>{En.budgetSubtitle}</Label>
+
 
           {/* Budget Options */}
           <View style={styles.optionsContainer}>
@@ -189,14 +197,22 @@ const BudgetScreen = ({ navigation }) => {
 export default BudgetScreen;
 
 const styles = StyleSheet.create({
+  centerWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  iconWrapper: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   headlineContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 10,
-    gap: wp(2),
-    marginTop: hp(2)
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
   },
   screenContainer: {
     flex: 1,
@@ -258,9 +274,6 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
     borderWidth: 1,
     borderColor: COLOR.lightBlue
-  },
-  stepIndicatorContainer: {
-    alignItems: 'center',
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
