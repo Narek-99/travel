@@ -812,7 +812,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingVertical: hp(2),
   },
   sheetTitle: {
     fontSize: 20,

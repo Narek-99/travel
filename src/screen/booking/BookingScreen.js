@@ -565,8 +565,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(4),
     paddingVertical: hp(2),
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: COLOR.white2,
   },
   headerTitle: {
     fontSize: 20,
