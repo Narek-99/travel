@@ -278,35 +278,36 @@ const DestinationScreen = ({ navigation }) => {
         <View style={styles.contentContainer}>
           <SafeAreaView />
 
-          <View style={styles.stepIndicatorContainer}>
-            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-            <ProgressBar
-              progress={progress}
-              width={wp(40)}
-              height={hp(0.5)}
-              color={COLOR.primary}
-              borderRadius={5}
-            />
-          </View>
-
           <View style={styles.headlineContainer}>
             <Pressable
+              style={styles.iconWrapper}
               onPress={() => {
                 ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
                 resetTrip();
                 setIsValidDestination(false);
                 navigation.goBack();
-              }}
-            >
+              }}>
               <SVG.BackIcon fill="black" />
             </Pressable>
-            <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
-            <View style={{ flex: 1 }} />
-            <Pressable onPress={handleClose}>
+
+            <View style={styles.centerWrapper}>
+              <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+              <ProgressBar
+                progress={progress}
+                width={wp(40)}
+                height={hp(0.5)}
+                color={COLOR.primary}
+                borderRadius={5}
+              />
+            </View>
+
+            <Pressable style={styles.iconWrapper} onPress={handleClose}>
               <SVG.Close fill="black" />
             </Pressable>
           </View>
 
+
+          <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
           <Label style={styles.subtitleText}>{En.DestinationScreenSubtitle}</Label>
 
           <View style={styles.dropdownWrapper}>
@@ -386,6 +387,7 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
+    color: COLOR.black,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -419,7 +421,6 @@ const styles = StyleSheet.create({
   },
   stepIndicatorContainer: {
     alignItems: 'center',
-    marginBottom: hp(2),
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
@@ -430,8 +431,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 10,
+    marginVertical: hp(2),
+    paddingHorizontal: wp(3),
+  },
+  centerWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  iconWrapper: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitContainer: {
     justifyContent: 'flex-end',
@@ -443,6 +453,7 @@ const styles = StyleSheet.create({
   dropdownWrapper: {
     position: 'relative',
     zIndex: 10,
+    marginTop: hp(2)
   },
   dropdown: {
     backgroundColor: '#fff',
