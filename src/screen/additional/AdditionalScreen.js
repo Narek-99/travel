@@ -161,7 +161,10 @@ const AdditionalScreen = ({ navigation }) => {
         <View style={styles.contentContainer}>
           <SafeAreaView />
           <View style={styles.headlineContainer}>
-            <Pressable style={styles.iconWrapper} onPress={() => navigation.goBack()}>
+            <Pressable style={styles.iconWrapper} onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              navigation.goBack();
+            }}>
               <SVG.BackIcon fill="black" />
             </Pressable>
 
@@ -178,10 +181,13 @@ const AdditionalScreen = ({ navigation }) => {
 
             <Pressable
               style={styles.iconWrapper}
-              onPress={() =>
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
                 tripId
                   ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
-                  : navigation.navigate(SCREEN.TRIPS)
+                  : navigation.navigate(SCREEN.TRIPS);
+              }
+
               }>
               <SVG.Close fill="black" />
             </Pressable>

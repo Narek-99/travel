@@ -139,9 +139,10 @@ const CompanionScreen = ({ navigation }) => {
               />
             </View>
 
-            <Pressable style={styles.iconWrapper} onPress={() =>
-              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS)
-            }>
+            <Pressable style={styles.iconWrapper} onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+            }}>
               <SVG.Close fill="black" />
             </Pressable>
           </View>

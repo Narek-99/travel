@@ -137,9 +137,9 @@ const DatesScreen = ({ navigation }) => {
           <Pressable
             style={styles.iconWrapper}
             onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS)
-            }
-            } >
+            }} >
             <SVG.Close fill="black" />
           </Pressable>
         </View>
