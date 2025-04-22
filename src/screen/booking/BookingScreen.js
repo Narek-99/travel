@@ -9,13 +9,13 @@ import { COLOR, hp, wp } from '../../enums/StyleGuide';
 import { searchFlights } from '../../services/amadeusApi';
 import { createSmartTripAffiliateLink } from '../../services/TripLinkService';
 import Toast from 'react-native-toast-message';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import AirportSelector from '../../components/AirportSelector';
 import airports from '../../assets/data/airports.json';
 import { Label } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
 import Clipboard from '@react-native-clipboard/clipboard';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const BookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);

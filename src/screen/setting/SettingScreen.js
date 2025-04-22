@@ -6,8 +6,8 @@ import { SVG } from '../../assets/svgs'
 import { FIREBASE_COLLECTIONS, SCREEN } from '../../enums/AppEnums'
 import { useSelector } from 'react-redux'
 import { DeleteMessages } from '../../services/FirebaseMethods'
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Toast from 'react-native-toast-message'
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const options = {
   enableVibrateFallback: true

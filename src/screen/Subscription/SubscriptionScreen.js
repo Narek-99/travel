@@ -5,9 +5,9 @@ import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
 import { useSubscriptions } from '../../contexts/subscriptionContext';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useRating from '../../utils/useRating';
 import LinearGradient from 'react-native-linear-gradient';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const options = {
   enableVibrateFallback: true,

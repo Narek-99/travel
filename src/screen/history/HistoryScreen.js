@@ -5,9 +5,9 @@ import firestore from '@react-native-firebase/firestore';
 import { useSelector } from 'react-redux';
 import { AppHeader, Label } from '../../components';
 import { COLOR, TEXT_STYLE } from '../../enums/StyleGuide';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Toast from 'react-native-toast-message';
 import { SVG } from '../../assets/svgs';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const HistoryScreen = () => {
   const navigation = useNavigation();

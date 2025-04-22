@@ -2,7 +2,6 @@ import { SafeAreaView, StyleSheet, View, Text, Pressable } from 'react-native';
 import { Button, Photo } from '../../components';
 import { IMAGES } from '../../assets/images';
 import { COLOR, hp, wp } from '../../enums/StyleGuide';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { useSelector, useDispatch } from 'react-redux';
 import useRating from '../../utils/useRating';
 import { SVG } from '../../assets/svgs';
@@ -11,6 +10,7 @@ import { getDocumentData, saveData } from '../../services/FirebaseMethods';
 import { setUser } from '../../redux/action/Action';
 import { Animated } from 'react-native';
 import React, { useRef, useEffect } from 'react';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const hapticOptions = { enableVibrateFallback: true };
 

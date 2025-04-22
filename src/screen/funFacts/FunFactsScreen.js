@@ -6,7 +6,6 @@ import firestore from '@react-native-firebase/firestore';
 import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp, commonStyles } from '../../enums/StyleGuide';
 import { SVG } from '../../assets/svgs';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import Toast from 'react-native-toast-message';
 import { SCREEN } from '../../enums/AppEnums';
@@ -14,6 +13,7 @@ import { getFunFactsPrompt } from '../../apis/Prompts';
 import Clipboard from '@react-native-clipboard/clipboard';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const FunFactsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -148,7 +148,7 @@ const FunFactsScreen = ({ navigation }) => {
   };
 
   const handleCopyFact = (fact, index) => {
-    ReactNativeHapticFeedback.trigger('impactLight');
+    ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
     Clipboard.setString(fact);
     Toast.show({
       type: 'success',

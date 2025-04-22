@@ -4,12 +4,10 @@ import { Button, Label, Photo } from '../../components';
 import { IMAGES } from '../../assets/images';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { SCREEN } from '../../enums/AppEnums';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-const hapticOptions = {
-  enableVibrateFallback: true,
-};
+const hapticOptions = { enableVibrateFallback: true };
 
 const Onboarding1Screen = ({ navigation }) => {
   return (
@@ -19,7 +17,6 @@ const Onboarding1Screen = ({ navigation }) => {
         <SafeAreaView />
 
         <Label style={styles.titleText}>{En.onboarding1Title}</Label>
-        {/* <Label style={styles.subtitleText}>{En.onboarding1Subtitle}</Label> */}
       </View>
 
       <Button

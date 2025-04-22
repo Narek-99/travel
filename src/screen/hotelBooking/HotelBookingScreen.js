@@ -6,11 +6,15 @@ import firestore from '@react-native-firebase/firestore';
 import { SVG } from '../../assets/svgs';
 import { COLOR, hp, wp } from '../../enums/StyleGuide';
 import Toast from 'react-native-toast-message';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Modal from 'react-native-modal';
 import { searchHotels } from '../../services/searchHotels';
 import { getCityDetailsFromDestination } from '../../utils/airports';
 import { createBookingComLink } from '../../utils/bookingLinks';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
+const hapticOptions = {
+  enableVibrateFallback: true,
+};
 
 const HotelBookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -228,7 +232,7 @@ const HotelBookingScreen = ({ navigation }) => {
 
       <View style={styles.header}>
         <Pressable onPress={() => {
-          ReactNativeHapticFeedback.trigger('impactLight');
+          ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
           navigation.goBack();
         }}>
           <SVG.BackIcon />

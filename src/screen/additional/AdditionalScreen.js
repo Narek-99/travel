@@ -13,11 +13,16 @@ import { ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
-import { getTripPrompt, getFunFactsPrompt } from '../../apis/Prompts';
+import { getFunFactsPrompt } from '../../apis/Prompts';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const currentStep = 7;
 const totalSteps = 7;
 const progress = currentStep / totalSteps;
+
+const hapticOptions = {
+  enableVibrateFallback: true,
+};
 
 const AdditionalScreen = ({ navigation }) => {
   const { tripData, setTripData, resetTrip } = useTripStore();

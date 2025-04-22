@@ -3,9 +3,9 @@ import { StyleSheet, View, Pressable, Text, ScrollView, Linking, Animated, Image
 import { useRoute } from '@react-navigation/native';
 import { COLOR, hp, wp } from '../../enums/StyleGuide';
 import { SVG } from '../../assets/svgs';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const { height } = Dimensions.get('window');
 
@@ -272,7 +272,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
                       </View>
                       <Pressable
                         onPress={() => {
-                          ReactNativeHapticFeedback.trigger('impactLight');
+                          ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
                           Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`);
                         }}
                         style={styles.directionsButton}>

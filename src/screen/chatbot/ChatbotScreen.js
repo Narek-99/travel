@@ -18,9 +18,9 @@ import { AppHeader } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { SVG } from '../../assets/svgs';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 
 const ChatbotScreen = ({ navigation }) => {

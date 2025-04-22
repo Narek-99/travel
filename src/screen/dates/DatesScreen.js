@@ -4,15 +4,15 @@ import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ProgressBar from 'react-native-progress/Bar';
 import { SVG } from '../../assets/svgs';
-import { useTripStore } from '../../store/tripStore'; // Import Zustand store
+import { useTripStore } from '../../store/tripStore';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const hapticOptions = {
   enableVibrateFallback: true,
@@ -103,7 +103,7 @@ const DatesScreen = ({ navigation }) => {
   };
 
   const handleNext = () => {
-    setTripData({ startDate, endDate }); // ✅ gezielte Speicherung
+    setTripData({ startDate, endDate });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.COMPANION, { tripId });
   };

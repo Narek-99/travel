@@ -4,7 +4,6 @@ import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { SVG } from '../../assets/svgs';
 import ProgressBar from 'react-native-progress/Bar';
 import { useTripStore } from '../../store/tripStore';
@@ -12,6 +11,7 @@ import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const hapticOptions = { enableVibrateFallback: true };
 
