@@ -300,8 +300,8 @@ const styles = StyleSheet.create({
     top: 50,
     left: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: "50%",
-    padding: 5,
+    borderRadius: 999,
+    padding: 6,
   },
   bottomContainer: {
     position: 'absolute',
@@ -315,14 +315,14 @@ const styles = StyleSheet.create({
     paddingVertical: hp(1),
   },
   dayTab: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#F3F4F6',
     borderRadius: 20,
     paddingVertical: hp(1),
     paddingHorizontal: wp(4),
     marginRight: wp(2),
   },
   dayTabSelected: {
-    backgroundColor: '#4B5EAA',
+    backgroundColor: COLOR.primary,
   },
   dayTabText: {
     fontSize: 14,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     width: 200,
     backgroundColor: COLOR.white,
     borderRadius: 14,
-    marginRight: wp(1),
+    marginRight: wp(2),
     padding: wp(3),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -360,26 +360,21 @@ const styles = StyleSheet.create({
     width: 260,
     height: 220,
     borderRadius: 14,
-    marginRight: wp(1),
+    marginRight: wp(2),
   },
   orderContainer: {
     position: 'absolute',
     top: 10,
     left: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: "50%",
-    padding: wp(2),
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 999,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
     zIndex: 1,
   },
   order: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: COLOR.white,
-  },
-  dayText: {
-    fontSize: 12,
     color: COLOR.white,
   },
   imageContainer: {
@@ -399,15 +394,13 @@ const styles = StyleSheet.create({
   },
   details: {
     paddingTop: hp(0.5),
-    paddingBottom: hp(0.5),
-    flexDirection: "column",
     gap: hp(0.3),
     flex: 1,
   },
   placeText: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLOR.dark,
+    color: '#1F2937',
     marginBottom: hp(0.5),
   },
   ratingText: {
@@ -415,32 +408,32 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '500',
   },
-  timeContainer: {
-    flexDirection: 'row',
-    gap: wp(1),
-  },
   reviewContainer: {
     flexDirection: 'row',
     gap: wp(1),
   },
-  travelContainer: {
+  timeContainer: {
     flexDirection: 'row',
     gap: wp(1),
+  },
+  timeText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  travelContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: wp(1),
   },
   travelInfoContainer: {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: wp(1),
-    backgroundColor: 'white',
+    backgroundColor: COLOR.white,
     borderRadius: 20,
-    padding: wp(2)
-  },
-  timeText: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
+    padding: wp(2),
   },
   travelText: {
     fontSize: 12,
@@ -488,7 +481,7 @@ const styles = StyleSheet.create({
   calloutTitle: {
     fontWeight: '700',
     fontSize: 14,
-    color: COLOR.dark,
+    color: '#1F2937',
     marginTop: 8,
     marginBottom: 4,
   },
