@@ -18,15 +18,6 @@ const hapticOptions = {
   enableVibrateFallback: true,
 };
 
-// Fallback list of major cities to ensure they're included in search results
-const MAJOR_CITIES = [
-  { id: 'major_paris_fr', city: 'Paris', country: 'France', population: 2148000, type: 'CITY' },
-  { id: 'major_rome_it', city: 'Rome', country: 'Italy', population: 2873000, type: 'CITY' },
-  { id: 'major_london_uk', city: 'London', country: 'United Kingdom', population: 8982000, type: 'CITY' },
-  { id: 'major_newyork_us', city: 'New York', country: 'United States', population: 8336000, type: 'CITY' },
-  { id: 'major_tokyo_jp', city: 'Tokyo', country: 'Japan', population: 37400068, type: 'CITY' },
-];
-
 const DestinationScreen = ({ navigation }) => {
   const { tripData, setTripData, resetTrip } = useTripStore();
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -38,12 +29,41 @@ const DestinationScreen = ({ navigation }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [localDestination, setLocalDestination] = useState(tripData.destination || '');
   const [localCountry, setLocalCountry] = useState(tripData.country || '');
+  const [googleApiKey, setGoogleApiKey] = useState(null);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const currentStep = 1;
   const totalSteps = 7;
   const progress = currentStep / totalSteps;
 
+  // Fetch Google API key on component mount
   useEffect(() => {
+    const fetchApiKey = async () => {
+      try {
+        const response = await fetch('https://openai-proxy-gilt-three.vercel.app/api/get-google-api-key');
+        const { apiKey } = await response.json();
+        setGoogleApiKey(apiKey);
+      } catch (error) {
+        console.error('Failed to fetch Google API key:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Search Error',
+          text2: 'Unable to load city search. Please try again later.',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+      }
+    };
+    fetchApiKey();
+  }, []);
+
+  // Load trip data if editing an existing trip
+  useEffect(() => {
+    if (!user?.uid) {
+      console.warn('User UID is undefined');
+      return;
+    }
+
     if (tripId) {
       firestore()
         .collection('users')
@@ -58,53 +78,111 @@ const DestinationScreen = ({ navigation }) => {
             setLocalCountry(country || '');
             setIsValidDestination(!!destination);
           }
+        })
+        .catch(error => {
+          console.error('Error loading trip data:', error);
+          Toast.show({
+            type: 'error',
+            text1: 'Load Error',
+            text2: 'Failed to load trip data. Please try again.',
+            position: 'top',
+            visibilityTime: 3000,
+          });
         });
     } else {
       setLocalDestination('');
       setLocalCountry('');
       setIsValidDestination(false);
     }
-  }, [tripId, user.uid]);
+  }, [tripId, user?.uid]);
 
+  // Fetch city suggestions using Google Places API
   const getCities = async (searchQuery) => {
+    if (!googleApiKey) {
+      console.error('Google API key not available');
+      Toast.show({
+        type: 'error',
+        text1: 'Search Error',
+        text2: 'API key missing. Please try again later.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    if (isLoadingSuggestions) return; // Prevent multiple simultaneous API calls
+
+    setIsLoadingSuggestions(true);
     try {
-      // Fetch cities from the API
-      const response = await axios.get(`https://openai-proxy-gilt-three.vercel.app/api/cities?namePrefix=${searchQuery}`);
-      let filteredCities = response.data.data.filter(city => city.type === 'CITY');
-
-      // Combine API results with major cities
-      const searchQueryLower = searchQuery.toLowerCase();
-      const matchingMajorCities = MAJOR_CITIES.filter(city =>
-        city.city.toLowerCase().startsWith(searchQueryLower)
-      );
-
-      // Merge and sort by population (descending) to prioritize major cities
-      const allCities = [...matchingMajorCities, ...filteredCities];
-      allCities.sort((a, b) => (b.population || 0) - (a.population || 0));
-
-      // Remove duplicates (prefer major cities)
-      const uniqueCities = [];
-      const seen = new Set();
-      for (const city of allCities) {
-        const key = `${city.city}-${city.country}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          uniqueCities.push(city);
+      // Fetch city suggestions from Google Places Autocomplete API
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+        {
+          params: {
+            input: searchQuery,
+            types: '(cities)',
+            key: googleApiKey,
+            language: 'en', // Force English language for suggestions
+          },
         }
-      }
-
-      setSuggestions(uniqueCities);
-    } catch (error) {
-      console.error('🌍 Fehler beim Abrufen der Städte (Proxy):', error);
-      // Fallback to major cities if API fails
-      const searchQueryLower = searchQuery.toLowerCase();
-      const matchingMajorCities = MAJOR_CITIES.filter(city =>
-        city.city.toLowerCase().startsWith(searchQueryLower)
       );
-      setSuggestions(matchingMajorCities);
+
+      const predictions = response.data.predictions;
+      const cities = await Promise.all(
+        predictions.map(async (prediction) => {
+          // Fetch country details for each suggestion
+          const detailsResponse = await axios.get(
+            `https://maps.googleapis.com/maps/api/place/details/json`,
+            {
+              params: {
+                place_id: prediction.place_id,
+                fields: 'address_components',
+                key: googleApiKey,
+                language: 'en', // Force English language for details
+              },
+            }
+          );
+
+          const addressComponents = detailsResponse.data.result.address_components;
+          let city = '';
+          let country = '';
+
+          for (const component of addressComponents) {
+            if (component.types.includes('locality')) {
+              city = component.long_name;
+            } else if (component.types.includes('country')) {
+              country = component.long_name;
+            }
+          }
+
+          return {
+            id: prediction.place_id,
+            city: city || prediction.structured_formatting.main_text,
+            country: country || 'Unknown',
+            type: 'CITY',
+          };
+        })
+      );
+
+      // Filter out invalid entries and limit to 5 results
+      const validCities = cities.filter(city => city.city && city.country !== 'Unknown').slice(0, 5);
+      setSuggestions(validCities);
+    } catch (error) {
+      console.error('Error fetching cities from Google Places API:', error);
+      setSuggestions([]);
+      Toast.show({
+        type: 'error',
+        text1: 'Search Error',
+        text2: 'Unable to fetch city suggestions. Please try again.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    } finally {
+      setIsLoadingSuggestions(false);
     }
   };
 
+  // Navigate back to Trip Details or Trips screen
   const handleClose = () => {
     if (tripId) {
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
@@ -114,17 +192,19 @@ const DestinationScreen = ({ navigation }) => {
     }
   };
 
+  // Handle city selection from suggestions
   const handleCitySelect = (city) => {
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     setLocalDestination(city.city);
-    setLocalCountry(city.country || '');
+    setLocalCountry(city.country);
     setIsValidDestination(true);
     setSuggestions([]);
     Keyboard.dismiss();
   };
 
+  // Save destination to Firestore
   const handleSaveDestination = async () => {
-    if (!localDestination) return;
+    if (!localDestination || !user?.uid) return;
 
     try {
       await firestore()
@@ -144,20 +224,23 @@ const DestinationScreen = ({ navigation }) => {
       Toast.show({
         visibilityTime: 2000,
         type: 'success',
-        text1: 'Destination Updated',
+        text1: 'Success',
+        text2: 'Destination updated successfully.',
         position: 'top',
       });
     } catch (error) {
       console.error('Error updating destination:', error);
       Toast.show({
         type: 'error',
+        text1: 'Save Error',
+        text2: 'Failed to save destination. Please try again.',
         position: 'bottom',
-        text1: 'Failed to update destination',
-        visibilityTime: 4000,
+        visibilityTime: 3000,
       });
     }
   };
 
+  // Navigate to the next screen (Dates)
   const handleNext = () => {
     if (!isValidDestination) return;
     setTripData({
@@ -168,6 +251,7 @@ const DestinationScreen = ({ navigation }) => {
     navigation.navigate(SCREEN.DATES, { tripId });
   };
 
+  // Handle input changes with debouncing
   const handleInputChange = (text) => {
     setLocalDestination(text);
     setLocalCountry('');
@@ -206,20 +290,21 @@ const DestinationScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.headlineContainer}>
-            <Pressable onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              resetTrip();
-              setIsValidDestination(false);
-              if (tripId) {
-                navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
-              } else {
-                navigation.navigate(SCREEN.TRIPS);
-              }
-            }}>
+            <Pressable
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                resetTrip();
+                setIsValidDestination(false);
+                if (tripId) {
+                  navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
+                } else {
+                  navigation.navigate(SCREEN.TRIPS);
+                }
+              }}
+            >
               <SVG.BackIcon fill="black" />
             </Pressable>
             <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
-
             <View style={{ flex: 1 }} />
             <Pressable onPress={handleClose}>
               <SVG.Close fill="black" />
@@ -273,7 +358,7 @@ const DestinationScreen = ({ navigation }) => {
           <Button
             style={[
               styles.nextButton,
-              { backgroundColor: isValidDestination ? COLOR.primary : '#CCCCCC' }
+              { backgroundColor: isValidDestination ? COLOR.primary : '#CCCCCC' },
             ]}
             text={En.next}
             textStyle={styles.buttonText}
@@ -323,21 +408,6 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 17,
     backgroundColor: 'transparent',
-  },
-  suggestionItem: {
-    backgroundColor: COLOR.lightBlue,
-    padding: 10,
-    marginVertical: 2,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.125,
-  },
-  suggestionText: {
-    color: '#333',
   },
   nextButton: {
     marginHorizontal: wp(2),
