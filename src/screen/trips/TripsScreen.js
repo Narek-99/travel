@@ -23,7 +23,6 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useRating from '../../utils/useRating';
 import { useSubscriptions } from '../../contexts/subscriptionContext';
 
-
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [trips, setTrips] = useState([]);
@@ -42,6 +41,7 @@ const TripsScreen = ({ navigation }) => {
       hasShownRating.current = true;
     }
   }, [showRating]);
+
   const fetchTripImage = async (destination, tripId) => {
     if (tripImages[tripId] && lastFetchedDestinations[tripId] === destination) return;
 
@@ -140,6 +140,35 @@ const TripsScreen = ({ navigation }) => {
         return '👥';
     }
   };
+
+  const budgetOptions = [
+    { label: '💰 Low', value: 'low' },
+    { label: '💵 Medium', value: 'medium' },
+    { label: '💎 High', value: 'high' },
+    { label: '🔢 Enter specific amount', value: 'custom' },
+  ];
+
+  const getBudgetDisplay = (budget, customAmount) => {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    });
+
+    if (customAmount) {
+      return `💰 Budget: ${formatter.format(customAmount)}`;
+    }
+
+    const option = budgetOptions.find(opt => opt.value === budget);
+
+    if (option?.label) {
+      return `${option.label} Budget`;
+    }
+
+    return '💵 Medium Budget';
+  };
+
+
 
   const deleteTrip = async (tripId) => {
     Alert.alert("Delete Trip", "Are you sure you want to delete this trip?", [
@@ -276,6 +305,9 @@ const TripsScreen = ({ navigation }) => {
                         <Label style={styles.dateText}>
                           {item.companion} · {item.numberOfPersons || '1'} person
                         </Label>
+                      </View>
+                      <View style={styles.infoRow}>
+                        <Label style={styles.dateText}>{getBudgetDisplay(item.budget, item.customAmount)}</Label>
                       </View>
                     </View>
                   </LinearGradient>
