@@ -16,6 +16,9 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import { callChatGptForResponse } from '../../apis/ChatGptApi';
+import { getFunFactsPrompt } from '../../apis/Prompts';
+
 
 const TripDetailsScreen = ({ navigation }) => {
   const useFadeIn = () => {
@@ -272,32 +275,50 @@ const TripDetailsScreen = ({ navigation }) => {
 
   const regenerateAiPlan = async () => {
     if (!trip) return;
-    const { from, to } = getLimitedDateRange(trip.startDate, trip.endDate);
+
     Toast.show({ type: 'info', text1: 'Let me create the best plan for you...', position: 'top' });
+
     await firestore()
       .collection('users')
       .doc(user.uid)
       .collection('trips')
       .doc(tripId)
-      .update({ aiPlan: null, funFacts: [] });
+      .update({ funFacts: [] });
 
     try {
-      const [newPlan, funFactsResponse] = await Promise.all([
-        callChatGptForResponse(getTripPrompt(trip, from, to), ''),
+      const [funFactsResponse] = await Promise.all([
         callChatGptForResponse(getFunFactsPrompt(trip.destination), ''),
       ]);
-      const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
+
+      if (!funFactsResponse || typeof funFactsResponse !== 'string') {
+        throw new Error('Empty or invalid fun facts response');
+      }
+
+      const funFacts = funFactsResponse
+        .split('\n')
+        .filter(fact => fact.trim().match(/^\d+\./));
+
+      if (!funFacts.length) {
+        throw new Error('No valid fun facts found');
+      }
+
       await firestore()
         .collection('users')
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({ aiPlan: newPlan, funFacts });
-      setTrip(prev => ({ ...prev, aiPlan: newPlan, funFacts }));
+        .update({ funFacts });
+
+      setTrip(prev => ({ ...prev, funFacts }));
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Failed to regenerate plan or fun facts' });
+      console.error('❌ Error generating fun facts:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Could not generate fun facts for this destination',
+      });
     }
   };
+
 
   const formatDate = timestamp => {
     if (!timestamp?.toDate) return '';
@@ -320,6 +341,7 @@ const TripDetailsScreen = ({ navigation }) => {
   };
 
   const handleOptionsPress = useCallback(() => {
+    ReactNativeHapticFeedback.trigger('impactLight');
     bottomSheetRef.current?.open();
   }, []);
 

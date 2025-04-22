@@ -95,11 +95,8 @@ const AdditionalScreen = ({ navigation }) => {
   };
 
   const generateAiPlanInBackground = async (tripData, tripId) => {
-    const { from, to } = getLimitedDateRange(tripData.startDate, tripData.endDate);
-
     try {
-      const [aiPlan, funFactsResponse] = await Promise.all([
-        callChatGptForResponse(getTripPrompt(tripData, from, to), ""),
+      const [funFactsResponse] = await Promise.all([
         callChatGptForResponse(getFunFactsPrompt(tripData.destination), "")
       ]);
       const funFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
@@ -108,9 +105,9 @@ const AdditionalScreen = ({ navigation }) => {
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({ aiPlan, funFacts });
+        .update({ funFacts });
     } catch (error) {
-      console.error("❌ Fehler beim Generieren des AI-Plans oder Fun Facts:", error);
+      console.error("❌ Error generating the fun fact: ", error);
     }
   };
 
@@ -127,7 +124,6 @@ const AdditionalScreen = ({ navigation }) => {
     const tripToSave = {
       ...tripData,
       additionalInfo,
-      aiPlan: '',
       funFacts: [],
       updatedAt: new Date().toISOString(),
     };
