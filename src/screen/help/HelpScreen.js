@@ -1,7 +1,6 @@
 import { SafeAreaView, StyleSheet, View, Text, Pressable } from 'react-native';
 import { Button, Photo } from '../../components';
 import { IMAGES } from '../../assets/images';
-import { En } from '../../locales/En';
 import { COLOR, hp, wp } from '../../enums/StyleGuide';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { useSelector, useDispatch } from 'react-redux';
@@ -40,7 +39,7 @@ const HelpScreen = ({ navigation }) => {
 
   const handleUserStatusUpdate = async () => {
     try {
-      await showRating();
+      setTimeout(() => showRating(true), 100);
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const updatedData = { userStatus: USER_STATUS.OLD };
@@ -76,7 +75,7 @@ const HelpScreen = ({ navigation }) => {
       <View style={styles.submitContainer}>
         <Button
           style={styles.nextButton}
-          text="Let's Go!"
+          text="Ok!"
           textStyle={styles.buttonText}
           onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);

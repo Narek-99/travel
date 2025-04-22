@@ -263,7 +263,9 @@ const SubscriptionScreen = (props) => {
             <Label style={styles.noPaymentText}>
               No Payment Now
             </Label>
-          ) : null}
+          ) : <Label style={styles.noPaymentText}>
+            Cancel Anytime
+          </Label>}
 
           <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
             <LinearGradient

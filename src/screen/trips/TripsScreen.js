@@ -233,7 +233,7 @@ const TripsScreen = ({ navigation }) => {
 
       <Pressable style={styles.contentContainer}>
         {trips.length === 0 ? (
-          <Pressable style={styles.emptyContainer} onPress={handleAddTripNavigation}>
+          <Pressable onPress={handleAddTripNavigation} style={styles.emptyContainer}>
             <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
             <Text style={styles.emptyTitle}>No trips yet!</Text>
             <Text style={styles.emptySubtitle}>Let’s plan your first trip!</Text>
@@ -247,7 +247,10 @@ const TripsScreen = ({ navigation }) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.card}
-                onPress={handleAddTripNavigation}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
+                  navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
+                }}
               >
                 <View style={styles.cardImageContainer}>
                   {loadingImages[item.id] || !tripImages[item.id] ? (

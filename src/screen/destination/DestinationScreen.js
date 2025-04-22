@@ -115,6 +115,7 @@ const DestinationScreen = ({ navigation }) => {
   };
 
   const handleCitySelect = (city) => {
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     setLocalDestination(city.city);
     setLocalCountry(city.country || '');
     setIsValidDestination(true);
@@ -206,6 +207,7 @@ const DestinationScreen = ({ navigation }) => {
 
           <View style={styles.headlineContainer}>
             <Pressable onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               resetTrip();
               setIsValidDestination(false);
               if (tripId) {
