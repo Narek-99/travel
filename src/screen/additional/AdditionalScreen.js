@@ -164,8 +164,8 @@ const AdditionalScreen = ({ navigation }) => {
             <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
             <ProgressBar
               progress={progress}
-              width={wp(80)}
-              height={hp(0.8)}
+              width={wp(40)}
+              height={hp(0.5)}
               color={COLOR.primary}
               borderRadius={5}
             />
