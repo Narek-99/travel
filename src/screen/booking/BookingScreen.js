@@ -15,6 +15,7 @@ import airports from '../../assets/data/airports.json';
 import { Label } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 const BookingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -330,33 +331,83 @@ const BookingScreen = ({ navigation }) => {
             }}
           >
             <View style={styles.flightCardHeader}>
-              <Text style={styles.flightRoute}>
-                {item.flight.itineraries[0].segments[0].departure.iataCode} → {item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-              </Text>
-              <Text style={styles.flightPrice}>
-                {item.flight.price.total} {item.flight.price.currency}
-              </Text>
+              <Pressable
+                onLongPress={() => {
+                  Clipboard.setString(`${item.flight.itineraries[0].segments[0].departure.iataCode} → ${item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}`);
+                  triggerHaptic();
+                  Toast.show({ type: 'success', text1: 'Route copied!' });
+                }}
+              >
+                <Text style={styles.flightRoute}>
+                  {item.flight.itineraries[0].segments[0].departure.iataCode} → {item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onLongPress={() => {
+                  Clipboard.setString(`${item.flight.price.total} ${item.flight.price.currency}`);
+                  triggerHaptic();
+                  Toast.show({ type: 'success', text1: 'Price copied!' });
+                }}
+              >
+                <Text style={styles.flightPrice}>
+                  {item.flight.price.total} {item.flight.price.currency}
+                </Text>
+              </Pressable>
             </View>
+
             <View style={styles.flightDetails}>
               {item.isDeparture && (
-                <View style={styles.flightDetailRow}>
+                <Pressable
+                  onLongPress={() => {
+                    Clipboard.setString(item.flight.validatingAirlineCodes?.join(', ') || 'N/A');
+                    triggerHaptic();
+                    Toast.show({ type: 'success', text1: 'Airline copied!' });
+                  }}
+                  style={styles.flightDetailRow}
+                >
                   <Text style={styles.flightDetailText}>
                     ✈️ Airline: {item.flight.validatingAirlineCodes?.join(', ') || 'N/A'}
                   </Text>
-                </View>
+                </Pressable>
               )}
-              <View style={styles.flightDetailRow}>
+              <Pressable
+                onLongPress={() => {
+                  Clipboard.setString(item.flight.itineraries[0].duration.replace('PT', '').toLowerCase());
+                  triggerHaptic();
+                  Toast.show({ type: 'success', text1: 'Duration copied!' });
+                }}
+                style={styles.flightDetailRow}
+              >
                 <Text style={styles.flightDetailText}>
                   ⏱️ Duration: {item.flight.itineraries[0].duration.replace('PT', '').toLowerCase()}
                 </Text>
-              </View>
-              <View style={styles.flightDetailRow}>
+              </Pressable>
+              <Pressable
+                onLongPress={() => {
+                  Clipboard.setString(
+                    new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  );
+                  triggerHaptic();
+                  Toast.show({ type: 'success', text1: 'Date copied!' });
+                }}
+                style={styles.flightDetailRow}
+              >
                 <Text style={styles.flightDetailText}>
-                  📅 Date: {new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  📅 Date: {new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
                 </Text>
-              </View>
+              </Pressable>
             </View>
           </TouchableOpacity>
+
         );
 
       case 'hotelButton':
