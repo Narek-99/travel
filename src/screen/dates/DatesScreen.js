@@ -113,32 +113,41 @@ const DatesScreen = ({ navigation }) => {
       <View style={styles.contentContainer}>
         <SafeAreaView />
 
-        {/* Step Indicator and Progress Bar */}
-        <View style={styles.stepIndicatorContainer}>
-          <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-          <ProgressBar
-            progress={progress}
-            width={wp(40)}
-            height={hp(0.5)}
-            color={COLOR.primary}
-            borderRadius={5}
-          />
-        </View>
-
         <View style={styles.headlineContainer}>
-          <Pressable onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-            navigation.goBack();
-          }}>
+          <Pressable
+            style={styles.iconWrapper}
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              navigation.goBack();
+            }}>
             <SVG.BackIcon fill="black" />
           </Pressable>
-          <Label style={styles.titleText}>{En.datesTitle}</Label>
-          <View style={{ flex: 1 }} />
-          <Pressable onPress={() => tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId: tripId }) : navigation.navigate(SCREEN.TRIPS)}>
+
+          <View style={styles.centerWrapper}>
+            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+            <ProgressBar
+              progress={progress}
+              width={wp(40)}
+              height={hp(0.5)}
+              color={COLOR.primary}
+              borderRadius={5}
+            />
+          </View>
+
+          <Pressable
+            style={styles.iconWrapper}
+            onPress={() => {
+              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS)
+            }
+            } >
             <SVG.Close fill="black" />
           </Pressable>
         </View>
+
+        <Label style={styles.titleText}>{En.datesTitle}</Label>
         <Label style={styles.subtitleText}>{En.datesSubtitle}</Label>
+
+
 
         <View style={styles.dateContainer}>
           <View>
@@ -189,13 +198,20 @@ export default DatesScreen;
 
 const styles = StyleSheet.create({
   headlineContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: '100%',
-    paddingHorizontal: 10,
-    gap: wp(2),
-    marginTop: hp(2)
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
+  },
+  centerWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  iconWrapper: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   screenContainer: {
     flex: 1,

@@ -184,6 +184,7 @@ const DestinationScreen = ({ navigation }) => {
 
   // Navigate back to Trip Details or Trips screen
   const handleClose = () => {
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     if (tripId) {
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
     } else {
