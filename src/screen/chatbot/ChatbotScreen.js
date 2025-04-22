@@ -19,6 +19,9 @@ import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
+
 
 const ChatbotScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -41,12 +44,11 @@ const ChatbotScreen = ({ navigation }) => {
       .doc(user.uid)
       .collection('trips')
       .doc(tripId)
-      .onSnapshot((doc) => {
+      .onSnapshot(doc => {
         if (doc.exists) {
-          const data = doc.data();
-          setTrip(data);
+          setTrip(doc.data());
         }
-      }, (error) => console.error('❌ Error fetching trip:', error));
+      }, error => console.error('❌ Error fetching trip:', error));
     return () => unsubscribe();
   }, [user?.uid, tripId]);
 
@@ -120,17 +122,40 @@ const ChatbotScreen = ({ navigation }) => {
 
   const MessageBubble = React.memo(({ item }) => {
     const isUser = item.sender === 'user';
+
+    const handleLongPress = () => {
+      ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+      Clipboard.setString(item.text);
+      Toast.show({
+        type: 'success',
+        text1: isUser ? 'Question copied!' : 'Answer copied!',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+    };
+
     return (
-      <View style={[styles.messageWrapper, isUser ? styles.userMessageWrapper : styles.botMessageWrapper]}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onLongPress={handleLongPress}
+        delayLongPress={300}
+        style={[styles.messageWrapper, isUser ? styles.userMessageWrapper : styles.botMessageWrapper]}
+      >
         <View style={styles.avatarContainer}>
-          {isUser ? <SVG.Person fill="#00A3FF" width={25} height={25} /> : <SVG.Eagle width={25} height={25} />}
+          {isUser ? (
+            <SVG.Person fill="#00A3FF" width={25} height={25} />
+          ) : (
+            <SVG.Eagle width={25} height={25} />
+          )}
         </View>
         <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   });
+
+
 
   return (
     <View style={styles.screenContainer}>
@@ -211,7 +236,7 @@ export default ChatbotScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundImage: 'linear-gradient(to bottom, #F5F5F5, #E0E0E0)',
+    backgroundColor: '#F5F5F5',
   },
   contentContainer: {
     flex: 1,
@@ -234,7 +259,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 4,
-    borderColor: '#1E3A8A',
+    borderColor: COLOR.primary,
   },
   eagle: {
     zIndex: 2,
@@ -242,7 +267,6 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flexGrow: 1,
     paddingBottom: hp(2),
-    paddingTop: 0,
   },
   messageWrapper: {
     flexDirection: 'row',
@@ -250,13 +274,13 @@ const styles = StyleSheet.create({
     marginVertical: hp(1),
   },
   userMessageWrapper: {
-    justifyContent: 'flex-end',
+    flexDirection: 'row-reverse',
   },
   botMessageWrapper: {
-    justifyContent: 'flex-start',
+    flexDirection: 'row',
   },
   avatarContainer: {
-    marginRight: wp(3),
+    marginHorizontal: wp(3),
     marginTop: hp(1),
   },
   messageBubble: {
@@ -269,9 +293,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   botBubble: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.white,
     borderTopLeftRadius: 0,
-    shadowColor: '#000',
+    shadowColor: COLOR.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -288,7 +312,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
     borderRadius: 25,
     marginBottom: hp(2),
-    shadowColor: '#000',
+    paddingHorizontal: wp(3),
+    backgroundColor: COLOR.white,
+    shadowColor: COLOR.black,
     shadowOffset: { width: 0, height: -1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -302,14 +328,14 @@ const styles = StyleSheet.create({
     paddingVertical: hp(1.5),
     fontSize: 16,
     borderWidth: 0.2,
-    borderColor: '#D3D3D3',
+    borderColor: COLOR.lightGray,
   },
   sendButton: {
     marginLeft: wp(2),
-    backgroundColor: '#1E3A8A',
-    borderRadius: "50%",
+    backgroundColor: COLOR.primary,
+    borderRadius: 25,
     padding: wp(2.5),
-    shadowColor: '#000',
+    shadowColor: COLOR.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,

@@ -4,7 +4,7 @@ import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import { AppHeader } from '../../components';
-import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
+import { COLOR, TEXT_STYLE, hp, wp, commonStyles } from '../../enums/StyleGuide';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
@@ -258,6 +258,7 @@ export default FunFactsScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
+    backgroundColor: COLOR.background,
   },
   headerImageContainer: {
     height: hp(20),
@@ -272,13 +273,12 @@ const styles = StyleSheet.create({
   },
   placeholderImage: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: COLOR.lightGray,
   },
   headerTitle: {
     ...TEXT_STYLE.title,
     color: COLOR.white,
     fontSize: 24,
-    fontWeight: '700',
     textAlign: 'center',
   },
   contentContainer: {
@@ -293,13 +293,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: hp(2),
     padding: wp(4),
-    backgroundColor: '#F7F7F7',
+    backgroundColor: COLOR.white,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    ...commonStyles.shadow_3,
   },
   factContent: {
     flex: 1,
@@ -313,13 +309,12 @@ const styles = StyleSheet.create({
     marginRight: wp(2),
   },
   factTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLOR.dark,
+    ...TEXT_STYLE.bigTextBold,
+    color: COLOR.black,
   },
   factDescription: {
-    fontSize: 14,
-    color: COLOR.mediumGray,
+    ...TEXT_STYLE.text,
+    color: COLOR.gray,
     lineHeight: 20,
   },
   copyButton: {
@@ -332,14 +327,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#1E3A8A',
+    backgroundColor: COLOR.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#1E3A8A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 10,
+    ...commonStyles.shadow_10,
   },
   loader: {
     flex: 1,
@@ -347,14 +338,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorText: {
-    ...TEXT_STYLE.text,
-    color: COLOR.red,
+    ...TEXT_STYLE.textBold,
+    color: COLOR.danger,
     textAlign: 'center',
     marginTop: hp(2),
   },
   noFactsText: {
     ...TEXT_STYLE.text,
-    color: COLOR.mediumGray,
+    color: COLOR.gray,
     textAlign: 'center',
     marginTop: hp(2),
   },

@@ -198,6 +198,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
                 <Pressable
                   key={index}
                   onPress={() => {
+                    ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
                     setSelectedDayIndex(index);
                     setError(null);
                   }}
@@ -246,7 +247,10 @@ const DayByDayPlanScreen = ({ navigation }) => {
                         <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
                       </View>
                       <Pressable
-                        onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`)}
+                        onPress={() => {
+                          ReactNativeHapticFeedback.trigger('impactLight');
+                          Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`);
+                        }}
                         style={styles.directionsButton}>
                         <Text style={styles.directionsText}>Directions</Text>
                       </Pressable>
