@@ -240,13 +240,13 @@ const DayByDayPlanScreen = ({ navigation }) => {
                   {index > 0 && item.travelDistance && item.travelDuration && (
                     <View style={styles.travelInfoContainer}>
                       <View style={styles.travelContainer}>
-                        <SVG.Car width={14} height={14} fill="#4B5563" />
+                        <Text>🚘</Text>
                         <Text style={styles.travelText}>
                           {item.travelDistance}
                         </Text>
                       </View>
                       <View style={styles.travelContainer}>
-                        <SVG.Clock width={14} height={14} fill="#4B5563" />
+                        <Text>🕞</Text>
                         <Text style={styles.travelText}>
                           {item.travelDuration}
                         </Text>
@@ -466,6 +466,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white,
     borderRadius: 20,
     padding: wp(2),
+    gap: hp(1)
   },
   travelText: {
     fontSize: 12,
