@@ -344,7 +344,7 @@ const TripsScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
-            rightOpenValue={-100}
+            rightOpenValue={-110}
             previewRowKey={'0'}
             previewOpenDelay={3000}
           />
