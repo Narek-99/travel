@@ -319,7 +319,7 @@ const TripsScreen = ({ navigation }) => {
                     style={styles.editButton}
                     onPress={() => handleEditTripPress(item.id)}
                   >
-                    <SVG.Edit fill={COLOR.white} width={20} height={20} />
+                    <SVG.Edit fill={COLOR.white} width={15} height={15} />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12,
     backgroundColor: COLOR.primary,
-    padding: wp(2.5),
+    padding: wp(3),
     borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
