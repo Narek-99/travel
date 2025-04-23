@@ -23,16 +23,13 @@ const progress = currentStep / totalSteps;
 
 const activityOptions = [
   { label: '🎭 Culture & History', value: 'culture' },
-  { label: '🌳 Nature', value: 'nature' },
-  { label: '💞 Romantic', value: 'romantic' },
-  { label: '🌃 Nightlife', value: 'nightlife' },
-  { label: '🧘‍♀️ Relaxation', value: 'relaxation' },
+  { label: '🌳 Nature & Outdoors', value: 'nature' },
+  { label: '🥾 Adventure & Thrills', value: 'adventure' },
+  { label: '🍴 Food & Culinary', value: 'food' },
+  { label: '🌃 Nightlife & Entertainment', value: 'nightlife' },
+  { label: '🧘‍♀️ Relaxation & Wellness', value: 'relaxation' },
   { label: '🛍️ Shopping', value: 'shopping' },
-  { label: '📚 Learning', value: 'learning' },
-  { label: '⚽ Sports', value: 'sports' },
-  { label: '🎮 Tech & VR Experiences', value: 'tech' },
-  { label: '🌍 Eco', value: 'eco_tours' },
-  { label: '📸 Photography & Sightseeing', value: 'photography' },
+  { label: '👨‍👩‍👧 Family-Friendly', value: 'family' },
 ];
 
 const ActivitiesScreen = ({ navigation }) => {
@@ -55,8 +52,7 @@ const ActivitiesScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-
-          setSelectedActivities(data.activities);
+          setSelectedActivities(data.activities || []);
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -64,7 +60,7 @@ const ActivitiesScreen = ({ navigation }) => {
     };
 
     loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
+  }, [tripId]);
 
   const handleActivitySelect = (activityValue) => {
     setSelectedActivities((prev) => {
@@ -94,21 +90,18 @@ const ActivitiesScreen = ({ navigation }) => {
         position: 'top',
         visibilityTime: 2000,
       });
-
     } catch (error) {
       console.error('Error updating activities:', error);
       Toast.show({
         type: 'error',
         text1: 'Failed to update activities',
-        position: 'Top',
+        position: 'top',
         visibilityTime: 4000,
       });
     }
   };
 
   const handleNext = () => {
-    if (selectedActivities.length === 0) return;
-
     setTripData({ activities: selectedActivities });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.PREFERENCES, { tripId });
@@ -148,7 +141,6 @@ const ActivitiesScreen = ({ navigation }) => {
 
         <Label style={styles.titleText}>{En.activitiesTitle}</Label>
         <Label style={styles.subtitleText}>{En.activitiesSubtutle}</Label>
-
 
         {/* Activity Options */}
         <View style={styles.optionsContainer}>

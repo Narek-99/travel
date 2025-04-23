@@ -21,26 +21,24 @@ const progress = currentStep / totalSteps;
 
 const accommodationOptions = [
   { label: '🏨 Hotel', value: 'hotel' },
-  { label: '🏡 Airbnb', value: 'airbnb' },
-  { label: '🏠 Vacation Apartment', value: 'vacationApartment' },
+  { label: '🏠 Vacation Rental', value: 'rental' },
   { label: '🏨 Hostel', value: 'hostel' },
   { label: '⛺ Camping', value: 'camping' },
   { label: '🌟 Luxury Hotel', value: 'luxuryHotel' },
-  { label: '💸 Budget Options', value: 'budgetOptions' },
+  { label: '🏝️ Resort', value: 'resort' },
 ];
 
 const locationPreferences = [
   { label: '🏙️ Central', value: 'central' },
   { label: '🌳 Quiet Area', value: 'quietArea' },
   { label: '🌲 Near Nature', value: 'nearNature' },
-  { label: '💎 Luxury', value: 'luxury' },
-  { label: '💰 Budget Friendly', value: 'budgetFriendly' },
+  { label: '💰 Budget-Friendly', value: 'budgetFriendly' },
 ];
 
 const PreferencesScreen = ({ navigation }) => {
   const { tripData, setTripData } = useTripStore();
-  const [selectedAccommodation, setSelectedAccommodation] = useState(tripData.accommodation || []);
-  const [selectedLocation, setSelectedLocation] = useState(tripData.location || []);
+  const [selectedAccommodation, setSelectedAccommodation] = useState(tripData.accommodation || '');
+  const [selectedLocation, setSelectedLocation] = useState(tripData.location || '');
 
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
@@ -48,7 +46,7 @@ const PreferencesScreen = ({ navigation }) => {
 
   useEffect(() => {
     const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
+      if (!tripId) return;
 
       try {
         const tripDetails = await firestore()
@@ -59,9 +57,8 @@ const PreferencesScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-
-          setSelectedAccommodation(data.accommodation);
-          setSelectedLocation(data.location);
+          setSelectedAccommodation(data.accommodation || '');
+          setSelectedLocation(data.location || '');
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -69,61 +66,51 @@ const PreferencesScreen = ({ navigation }) => {
     };
 
     loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
+  }, [tripId]);
 
   useEffect(() => {
     setTripData({ accommodation: selectedAccommodation, location: selectedLocation });
   }, [selectedAccommodation, selectedLocation]);
 
   const handleAccommodationSelect = (value) => {
-    setSelectedAccommodation((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
+    setSelectedAccommodation(value === selectedAccommodation ? '' : value);
   };
 
   const handleLocationSelect = (value) => {
-    setSelectedLocation((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
+    setSelectedLocation(value === selectedLocation ? '' : value);
   };
 
   const handleSavePreferences = async () => {
-    if (selectedAccommodation.length === 0 || selectedLocation.length === 0) {
-      try {
-        await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('trips')
-          .doc(tripId)
-          .update({
-            accommodation: selectedAccommodation,
-            location: selectedLocation
-          });
-
-        Toast.show({
-          type: 'success',
-          text1: 'Preferences Updated Successfully',
-          position: 'top',
-          visibilityTime: 2000,
+    try {
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .update({
+          accommodation: selectedAccommodation,
+          location: selectedLocation
         });
 
-      } catch (error) {
-        console.error('Error updating preferences:', error);
-        Toast.show({
-          type: 'error',
-          text1: 'Failed to update preferences',
-          position: 'bottom',
-          visibilityTime: 4000,
-        });
-      }
+      Toast.show({
+        type: 'success',
+        text1: 'Preferences Updated Successfully',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+    } catch (error) {
+      console.error('Error updating preferences:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to update preferences',
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
     }
   };
 
   const handleNext = () => {
-    if (selectedAccommodation.length !== 0 || selectedLocation.length !== 0) {
-      setTripData({ accommodation: selectedAccommodation, location: selectedLocation });
-    }
-
+    setTripData({ accommodation: selectedAccommodation, location: selectedLocation });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.ADDITIONAL, { tripId });
   };
@@ -155,9 +142,7 @@ const PreferencesScreen = ({ navigation }) => {
           <Pressable style={styles.iconWrapper} onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
             tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-          }
-
-          }>
+          }}>
             <SVG.Close fill="black" />
           </Pressable>
         </View>
@@ -171,7 +156,7 @@ const PreferencesScreen = ({ navigation }) => {
               key={option.value}
               style={[
                 styles.optionButton,
-                selectedAccommodation.includes(option.value) && styles.selectedOption,
+                selectedAccommodation === option.value && styles.selectedOption,
               ]}
               onPress={() => handleAccommodationSelect(option.value)}
             >
@@ -188,7 +173,7 @@ const PreferencesScreen = ({ navigation }) => {
               key={option.value}
               style={[
                 styles.optionButton,
-                selectedLocation.includes(option.value) && styles.selectedOption,
+                selectedLocation === option.value && styles.selectedOption,
               ]}
               onPress={() => handleLocationSelect(option.value)}
             >

@@ -157,10 +157,11 @@ const TripDetailsScreen = ({ navigation }) => {
     setLoadingAttractions(true);
     if (!region?.latitude || !region?.longitude) return;
     try {
-      const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}`);
+      const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}&targetAttractions=15`);
       const data = await response.json();
-      setAttractions(data.results.slice(0, 15));
+      setAttractions(data.results.slice(0, 20)); // Limit to a maximum of 20 attractions
     } catch (err) {
+      console.error('Error fetching attractions:', err);
     } finally {
       setLoadingAttractions(false);
     }
