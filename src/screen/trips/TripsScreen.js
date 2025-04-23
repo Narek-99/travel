@@ -315,12 +315,12 @@ const TripsScreen = ({ navigation }) => {
                     </View>
                   </LinearGradient>
 
-                  <TouchableOpacity
+                  <Pressable
                     style={styles.editButton}
                     onPress={() => handleEditTripPress(item.id)}
                   >
                     <SVG.Edit fill={COLOR.white} width={15} height={15} />
-                  </TouchableOpacity>
+                  </Pressable>
 
                   <TouchableOpacity
                     style={styles.detailButton}
