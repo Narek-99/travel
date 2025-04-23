@@ -142,9 +142,9 @@ const TripsScreen = ({ navigation }) => {
   };
 
   const budgetOptions = [
-    { label: '💰 Low', value: 'low' },
-    { label: '💵 Medium', value: 'medium' },
-    { label: '💎 High', value: 'high' },
+    { label: '💵 Budget: Low', value: 'low' },
+    { label: '💰 Budget: Medium', value: 'medium' },
+    { label: '💎 Budget: High', value: 'high' },
     { label: '🔢 Enter specific amount', value: 'custom' },
   ];
 
@@ -162,7 +162,7 @@ const TripsScreen = ({ navigation }) => {
     const option = budgetOptions.find(opt => opt.value === budget);
 
     if (option?.label) {
-      return `${option.label} Budget`;
+      return `${option.label}`;
     }
 
     return '💵 Medium Budget';
@@ -366,7 +366,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerActions: { flexDirection: 'col', alignItems: 'center', gap: wp(3) },
-  contentContainer: { flex: 1, padding: 20 },
+  contentContainer: {
+    flex: 1,
+    padding: "3%"
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -410,14 +413,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
   },
-  deleteButton: {
-    backgroundColor: 'red',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    height: '100%',
-    borderRadius: 10,
-  },
+  // deleteButton: {
+  //   backgroundColor: 'red',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   width: 80,
+  //   height: '100%',
+  //   borderRadius: 10,
+  // },
   deleteText: {
     color: 'white',
     fontSize: 16,
@@ -441,7 +444,6 @@ const styles = StyleSheet.create({
   hiddenRow: {
     flex: 1,
     alignItems: 'flex-end',
-    marginHorizontal: wp(2),
   },
   deleteButton: {
     width: 80,

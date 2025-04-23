@@ -1,5 +1,5 @@
-import { SafeAreaView, StyleSheet, View, TextInput, TouchableOpacity, Text, Keyboard, Pressable, TouchableWithoutFeedback } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, View, TextInput, TouchableOpacity, Text, Keyboard, Pressable, TouchableWithoutFeedback, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
@@ -29,8 +29,7 @@ const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const BudgetScreen = ({ navigation }) => {
-  const { setTripData } = useTripStore(); // Access Zustand store
-
+  const { setTripData } = useTripStore();
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
@@ -38,9 +37,49 @@ const BudgetScreen = ({ navigation }) => {
   const [selectedBudget, setSelectedBudget] = useState('');
   const [customAmount, setCustomAmount] = useState('');
 
+  // Animation state for each option
+  const animatedValues = useRef(
+    budgetOptions.reduce((acc, option) => {
+      acc[option.value] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(0),
+      };
+      return acc;
+    }, {})
+  ).current;
+
+  const handleSelect = (value) => {
+    // Reset all animations
+    Object.keys(animatedValues).forEach((key) => {
+      if (key !== value) {
+        animatedValues[key].scale.setValue(1);
+        animatedValues[key].opacity.setValue(0);
+      }
+    });
+
+    // Animate the selected option
+    Animated.parallel([
+      Animated.spring(animatedValues[value].scale, {
+        toValue: 1.02, // Slight scale up
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animatedValues[value].opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    setSelectedBudget(value);
+    if (value !== 'custom') setCustomAmount('');
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+  };
+
   useEffect(() => {
     const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
+      if (!tripId) return;
 
       try {
         const tripDetails = await firestore()
@@ -51,9 +90,12 @@ const BudgetScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-
-          setCustomAmount(data.customAmount);
-          setSelectedBudget(data.budget);
+          setCustomAmount(data.customAmount || '');
+          setSelectedBudget(data.budget || '');
+          // Trigger animation for pre-selected option
+          if (data.budget) {
+            handleSelect(data.budget);
+          }
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -61,8 +103,7 @@ const BudgetScreen = ({ navigation }) => {
     };
 
     loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
-
+  }, [tripId]);
 
   const handleSaveBudget = async () => {
     if (!selectedBudget || (selectedBudget === 'custom' && !customAmount)) return;
@@ -75,7 +116,7 @@ const BudgetScreen = ({ navigation }) => {
         .doc(tripId)
         .update({
           budget: selectedBudget,
-          customAmount: selectedBudget === 'custom' ? customAmount : null
+          customAmount: selectedBudget === 'custom' ? customAmount : null,
         });
 
       Toast.show({
@@ -84,7 +125,6 @@ const BudgetScreen = ({ navigation }) => {
         position: 'top',
         visibilityTime: 2000,
       });
-
     } catch (error) {
       console.error('Error updating budget:', error);
       Toast.show({
@@ -110,10 +150,12 @@ const BudgetScreen = ({ navigation }) => {
         <View style={styles.contentContainer}>
           <SafeAreaView />
           <View style={styles.headlineContainer}>
-            <Pressable style={styles.iconWrapper} onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              navigation.goBack();
-            }}>
+            <Pressable
+              style={styles.iconWrapper}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                navigation.goBack();
+              }}>
               <SVG.BackIcon fill="black" />
             </Pressable>
 
@@ -128,10 +170,12 @@ const BudgetScreen = ({ navigation }) => {
               />
             </View>
 
-            <Pressable style={styles.iconWrapper} onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS)
-            }}>
+            <Pressable
+              style={styles.iconWrapper}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+              }}>
               <SVG.Close fill="black" />
             </Pressable>
           </View>
@@ -139,22 +183,28 @@ const BudgetScreen = ({ navigation }) => {
           <Label style={styles.titleText}>{En.budgetTitle}</Label>
           <Label style={styles.subtitleText}>{En.budgetSubtitle}</Label>
 
-
-          {/* Budget Options */}
           <View style={styles.optionsContainer}>
             {budgetOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                style={[
-                  styles.optionButton,
-                  selectedBudget === option.value && styles.selectedOption,
-                ]}
-                onPress={() => {
-                  setSelectedBudget(option.value);
-                  if (option.value !== 'custom') setCustomAmount('');
-                }}
-              >
-                <Text style={styles.optionText}>{option.label}</Text>
+                onPress={() => handleSelect(option.value)}
+                activeOpacity={0.8}>
+                <Animated.View
+                  style={[
+                    styles.optionButton,
+                    selectedBudget === option.value && {
+                      backgroundColor: COLOR.lightBlue,
+                      transform: [{ scale: animatedValues[option.value].scale }],
+                    },
+                    {
+                      opacity: Animated.add(
+                        selectedBudget === option.value ? animatedValues[option.value].opacity : 1,
+                        selectedBudget === option.value ? 0 : 0.2
+                      ),
+                    },
+                  ]}>
+                  <Text style={styles.optionText}>{option.label}</Text>
+                </Animated.View>
               </TouchableOpacity>
             ))}
           </View>
@@ -166,7 +216,7 @@ const BudgetScreen = ({ navigation }) => {
               placeholderTextColor="#999"
               keyboardType="number-pad"
               value={customAmount}
-              onChangeText={(text) => setCustomAmount(text.replace(/[^0-9]/g, ''))} // Only allow numbers
+              onChangeText={(text) => setCustomAmount(text.replace(/[^0-9]/g, ''))}
             />
           )}
         </View>
@@ -182,7 +232,12 @@ const BudgetScreen = ({ navigation }) => {
           <Button
             style={[
               styles.nextButton,
-              { backgroundColor: !selectedBudget || (selectedBudget === 'custom' && !customAmount) ? COLOR.lightGray : COLOR.primary } // Use isValidDestination to determine button color
+              {
+                backgroundColor:
+                  !selectedBudget || (selectedBudget === 'custom' && !customAmount)
+                    ? COLOR.lightGray
+                    : COLOR.primary,
+              },
             ]}
             text={En.next}
             textStyle={styles.buttonText}
@@ -198,6 +253,14 @@ const BudgetScreen = ({ navigation }) => {
 export default BudgetScreen;
 
 const styles = StyleSheet.create({
+  headlineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
+  },
   centerWrapper: {
     flex: 1,
     alignItems: 'center',
@@ -206,14 +269,6 @@ const styles = StyleSheet.create({
     width: 36,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  headlineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: wp(3),
-    marginVertical: hp(2),
   },
   screenContainer: {
     flex: 1,
@@ -230,7 +285,7 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: 'black'
+    color: COLOR.gray,
   },
   optionsContainer: {
     marginVertical: hp(4),
@@ -245,10 +300,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: COLOR.lightBlue,
   },
-  selectedOption: {
-    backgroundColor: COLOR.lightBlue,
-    borderWidth: 0,
-  },
   optionText: {
     color: 'black',
     ...TEXT_STYLE.textMedium,
@@ -261,12 +312,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
-  continueButton: {
-    backgroundColor: '#002953',
-    marginTop: 'auto',
-    marginBottom: hp(5),
-    marginHorizontal: wp(2),
-  },
   buttonText: {
     color: 'white',
   },
@@ -274,7 +319,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginHorizontal: wp(2),
     borderWidth: 1,
-    borderColor: COLOR.lightBlue
+    borderColor: COLOR.lightBlue,
   },
   stepText: {
     ...TEXT_STYLE.textSmall,

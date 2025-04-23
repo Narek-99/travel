@@ -1,5 +1,5 @@
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, Pressable } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, View, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
@@ -30,18 +30,49 @@ const totalSteps = 7;
 const progress = currentStep / totalSteps;
 
 const CompanionScreen = ({ navigation }) => {
-  const { setTripData } = useTripStore(); // Access Zustand store
-
+  const { setTripData } = useTripStore();
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
 
-  // Load saved values if they exist
   const [selectedOption, setSelectedOption] = useState('');
   const [numberOfPersons, setNumberOfPersons] = useState('');
 
+  // Animation state for each option
+  const animatedValues = useRef(
+    options.reduce((acc, option) => {
+      acc[option.value] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(0),
+      };
+      return acc;
+    }, {})
+  ).current;
 
   const handleSelect = (value) => {
+    // Reset all animations
+    Object.keys(animatedValues).forEach((key) => {
+      if (key !== value) {
+        animatedValues[key].scale.setValue(1);
+        animatedValues[key].opacity.setValue(0);
+      }
+    });
+
+    // Animate the selected option
+    Animated.parallel([
+      Animated.spring(animatedValues[value].scale, {
+        toValue: 1.02, // Slight scale up
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animatedValues[value].opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     setSelectedOption(value);
     setNumberOfPersons(''); // Reset input when changing selection
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
@@ -58,7 +89,7 @@ const CompanionScreen = ({ navigation }) => {
         .doc(tripId)
         .update({
           companion: selectedOption,
-          numberOfPersons: numberOfPersons
+          numberOfPersons: numberOfPersons,
         });
 
       Toast.show({
@@ -67,7 +98,6 @@ const CompanionScreen = ({ navigation }) => {
         text1: 'Dates Updated Successfully',
         position: 'Top',
       });
-
     } catch (error) {
       console.error('Error updating dates:', error);
       Toast.show({
@@ -90,7 +120,7 @@ const CompanionScreen = ({ navigation }) => {
 
   useEffect(() => {
     const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
+      if (!tripId) return;
 
       try {
         const tripDetails = await firestore()
@@ -101,9 +131,12 @@ const CompanionScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-
-          setNumberOfPersons(data.numberOfPersons);
-          setSelectedOption(data.companion);
+          setNumberOfPersons(data.numberOfPersons || '');
+          setSelectedOption(data.companion || '');
+          // Trigger animation for pre-selected option
+          if (data.companion) {
+            handleSelect(data.companion);
+          }
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -111,7 +144,7 @@ const CompanionScreen = ({ navigation }) => {
     };
 
     loadTripData();
-  }, [tripId]); // Abhängigkeit von tripId
+  }, [tripId]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -120,7 +153,8 @@ const CompanionScreen = ({ navigation }) => {
           <SafeAreaView />
 
           <View style={styles.headlineContainer}>
-            <Pressable style={styles.iconWrapper}
+            <Pressable
+              style={styles.iconWrapper}
               onPress={() => {
                 ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
                 navigation.goBack();
@@ -139,10 +173,12 @@ const CompanionScreen = ({ navigation }) => {
               />
             </View>
 
-            <Pressable style={styles.iconWrapper} onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-            }}>
+            <Pressable
+              style={styles.iconWrapper}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+              }}>
               <SVG.Close fill="black" />
             </Pressable>
           </View>
@@ -150,23 +186,32 @@ const CompanionScreen = ({ navigation }) => {
           <Label style={styles.titleText}>{En.companionTitle}</Label>
           <Label style={styles.subtitleText}>{En.companionSubtitle}</Label>
 
-
           <View style={styles.optionsContainer}>
             {options.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                style={[
-                  styles.optionButton,
-                  selectedOption === option.value && styles.selectedOption,
-                ]}
                 onPress={() => handleSelect(option.value)}
-              >
-                <Label style={styles.optionText}>{option.label}</Label>
+                activeOpacity={0.8}>
+                <Animated.View
+                  style={[
+                    styles.optionButton,
+                    selectedOption === option.value && {
+                      backgroundColor: COLOR.lightBlue,
+                      transform: [{ scale: animatedValues[option.value].scale }],
+                    },
+                    {
+                      opacity: Animated.add(
+                        selectedOption === option.value ? animatedValues[option.value].opacity : 1,
+                        selectedOption === option.value ? 0 : 0.2
+                      ),
+                    },
+                  ]}>
+                  <Label style={styles.optionText}>{option.label}</Label>
+                </Animated.View>
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Show input field when necessary */}
           {shouldShowInput && (
             <TextInput
               style={styles.input}
@@ -190,12 +235,17 @@ const CompanionScreen = ({ navigation }) => {
           <Button
             style={[
               styles.nextButton,
-              { backgroundColor: !selectedOption || (shouldShowInput && !numberOfPersons) ? COLOR.lightGray : COLOR.primary } // Use isValidDestination to determine button color
+              {
+                backgroundColor:
+                  !selectedOption || (shouldShowInput && !numberOfPersons)
+                    ? COLOR.lightGray
+                    : COLOR.primary,
+              },
             ]}
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}
-            disabled={!selectedOption || (shouldShowInput && !numberOfPersons)} // Disable if input is required but empty
+            disabled={!selectedOption || (shouldShowInput && !numberOfPersons)}
           />
         </View>
       </View>
@@ -237,7 +287,7 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: 'black'
+    color: COLOR.gray,
   },
   optionsContainer: {
     marginVertical: hp(4),
@@ -252,10 +302,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: COLOR.lightBlue,
   },
-  selectedOption: {
-    backgroundColor: COLOR.lightBlue,
-    borderWidth: 0,
-  },
   optionText: {
     color: 'black',
     ...TEXT_STYLE.textMedium,
@@ -268,20 +314,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
-  continueButton: {
-    backgroundColor: '#002953',
-    marginTop: 'auto',
-    marginBottom: hp(5),
-    marginHorizontal: wp(2),
-  },
-  buttonText: {
-    color: 'white',
-  },
   saveButton: {
     backgroundColor: 'transparent',
     marginHorizontal: wp(2),
     borderWidth: 1,
-    borderColor: COLOR.lightBlue
+    borderColor: COLOR.lightBlue,
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
@@ -295,15 +332,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(2),
     marginBottom: hp(2),
   },
-  submitContainer: {
-    justifyContent: 'flex-end',
-    marginTop: 'auto',
-    width: '100%',
-    paddingHorizontal: wp(2),
-    marginBottom: hp(2),
-  },
   nextButton: {
     backgroundColor: '#002953',
     marginHorizontal: wp(2),
+  },
+  buttonText: {
+    color: 'white',
   },
 });

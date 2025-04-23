@@ -147,8 +147,6 @@ const DatesScreen = ({ navigation }) => {
         <Label style={styles.titleText}>{En.datesTitle}</Label>
         <Label style={styles.subtitleText}>{En.datesSubtitle}</Label>
 
-
-
         <View style={styles.dateContainer}>
           <View>
             <DateTimePicker
@@ -234,7 +232,7 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.black,
+    color: COLOR.gray,
   },
   dateButton: {
     marginVertical: hp(2),

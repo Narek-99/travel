@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     ...TEXT_STYLE.textMedium,
     marginBottom: hp(2),
-    color: 'black'
+    color: COLOR.gray
   },
   textInput: {
     height: hp(15),

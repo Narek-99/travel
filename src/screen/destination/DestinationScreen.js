@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.black,
+    color: COLOR.gray,
   },
   inputContainer: {
     flexDirection: 'row',

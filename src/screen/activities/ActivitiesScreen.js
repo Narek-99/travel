@@ -1,5 +1,5 @@
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, Animated, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
@@ -39,6 +39,44 @@ const ActivitiesScreen = ({ navigation }) => {
   const [selectedActivities, setSelectedActivities] = useState([]);
   const { setTripData } = useTripStore();
 
+  // Animation state for each option
+  const animatedValues = useRef(
+    activityOptions.reduce((acc, option) => {
+      acc[option.value] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(0),
+      };
+      return acc;
+    }, {})
+  ).current;
+
+  const handleActivitySelect = (activityValue) => {
+    setSelectedActivities((prev) => {
+      if (prev.includes(activityValue)) {
+        animatedValues[activityValue].scale.setValue(1);
+        animatedValues[activityValue].opacity.setValue(0);
+        return prev.filter((activity) => activity !== activityValue);
+      } else {
+        Animated.parallel([
+          Animated.spring(animatedValues[activityValue].scale, {
+            toValue: 1.02,
+            friction: 5,
+            tension: 40,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animatedValues[activityValue].opacity, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        return [...prev, activityValue];
+      }
+    });
+
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+  };
+
   useEffect(() => {
     const loadTripData = async () => {
       if (!tripId) return;
@@ -52,7 +90,23 @@ const ActivitiesScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-          setSelectedActivities(data.activities || []);
+          const activities = data.activities || [];
+          setSelectedActivities(activities);
+          activities.forEach((activity) => {
+            Animated.parallel([
+              Animated.spring(animatedValues[activity].scale, {
+                toValue: 1.02,
+                friction: 5,
+                tension: 40,
+                useNativeDriver: true,
+              }),
+              Animated.timing(animatedValues[activity].opacity, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -61,16 +115,6 @@ const ActivitiesScreen = ({ navigation }) => {
 
     loadTripData();
   }, [tripId]);
-
-  const handleActivitySelect = (activityValue) => {
-    setSelectedActivities((prev) => {
-      if (prev.includes(activityValue)) {
-        return prev.filter((activity) => activity !== activityValue);
-      } else {
-        return [...prev, activityValue];
-      }
-    });
-  };
 
   const handleSaveActivities = async () => {
     if (selectedActivities.length === 0) return;
@@ -81,7 +125,7 @@ const ActivitiesScreen = ({ navigation }) => {
         .collection('trips')
         .doc(tripId)
         .update({
-          activities: selectedActivities
+          activities: selectedActivities,
         });
 
       Toast.show({
@@ -109,14 +153,15 @@ const ActivitiesScreen = ({ navigation }) => {
 
   return (
     <View style={styles.screenContainer}>
-      <View style={styles.contentContainer}>
-        <SafeAreaView />
-
+      <SafeAreaView />
+      <View style={styles.headerContainer}>
         <View style={styles.headlineContainer}>
-          <Pressable style={styles.iconWrapper} onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-            navigation.goBack();
-          }}>
+          <Pressable
+            style={styles.iconWrapper}
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              navigation.goBack();
+            }}>
             <SVG.BackIcon fill="black" />
           </Pressable>
 
@@ -131,33 +176,49 @@ const ActivitiesScreen = ({ navigation }) => {
             />
           </View>
 
-          <Pressable style={styles.iconWrapper} onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-            tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-          }}>
+          <Pressable
+            style={styles.iconWrapper}
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+            }}>
             <SVG.Close fill="black" />
           </Pressable>
         </View>
 
         <Label style={styles.titleText}>{En.activitiesTitle}</Label>
         <Label style={styles.subtitleText}>{En.activitiesSubtutle}</Label>
+      </View>
 
-        {/* Activity Options */}
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         <View style={styles.optionsContainer}>
           {activityOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
-              style={[
-                styles.optionButton,
-                selectedActivities.includes(option.value) && styles.selectedOption,
-              ]}
               onPress={() => handleActivitySelect(option.value)}
-            >
-              <Text style={styles.optionText}>{option.label}</Text>
+              activeOpacity={0.8}>
+              <Animated.View
+                style={[
+                  styles.optionButton,
+                  selectedActivities.includes(option.value) && {
+                    backgroundColor: COLOR.lightBlue,
+                    borderRadius: 8,
+                  },
+                  {
+                    opacity: Animated.add(
+                      selectedActivities.includes(option.value) ? animatedValues[option.value].opacity : 1,
+                      selectedActivities.includes(option.value) ? 0 : 0.2
+                    ),
+                  },
+                ]}>
+                <Text style={styles.optionText}>{option.label}</Text>
+              </Animated.View>
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </ScrollView>
 
       <View style={styles.submitContainer}>
         {tripId && (
@@ -170,7 +231,7 @@ const ActivitiesScreen = ({ navigation }) => {
         <Button
           style={[
             styles.nextButton,
-            { backgroundColor: selectedActivities.length === 0 ? COLOR.lightGray : COLOR.primary }
+            { backgroundColor: selectedActivities.length === 0 ? COLOR.lightGray : COLOR.primary },
           ]}
           text={En.next}
           textStyle={styles.buttonText}
@@ -185,6 +246,13 @@ const ActivitiesScreen = ({ navigation }) => {
 export default ActivitiesScreen;
 
 const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: COLOR.white,
+  },
+  headerContainer: {
+    paddingHorizontal: wp(4),
+  },
   headlineContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -206,14 +274,6 @@ const styles = StyleSheet.create({
     color: COLOR.primary,
     marginBottom: hp(1),
   },
-  screenContainer: {
-    flex: 1,
-    backgroundColor: COLOR.white,
-  },
-  contentContainer: {
-    paddingTop: '8%',
-    paddingHorizontal: '5%',
-  },
   titleText: {
     ...TEXT_STYLE.title,
     color: COLOR.black,
@@ -221,13 +281,14 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: 'black'
+    color: COLOR.gray,
+  },
+  scrollContainer: {
+    flex: 1,
+    marginHorizontal: wp(5),
   },
   optionsContainer: {
     marginVertical: hp(4),
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
   },
   optionButton: {
     backgroundColor: COLOR.darkGrey,
@@ -235,40 +296,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     marginVertical: 5,
-    marginHorizontal: wp(2),
     alignItems: 'center',
-  },
-  selectedOption: {
-    backgroundColor: COLOR.lightBlue,
+    borderWidth: 0.5,
+    borderColor: COLOR.lightBlue,
   },
   optionText: {
     color: 'black',
     ...TEXT_STYLE.textMedium,
   },
-  continueButton: {
-    backgroundColor: '#002953',
-    marginTop: 'auto',
-    marginBottom: hp(5),
-    marginHorizontal: wp(2),
-  },
-  buttonText: {
-    color: 'white',
+  submitContainer: {
+    backgroundColor: COLOR.white,
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(2),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   saveButton: {
     backgroundColor: 'transparent',
     marginHorizontal: wp(2),
     borderWidth: 1,
-    borderColor: COLOR.lightBlue
-  },
-  submitContainer: {
-    justifyContent: 'flex-end',
-    marginTop: 'auto',
-    width: '100%',
-    paddingHorizontal: wp(2),
-    marginBottom: hp(2),
+    borderColor: COLOR.lightBlue,
   },
   nextButton: {
     backgroundColor: '#002953',
     marginHorizontal: wp(2),
   },
+  buttonText: {
+    color: COLOR.white,
+  }
 });

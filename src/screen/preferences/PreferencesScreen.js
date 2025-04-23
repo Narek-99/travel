@@ -1,5 +1,5 @@
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, ScrollView, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
@@ -44,6 +44,22 @@ const PreferencesScreen = ({ navigation }) => {
   const route = useRoute();
   const tripId = route.params?.tripId;
 
+  // Animation state for accommodation options
+  const accommodationAnimatedValues = useRef(
+    accommodationOptions.reduce((acc, option) => {
+      acc[option.value] = new Animated.Value(1); // For scale animation
+      return acc;
+    }, {})
+  ).current;
+
+  // Animation state for location preferences
+  const locationAnimatedValues = useRef(
+    locationPreferences.reduce((acc, option) => {
+      acc[option.value] = new Animated.Value(1); // For scale animation
+      return acc;
+    }, {})
+  ).current;
+
   useEffect(() => {
     const loadTripData = async () => {
       if (!tripId) return;
@@ -57,8 +73,28 @@ const PreferencesScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-          setSelectedAccommodation(data.accommodation || '');
-          setSelectedLocation(data.location || '');
+          const accommodation = data.accommodation || '';
+          const location = data.location || '';
+          setSelectedAccommodation(accommodation);
+          setSelectedLocation(location);
+
+          // Trigger animations for pre-selected options
+          if (accommodation) {
+            Animated.spring(accommodationAnimatedValues[accommodation], {
+              toValue: 1.02,
+              friction: 5,
+              tension: 40,
+              useNativeDriver: true,
+            }).start();
+          }
+          if (location) {
+            Animated.spring(locationAnimatedValues[location], {
+              toValue: 1.02,
+              friction: 5,
+              tension: 40,
+              useNativeDriver: true,
+            }).start();
+          }
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -73,11 +109,53 @@ const PreferencesScreen = ({ navigation }) => {
   }, [selectedAccommodation, selectedLocation]);
 
   const handleAccommodationSelect = (value) => {
-    setSelectedAccommodation(value === selectedAccommodation ? '' : value);
+    // Reset all accommodation animations
+    Object.keys(accommodationAnimatedValues).forEach((key) => {
+      if (key !== value) {
+        accommodationAnimatedValues[key].setValue(1);
+      }
+    });
+
+    // Toggle selection
+    if (selectedAccommodation === value) {
+      setSelectedAccommodation('');
+      accommodationAnimatedValues[value].setValue(1);
+    } else {
+      Animated.spring(accommodationAnimatedValues[value], {
+        toValue: 1.02,
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+      setSelectedAccommodation(value);
+    }
+
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
   };
 
   const handleLocationSelect = (value) => {
-    setSelectedLocation(value === selectedLocation ? '' : value);
+    // Reset all location animations
+    Object.keys(locationAnimatedValues).forEach((key) => {
+      if (key !== value) {
+        locationAnimatedValues[key].setValue(1);
+      }
+    });
+
+    // Toggle selection
+    if (selectedLocation === value) {
+      setSelectedLocation('');
+      locationAnimatedValues[value].setValue(1);
+    } else {
+      Animated.spring(locationAnimatedValues[value], {
+        toValue: 1.02,
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+      setSelectedLocation(value);
+    }
+
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
   };
 
   const handleSavePreferences = async () => {
@@ -89,7 +167,7 @@ const PreferencesScreen = ({ navigation }) => {
         .doc(tripId)
         .update({
           accommodation: selectedAccommodation,
-          location: selectedLocation
+          location: selectedLocation,
         });
 
       Toast.show({
@@ -117,14 +195,16 @@ const PreferencesScreen = ({ navigation }) => {
 
   return (
     <View style={styles.screenContainer}>
-      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
-        <SafeAreaView />
+      <SafeAreaView />
 
+      <View style={styles.headerContainer}>
         <View style={styles.headlineContainer}>
-          <Pressable style={styles.iconWrapper} onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-            navigation.goBack();
-          }}>
+          <Pressable
+            style={styles.iconWrapper}
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              navigation.goBack();
+            }}>
             <SVG.BackIcon fill="black" />
           </Pressable>
 
@@ -139,14 +219,20 @@ const PreferencesScreen = ({ navigation }) => {
             />
           </View>
 
-          <Pressable style={styles.iconWrapper} onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-            tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-          }}>
+          <Pressable
+            style={styles.iconWrapper}
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+            }}>
             <SVG.Close fill="black" />
           </Pressable>
         </View>
+      </View>
 
+
+      {/* Scrollable Content */}
+      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
         <Label style={styles.titleText}>Accommodations</Label>
         <Label style={styles.subtitleText}>1. What type of accommodation do you prefer?</Label>
 
@@ -154,13 +240,20 @@ const PreferencesScreen = ({ navigation }) => {
           {accommodationOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
-              style={[
-                styles.optionButton,
-                selectedAccommodation === option.value && styles.selectedOption,
-              ]}
               onPress={() => handleAccommodationSelect(option.value)}
-            >
-              <Text style={styles.optionText}>{option.label}</Text>
+              activeOpacity={0.8}>
+              <Animated.View
+                style={[
+                  styles.optionButton,
+                  {
+                    backgroundColor: selectedAccommodation === option.value
+                      ? COLOR.lightBlue
+                      : COLOR.darkGrey,
+                    transform: [{ scale: accommodationAnimatedValues[option.value] }],
+                  },
+                ]}>
+                <Text style={styles.optionText}>{option.label}</Text>
+              </Animated.View>
             </TouchableOpacity>
           ))}
         </View>
@@ -171,18 +264,26 @@ const PreferencesScreen = ({ navigation }) => {
           {locationPreferences.map((option) => (
             <TouchableOpacity
               key={option.value}
-              style={[
-                styles.optionButton,
-                selectedLocation === option.value && styles.selectedOption,
-              ]}
               onPress={() => handleLocationSelect(option.value)}
-            >
-              <Text style={styles.optionText}>{option.label}</Text>
+              activeOpacity={0.8}>
+              <Animated.View
+                style={[
+                  styles.optionButton,
+                  {
+                    backgroundColor: selectedLocation === option.value
+                      ? COLOR.lightBlue
+                      : COLOR.darkGrey,
+                    transform: [{ scale: locationAnimatedValues[option.value] }],
+                  },
+                ]}>
+                <Text style={styles.optionText}>{option.label}</Text>
+              </Animated.View>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
 
+      {/* Footer */}
       <View style={styles.submitContainer}>
         {tripId && (
           <Button
@@ -200,17 +301,19 @@ const PreferencesScreen = ({ navigation }) => {
       </View>
     </View>
   );
-};
+}
 
 export default PreferencesScreen;
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    paddingHorizontal: "5%",
+  },
   headlineContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginVertical: hp(2),
-    paddingHorizontal: wp(3),
   },
   centerWrapper: {
     flex: 1,
@@ -231,8 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.white,
   },
   contentContainer: {
-    paddingTop: '8%',
-    paddingHorizontal: '5%',
+    paddingHorizontal: wp(4),
   },
   titleText: {
     ...TEXT_STYLE.title,
@@ -246,16 +348,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   optionButton: {
-    backgroundColor: COLOR.darkGrey,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginVertical: 5,
     marginHorizontal: wp(2),
     alignItems: 'center',
-  },
-  selectedOption: {
-    backgroundColor: COLOR.lightBlue,
   },
   optionText: {
     color: 'black',
@@ -274,11 +372,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginHorizontal: wp(2),
     borderWidth: 1,
-    borderColor: COLOR.lightBlue
+    borderColor: COLOR.lightBlue,
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: 'black'
+    color: COLOR.gray,
   },
   stepIndicatorContainer: {
     alignItems: 'center',
