@@ -237,6 +237,22 @@ const DayByDayPlanScreen = ({ navigation }) => {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
               {dailyItineraries[selectedDayIndex].items.map((item, index) => (
                 <React.Fragment key={index}>
+                  {index > 0 && item.travelDistance && item.travelDuration && (
+                    <View style={styles.travelInfoContainer}>
+                      <View style={styles.travelContainer}>
+                        <SVG.Car width={14} height={14} fill="#4B5563" />
+                        <Text style={styles.travelText}>
+                          {item.travelDistance}
+                        </Text>
+                      </View>
+                      <View style={styles.travelContainer}>
+                        <SVG.Clock width={14} height={14} fill="#4B5563" />
+                        <Text style={styles.travelText}>
+                          {item.travelDuration}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
                   <Pressable
                     style={styles.card}
                     onPress={() => {
@@ -280,18 +296,6 @@ const DayByDayPlanScreen = ({ navigation }) => {
                       </Pressable>
                     </View>
                   </Pressable>
-                  {index < dailyItineraries[selectedDayIndex].items.length - 1 && (
-                    <View style={styles.travelInfoContainer}>
-                      <View style={styles.travelContainer}>
-                        <SVG.Car width={14} height={14} fill="#4B5563" />
-                        <Text style={styles.travelText}>{item.travelDistance}</Text>
-                      </View>
-                      <View style={styles.travelContainer}>
-                        <SVG.Clock width={14} height={14} fill="#4B5563" />
-                        <Text style={styles.travelText}>{item.travelDuration}</Text>
-                      </View>
-                    </View>
-                  )}
                 </React.Fragment>
               ))}
             </ScrollView>
