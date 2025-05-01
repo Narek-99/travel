@@ -155,20 +155,38 @@ const TripDetailsScreen = ({ navigation }) => {
 
   const fetchAttractions = async () => {
     setLoadingAttractions(true);
-    if (!region?.latitude || !region?.longitude) return;
+
+    if (trip?.attractions?.length > 0) {
+      console.log('✅ Using attractions from Firestore');
+      setAttractions(trip.attractions.slice(0, 20));
+      setLoadingAttractions(false);
+      return;
+    }
+
     try {
       const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}&targetAttractions=15`);
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('❌ Places API error:', text);
+        throw new Error(`Places API failed with status ${response.status}`);
+      }
+
       const data = await response.json();
-      setAttractions(data.results.slice(0, 20)); // Limit to a maximum of 20 attractions
+      setAttractions(data.results.slice(0, 20));
     } catch (err) {
-      console.error('Error fetching attractions:', err);
+      console.error('❌ Error fetching attractions:', err.message);
+      Toast.show({ type: 'error', text1: 'Failed to load attractions' });
     } finally {
       setLoadingAttractions(false);
     }
   };
 
+
   useEffect(() => {
-    fetchAttractions();
+    if (region) {
+      fetchAttractions();
+    }
   }, [region]);
 
   const fetchWeather = async (lat, lon, date) => {
@@ -210,7 +228,7 @@ const TripDetailsScreen = ({ navigation }) => {
     }, 15000);
 
     try {
-      const url = `https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${region.latitude}&lng=${region.longitude}&tripId=${tripId}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`;
+      const url = `https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${region.latitude}&lng=${region.longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`;
       const response = await fetch(url);
 
       if (!response.ok) {
