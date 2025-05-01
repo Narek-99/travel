@@ -398,7 +398,7 @@ const TripDetailsScreen = ({ navigation }) => {
       />
 
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {loadingWeather ? (
+        {false ? (
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.infoCard}>
               <View style={{ width: 180, height: 25, marginBottom: 10 }} />
