@@ -355,7 +355,7 @@ const DestinationScreen = ({ navigation }) => {
                 style={styles.input}
                 placeholder="Search for a city..."
                 placeholderTextColor="#8E8E93"
-                value={localDestination}
+                value={`${localDestination}${localCountry ? ', ' + localCountry : ''}`}
                 onChangeText={handleInputChange}
                 accessibilityLabel="Search for a city"
               />
