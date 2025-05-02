@@ -142,7 +142,7 @@ const ChatbotScreen = ({ navigation }) => {
       >
         <View style={styles.avatarContainer}>
           {isUser ? (
-            <SVG.Person fill="#00A3FF" width={25} height={25} />
+            <SVG.Person fill={COLOR.primary} width={25} height={25} />
           ) : (
             <SVG.Eagle width={25} height={25} />
           )}
