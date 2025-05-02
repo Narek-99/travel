@@ -23,8 +23,8 @@ const DatesScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   useEffect(() => {
     const loadTripData = async () => {
