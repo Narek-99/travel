@@ -22,7 +22,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-
 const ChatbotScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
@@ -82,7 +81,7 @@ const ChatbotScreen = ({ navigation }) => {
     const botMessage = { id: Date.now() + 1, text: '', sender: 'bot' };
     const enrichedPrompt = `
       User's Question: "${userQuery}"
-      Context: The user is planning a trip to ${trip.destination}, from ${getDateString(trip.startDate)} to ${getDateString(trip.endDate)}. They will be traveling with ${trip.companion}, and they are interested in ${trip.activities?.join(', ') || 'various activities'}. The user might have preferences for ${trip.accommodation?.join(', ') || 'certain types of accommodation'} and has a budget described as ${trip.budget || 'medium'}.
+      Context: The user is planning a trip to ${trip.destination}, from ${getDateString(trip.startDate)} to ${getDateString(trip.endDate)}. They will be traveling with ${trip.companion}, and they are interested in ${trip.activities?.join(', ') || 'various activities'}. The user prefers staying in ${trip.accommodation || 'any type of accommodation'} and has a budget described as ${trip.budget || 'medium'}.
       Answer the question taking into account these details about their trip.
     `;
 
