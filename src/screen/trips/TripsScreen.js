@@ -315,7 +315,7 @@ const TripsScreen = ({ navigation }) => {
                     <View style={styles.companionRow}>
                       <Text style={styles.destinationText}>{item.destination}, {item.country}</Text>
                       <Text style={styles.dateText}>{formatDateRange(item.startDate, item.endDate)}</Text>
-                      <View style={styles.infoRow}>
+                      <View style={[styles.infoRow, { marginTop: hp(0.5) }]}>
                         <Label style={styles.dateText}>{getCompanionEmoji(item.companion)}</Label>
                         <Label style={styles.dateText}>
                           {item.companion} · {item.numberOfPersons || '1'} person
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     color: 'white',
-    fontWeight: "500"
+    fontWeight: "500",
   },
   destinationText: {
     fontSize: 28,

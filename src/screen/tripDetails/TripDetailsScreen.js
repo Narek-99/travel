@@ -16,8 +16,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import { callChatGptForResponse } from '../../apis/ChatGptApi';
-import { getFunFactsPrompt } from '../../apis/Prompts';
 
 // Debounce utility function
 const debounce = (func, wait) => {
@@ -209,7 +207,6 @@ const TripDetailsScreen = ({ navigation }) => {
       weatherFetchRef.current.date === date &&
       weatherCache
     ) {
-      console.log('✅ Using cached weather data:', weatherCache);
       setWeather(weatherCache);
       setLoadingWeather(false);
       return;
