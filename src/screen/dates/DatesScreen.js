@@ -43,6 +43,7 @@ const DatesScreen = ({ navigation }) => {
             if (value instanceof Date) return value;
             if (value?.toDate) return value.toDate();
             if (typeof value === 'string') return new Date(value);
+            if (typeof value === 'object' && value.seconds) return new Date(value.seconds * 1000);
             return null;
           };
 
@@ -95,18 +96,22 @@ const DatesScreen = ({ navigation }) => {
         .collection('trips')
         .doc(tripId);
       const tripDoc = await tripRef.get();
-      const needsRegeneration = tripDoc.exists && tripDoc.data().needsRegeneration;
 
       await tripRef.update({
         startDate: firestore.Timestamp.fromDate(startDate),
         endDate: firestore.Timestamp.fromDate(endDate),
-        attractions: needsRegeneration ? [] : tripDoc.data().attractions,
-        attractionsFetchedAt: needsRegeneration ? null : tripDoc.data().attractionsFetchedAt,
-        itinerary: needsRegeneration ? [] : tripDoc.data().itinerary,
-        itineraryFetchedAt: needsRegeneration ? null : tripDoc.data().itineraryFetchedAt,
+        itinerary: [],
+        itineraryFetchedAt: null,
+        attractions: [],
+        attractionsFetchedAt: null,
+        needsRegeneration: true, // Trigger regeneration
       });
 
-      setTripData({ startDate, endDate });
+      setTripData({
+        ...tripData,
+        startDate: firestore.Timestamp.fromDate(startDate),
+        endDate: firestore.Timestamp.fromDate(endDate),
+      });
 
       Toast.show({
         visibilityTime: 2000,
@@ -125,7 +130,6 @@ const DatesScreen = ({ navigation }) => {
     }
   };
 
-
   const handleNext = () => {
     if (!startDate || !endDate) {
       Toast.show({
@@ -137,7 +141,7 @@ const DatesScreen = ({ navigation }) => {
       });
       return;
     }
-    setTripData({ startDate: new Date(startDate), endDate: new Date(endDate) });
+    setTripData({ startDate: firestore.Timestamp.fromDate(new Date(startDate)), endDate: firestore.Timestamp.fromDate(new Date(endDate)) });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.COMPANION, { tripId });
   };

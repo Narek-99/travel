@@ -73,8 +73,9 @@ const TripDetailsScreen = ({ navigation }) => {
   const [loadingRegeneration, setLoadingRegeneration] = useState(false);
 
   const getDateString = timestamp => {
-    if (!timestamp?.toDate) return '';
-    return timestamp.toDate().toISOString().split('T')[0];
+    if (!timestamp?.toDate && !timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toISOString().split('T')[0];
   };
 
   useEffect(() => {
@@ -115,7 +116,6 @@ const TripDetailsScreen = ({ navigation }) => {
       .doc(tripId)
       .onSnapshot(doc => {
         if (doc.exists) {
-
           const tripData = doc.data();
           console.log("📦 Trip Data from Firestore:", tripData);
           setTrip(tripData);
@@ -286,14 +286,14 @@ const TripDetailsScreen = ({ navigation }) => {
         // 1️⃣ Erst Attraktionen generieren, falls leer
         if (!trip.attractions || trip.attractions.length === 0) {
           console.log('🧭 No attractions found — triggering generate-attractions...');
-          const attrRes = await fetch(`${baseUrl}/generate-attractions?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${trip.startDate}&endDate=${trip.endDate}`);
+          const attrRes = await fetch(`${baseUrl}/generate-attractions?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`);
           const attrData = await attrRes.json();
           console.log('✅ Attractions response:', attrData);
           await new Promise(resolve => setTimeout(resolve, 2000)); // kurz warten
         }
 
         // 2️⃣ Dann das Itinerary generieren
-        const itineraryRes = await fetch(`${baseUrl}/generate-itinerary?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${trip.startDate}&endDate=${trip.endDate}`);
+        const itineraryRes = await fetch(`${baseUrl}/generate-itinerary?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`);
         const itineraryData = await itineraryRes.json();
 
         const updateData = {
@@ -334,12 +334,12 @@ const TripDetailsScreen = ({ navigation }) => {
     if (trip?.needsRegeneration) {
       triggerRegeneration();
     }
-  }, [trip?.needsRegeneration]);
+  }, [trip?.needsRegeneration, trip?.startDate, trip?.endDate]);
 
   const formatDate = (input) => {
     let date;
 
-    if (!input) return '';
+    if (!input) return 'Invalid Date';
 
     if (typeof input === 'string') {
       date = new Date(input);
@@ -348,8 +348,10 @@ const TripDetailsScreen = ({ navigation }) => {
     } else if (input instanceof Date) {
       date = input;
     } else {
-      return '';
+      return 'Invalid Date';
     }
+
+    if (isNaN(date.getTime())) return 'Invalid Date';
 
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -357,7 +359,6 @@ const TripDetailsScreen = ({ navigation }) => {
       year: 'numeric',
     });
   };
-
 
   const getCompanionEmoji = companion => {
     switch ((companion || '').toLowerCase()) {
