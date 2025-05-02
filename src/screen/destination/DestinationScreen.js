@@ -44,7 +44,6 @@ const DestinationScreen = ({ navigation }) => {
         const { apiKey } = await response.json();
         setGoogleApiKey(apiKey);
       } catch (error) {
-        console.error('Failed to fetch Google API key:', error);
         Toast.show({
           type: 'error',
           text1: 'Search Error',
@@ -58,10 +57,7 @@ const DestinationScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (!user?.uid) {
-      console.warn('User UID is undefined');
-      return;
-    }
+    if (!user?.uid) return;
 
     if (tripId) {
       firestore()
@@ -83,7 +79,6 @@ const DestinationScreen = ({ navigation }) => {
           }
         })
         .catch(error => {
-          console.error('Error loading trip data:', error);
           Toast.show({
             type: 'error',
             text1: 'Load Error',
@@ -102,7 +97,6 @@ const DestinationScreen = ({ navigation }) => {
 
   const getCities = async (searchQuery) => {
     if (!googleApiKey) {
-      console.error('Google API key not available');
       Toast.show({
         type: 'error',
         text1: 'Search Error',
@@ -175,7 +169,6 @@ const DestinationScreen = ({ navigation }) => {
       const validCities = cities.filter(city => city.city && city.country !== 'Unknown' && city.latitude && city.longitude).slice(0, 5);
       setSuggestions(validCities);
     } catch (error) {
-      console.error('Error fetching cities from Google Places API:', error);
       setSuggestions([]);
       Toast.show({
         type: 'error',
@@ -207,7 +200,6 @@ const DestinationScreen = ({ navigation }) => {
     setSuggestions([]);
     Keyboard.dismiss();
 
-    // Set region with latitude and longitude (mandatory)
     setTripData({
       region: {
         latitude: city.latitude,
@@ -249,6 +241,8 @@ const DestinationScreen = ({ navigation }) => {
             itinerary: [],
             itineraryFetchedAt: needsRegeneration ? null : firestore.FieldValue.serverTimestamp(),
             needsRegeneration: needsRegeneration,
+            // Clear funFacts if destination has changed to trigger regeneration
+            funFacts: needsRegeneration ? [] : firestore.FieldValue.delete(),
           },
           { merge: true }
         );
@@ -261,7 +255,6 @@ const DestinationScreen = ({ navigation }) => {
         position: 'top',
       });
     } catch (error) {
-      console.error('Error updating destination:', error);
       Toast.show({
         type: 'error',
         text1: 'Save Error',
