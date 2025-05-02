@@ -20,9 +20,6 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const mapFadeAnim = useRef(new Animated.Value(0)).current;
   const mapRef = useRef(null);
 
-  console.log('📅 groupedItinerary:', groupedItinerary);
-
-
   useEffect(() => {
     if (!groupedItinerary || !Array.isArray(groupedItinerary)) {
       setError('No itinerary data available.');

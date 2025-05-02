@@ -115,7 +115,6 @@ const TripDetailsScreen = ({ navigation }) => {
       .onSnapshot(doc => {
         if (doc.exists) {
           const tripData = doc.data();
-          console.log("📦 Trip Data from Firestore:", tripData);
           setTrip(tripData);
           // Load attractions and itinerary directly from Firestore
           setAttractions(tripData.attractions || []);
@@ -138,7 +137,6 @@ const TripDetailsScreen = ({ navigation }) => {
       getDateString(trip.startDate) !== getDateString(previousTrip.startDate) ||
       getDateString(trip.endDate) !== getDateString(previousTrip.endDate);
     if (criticalFieldsChanged) {
-      console.log('🗑️ Critical fields changed, clearing attractions and itinerary');
       // Clear attractions and itinerary in Firestore
       firestore()
         .collection('users')
@@ -220,14 +218,12 @@ const TripDetailsScreen = ({ navigation }) => {
       let useForecast = tripDate <= maxForecastDate;
 
       if (tripDate < today || tripDate > maxForecastDate) {
-        console.log(`⚠️ Trip date ${date} is outside forecast range. Fetching current weather instead.`);
         useForecast = false;
       }
 
       const url = useForecast
         ? `https://openai-proxy-gilt-three.vercel.app/api/weather?lat=${lat}&lon=${lon}&date=${date}`
         : `https://openai-proxy-gilt-three.vercel.app/api/weather?lat=${lat}&lon=${lon}`;
-      console.log(`🌤️ Fetching weather from: ${url}`);
 
       const res = await fetch(url);
       if (!res.ok) {
@@ -237,7 +233,6 @@ const TripDetailsScreen = ({ navigation }) => {
       }
 
       const data = await res.json();
-      console.log('✅ Weather API response:', data);
 
       let weatherData;
       if (useForecast && data?.forecast?.forecastday?.[0]) {
@@ -266,7 +261,6 @@ const TripDetailsScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (memoizedRegion && memoizedStartDate) {
-      console.log(`🌍 Fetching weather for lat: ${memoizedRegion.latitude}, lon: ${memoizedRegion.longitude}, date: ${memoizedStartDate}`);
       fetchWeather(memoizedRegion.latitude, memoizedRegion.longitude, memoizedStartDate);
     }
   }, [memoizedRegion, memoizedStartDate]);
@@ -282,10 +276,8 @@ const TripDetailsScreen = ({ navigation }) => {
 
         // 1️⃣ Erst Attraktionen generieren, falls leer
         if (!trip.attractions || trip.attractions.length === 0) {
-          console.log('🧭 No attractions found — triggering generate-attractions...');
           const attrRes = await fetch(`${baseUrl}/generate-attractions?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`);
           const attrData = await attrRes.json();
-          console.log('✅ Attractions response:', attrData);
           await new Promise(resolve => setTimeout(resolve, 2000)); // kurz warten
         }
 
