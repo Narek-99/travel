@@ -23,8 +23,8 @@ const DatesScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
-  const [startDate, setStartDate] = useState(tripData.startDate ? new Date(tripData.startDate) : null);
-  const [endDate, setEndDate] = useState(tripData.endDate ? new Date(tripData.endDate) : null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     const loadTripData = async () => {
@@ -39,10 +39,18 @@ const DatesScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-          const start = data.startDate?.toDate();
-          const end = data.endDate?.toDate();
-          setStartDate(start || null);
-          setEndDate(end || null);
+          const parseDate = (value) => {
+            if (value instanceof Date) return value;
+            if (value?.toDate) return value.toDate();
+            if (typeof value === 'string') return new Date(value);
+            return null;
+          };
+
+          const start = parseDate(data.startDate);
+          const end = parseDate(data.endDate);
+
+          if (start) setStartDate(start);
+          if (end) setEndDate(end);
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -99,6 +107,7 @@ const DatesScreen = ({ navigation }) => {
       });
 
       setTripData({ startDate, endDate });
+
       Toast.show({
         visibilityTime: 2000,
         type: 'success',
@@ -115,6 +124,7 @@ const DatesScreen = ({ navigation }) => {
       });
     }
   };
+
 
   const handleNext = () => {
     if (!startDate || !endDate) {
