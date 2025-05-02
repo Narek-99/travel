@@ -19,17 +19,16 @@ const hapticOptions = {
 };
 
 const DatesScreen = ({ navigation }) => {
-  const { setTripData } = useTripStore(); // Access Zustand store
-
+  const { setTripData, tripData } = useTripStore();
   const user = useSelector(({ appReducer }) => appReducer.user);
   const route = useRoute();
   const tripId = route.params?.tripId;
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(tripData.startDate ? new Date(tripData.startDate) : null);
+  const [endDate, setEndDate] = useState(tripData.endDate ? new Date(tripData.endDate) : null);
 
   useEffect(() => {
     const loadTripData = async () => {
-      if (!tripId) return; // Frühzeitiger Rückkehr, wenn keine tripId vorhanden ist
+      if (!tripId) return;
 
       try {
         const tripDetails = await firestore()
@@ -40,13 +39,10 @@ const DatesScreen = ({ navigation }) => {
           .get();
         if (tripDetails.exists) {
           const data = tripDetails.data();
-
-
-          const start = new Date(data.startDate.seconds * 1000);
-          const end = new Date(data.endDate.seconds * 1000);
-
-          setStartDate(start);
-          setEndDate(end);
+          const start = data.startDate?.toDate();
+          const end = data.endDate?.toDate();
+          setStartDate(start || null);
+          setEndDate(end || null);
         }
       } catch (error) {
         console.error('Fehler beim Laden der Trip-Daten:', error);
@@ -59,7 +55,6 @@ const DatesScreen = ({ navigation }) => {
   const currentStep = 2;
   const totalSteps = 7;
   const progress = currentStep / totalSteps;
-
 
   const onChangeStartDate = (event, selectedDate) => {
     if (selectedDate) {
@@ -74,15 +69,34 @@ const DatesScreen = ({ navigation }) => {
   };
 
   const handleSaveDates = async () => {
-    if (!startDate || !endDate) return;
+    if (!startDate || !endDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Dates',
+        text2: 'Please select both start and end dates.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
 
     try {
-      await firestore()
+      const tripRef = firestore()
         .collection('users')
         .doc(user.uid)
         .collection('trips')
-        .doc(tripId)
-        .update({ startDate, endDate });
+        .doc(tripId);
+      const tripDoc = await tripRef.get();
+      const needsRegeneration = tripDoc.exists && tripDoc.data().needsRegeneration;
+
+      await tripRef.update({
+        startDate: firestore.Timestamp.fromDate(startDate),
+        endDate: firestore.Timestamp.fromDate(endDate),
+        attractions: needsRegeneration ? [] : tripDoc.data().attractions,
+        attractionsFetchedAt: needsRegeneration ? null : tripDoc.data().attractionsFetchedAt,
+        itinerary: needsRegeneration ? [] : tripDoc.data().itinerary,
+        itineraryFetchedAt: needsRegeneration ? null : tripDoc.data().itineraryFetchedAt,
+      });
 
       setTripData({ startDate, endDate });
       Toast.show({
@@ -103,7 +117,17 @@ const DatesScreen = ({ navigation }) => {
   };
 
   const handleNext = () => {
-    setTripData({ startDate, endDate });
+    if (!startDate || !endDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Dates',
+        text2: 'Please select both start and end dates.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+    setTripData({ startDate: new Date(startDate), endDate: new Date(endDate) });
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     navigation.navigate(SCREEN.COMPANION, { tripId });
   };
@@ -150,22 +174,22 @@ const DatesScreen = ({ navigation }) => {
         <View style={styles.dateContainer}>
           <View>
             <DateTimePicker
-              value={startDate}
+              value={startDate || new Date()} // Temporary display fallback for picker
               mode="date"
               onChange={onChangeStartDate}
               themeVariant="light"
-              minimumDate={!tripId ? new Date() : undefined}
+              minimumDate={new Date()}
             />
           </View>
 
           <Label style={{ color: "black" }}>to</Label>
 
           <DateTimePicker
-            value={endDate}
+            value={endDate || new Date()} // Temporary display fallback for picker
             mode="date"
             onChange={onChangeEndDate}
             themeVariant="light"
-            minimumDate={startDate ? startDate : !tripId ? new Date() : undefined}
+            minimumDate={startDate || new Date()}
           />
         </View>
       </View>
@@ -176,16 +200,18 @@ const DatesScreen = ({ navigation }) => {
             style={styles.saveButton}
             text={En.save}
             onPress={handleSaveDates}
+            disabled={!startDate || !endDate}
           />
         )}
         <Button
           style={[
             styles.nextButton,
-            { backgroundColor: COLOR.primary },
+            { backgroundColor: startDate && endDate ? COLOR.primary : '#CCCCCC' },
           ]}
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}
+          disabled={!startDate || !endDate}
         />
       </View>
     </View>

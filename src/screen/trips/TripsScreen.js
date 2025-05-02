@@ -194,10 +194,22 @@ const TripsScreen = ({ navigation }) => {
   };
 
   const formatDateRange = (start, end) => {
-    const startDate = start?.toDate();
-    const endDate = end?.toDate();
+    let startDate, endDate;
 
-    if (!startDate || !endDate) return '';
+    // Handle Firestore Timestamps
+    if (start?.toDate) {
+      startDate = start.toDate();
+    } else if (typeof start === 'string') {
+      startDate = new Date(start);
+    }
+
+    if (end?.toDate) {
+      endDate = end.toDate();
+    } else if (typeof end === 'string') {
+      endDate = new Date(end);
+    }
+
+    if (!startDate || !endDate || isNaN(startDate) || isNaN(endDate)) return '';
 
     const options = { day: '2-digit', month: 'short' };
     const startStr = startDate.toLocaleDateString('en-US', options);

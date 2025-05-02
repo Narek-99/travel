@@ -39,15 +39,23 @@ const AdditionalScreen = ({ navigation }) => {
   };
 
   const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    if (duration <= maxDays) {
-      return { from: getDateString(start), to: getDateString(end) };
+    if (!startDate || !endDate) {
+      throw new Error('Start date and end date are required.');
     }
+    const start = startDate.toDate ? startDate.toDate() : new Date(startDate);
+    const end = endDate.toDate ? endDate.toDate() : new Date(endDate);
+    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (duration <= maxDays) {
+      return { from: start, to: end };
+    }
+
     const limitedEnd = new Date(start);
     limitedEnd.setDate(start.getDate() + maxDays - 1);
-    return { from: getDateString(start), to: getDateString(limitedEnd) };
+    return {
+      from: start,
+      to: limitedEnd,
+    };
   };
 
   useEffect(() => {
@@ -116,10 +124,88 @@ const AdditionalScreen = ({ navigation }) => {
     }
   };
 
+  const fetchDestinationImage = async (destination) => {
+    try {
+      const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/unsplash?destination=${destination}`);
+      const data = await response.json();
+      const imageUrl = data.results[0]?.urls?.regular;
+      return imageUrl || null;
+    } catch (error) {
+      console.error('❌ Error fetching destination image:', error);
+      return null;
+    }
+  };
+
+  const fetchWeatherData = async (lat, lng, date) => {
+    try {
+      const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/weather?lat=${lat}&lon=${lng}${date ? `&date=${date}` : ''}`);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      let weatherData = null;
+
+      // Handle current or forecast structure from WeatherAPI
+      if (data?.forecast?.forecastday?.[0]) {
+        const day = data.forecast.forecastday[0].day;
+        weatherData = {
+          temperature: day.avgtemp_c,
+          description: day.condition.text,
+          icon: day.condition.icon,
+        };
+      } else if (data?.current) {
+        weatherData = {
+          temperature: data.current.temp_c,
+          description: data.current.condition.text,
+          icon: data.current.condition.icon,
+        };
+      }
+
+      return weatherData;
+    } catch (error) {
+      console.error('❌ Error fetching weather data:', error);
+      return null;
+    }
+  };
+
+
   const handleSaveTrip = async () => {
     setLoading(true);
+
+    // Strict validation for required fields
     if (!user?.uid || !tripData.destination) {
-      Alert.alert("Error", "User or destination missing!");
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Data',
+        text2: 'User or destination is missing.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!tripData.region?.latitude || !tripData.region?.longitude) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Coordinates',
+        text2: 'Location coordinates are required. Please select a valid destination.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!tripData.startDate || !tripData.endDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Dates',
+        text2: 'Start and end dates are required.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
       setLoading(false);
       return;
     }
@@ -128,27 +214,110 @@ const AdditionalScreen = ({ navigation }) => {
     const effectiveTripId = isNewTrip ? `${tripData.destination}-${Date.now()}` : tripId;
     const tripToSave = {
       ...tripData,
-      additionalInfo,
+      additionalInfo: additionalInfo || '',
       funFacts: [],
       updatedAt: new Date().toISOString(),
+      region: {
+        latitude: tripData.region.latitude,
+        longitude: tripData.region.longitude,
+      },
     };
 
     if (isNewTrip) {
       tripToSave.createdAt = new Date().toISOString();
     }
 
+    // Convert dates to Firestore Timestamps
     try {
-      await firestore()
+      const limitedDates = getLimitedDateRange(tripData.startDate, tripData.endDate);
+      tripToSave.startDate = firestore.Timestamp.fromDate(limitedDates.from);
+      tripToSave.endDate = firestore.Timestamp.fromDate(limitedDates.to);
+    } catch (error) {
+      console.error('Error processing dates:', error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Dates',
+        text2: 'Please ensure the dates are valid.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Use user-provided coordinates
+    const latitude = tripData.region.latitude;
+    const longitude = tripData.region.longitude;
+
+    // Fetch destination image and weather data
+    const destinationImage = await fetchDestinationImage(tripData.destination);
+    const weatherData = await fetchWeatherData(latitude, longitude);
+
+    tripToSave.destinationImage = destinationImage;
+    tripToSave.weather = weatherData;
+
+    // Remove any undefined fields from tripToSave
+    Object.keys(tripToSave).forEach(key => {
+      if (tripToSave[key] === undefined) {
+        console.warn(`Undefined field detected in tripToSave: ${key}`);
+        delete tripToSave[key];
+      }
+    });
+
+    try {
+      const tripRef = firestore()
         .collection('users')
         .doc(user.uid)
         .collection('trips')
-        .doc(effectiveTripId)
-        .set(tripToSave, { merge: true });
+        .doc(effectiveTripId);
+      const tripDoc = await tripRef.get();
+      const needsRegeneration = isNewTrip || (tripDoc.exists && tripDoc.data().needsRegeneration);
+
+      // Log the tripToSave object for debugging
+      console.log('TripToSave:', tripToSave);
+
+      // Save trip to Firestore
+      await tripRef.set(tripToSave, { merge: true });
+
+      console.log('Lat/Lng:', latitude, longitude);
+
+      // Generate attractions and itinerary if needed
+      if (needsRegeneration) {
+        // Fetch attractions
+        const placesResponse = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${latitude}&lng=${longitude}&startDate=${tripToSave.startDate.toDate().toISOString().split('T')[0]}&endDate=${tripToSave.endDate.toDate().toISOString().split('T')[0]}&uid=${user.uid}&tripId=${effectiveTripId}`);
+        if (!placesResponse.ok) {
+          const errorText = await placesResponse.text();
+          throw new Error(`Attractions API failed: ${errorText}`);
+        }
+        const placesData = await placesResponse.json();
+        const attractions = placesData.results || [];
+
+        // Save attractions to Firestore
+        await tripRef.update({ attractions, attractionsFetchedAt: Date.now() });
+
+        // Generate itinerary
+        const itineraryResponse = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${latitude}&lng=${longitude}&tripId=${effectiveTripId}&uid=${user.uid}&startDate=${tripToSave.startDate.toDate().toISOString().split('T')[0]}&endDate=${tripToSave.endDate.toDate().toISOString().split('T')[0]}`);
+        if (!itineraryResponse.ok) {
+          const errorText = await itineraryResponse.text();
+          throw new Error(`Itinerary API failed: ${errorText}`);
+        }
+        const itineraryData = await itineraryResponse.json();
+        tripToSave.itinerary = itineraryData.itinerary;
+        await tripRef.update({ itinerary: itineraryData.itinerary, itineraryFetchedAt: Date.now() });
+        await tripRef.update({ needsRegeneration: false });
+        const savedTrip = await tripRef.get();
+        console.log("✅ Trip final content after save:", savedTrip.data());
+      }
+
+      // Generate fun facts in background
+      generateAiPlanInBackground(tripToSave, effectiveTripId);
+
+      // Navigate
       resetTrip();
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId: effectiveTripId });
-      generateAiPlanInBackground(tripToSave, effectiveTripId);
+
     } catch (error) {
-      console.error("Error saving trip:", error);
+      console.error("❌ Error saving trip:", error.message);
       Toast.show({
         type: 'error',
         text1: "Failed to save the trip.",
@@ -191,9 +360,8 @@ const AdditionalScreen = ({ navigation }) => {
                 tripId
                   ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
                   : navigation.navigate(SCREEN.TRIPS);
-              }
-
-              }>
+              }}
+            >
               <SVG.Close fill="black" />
             </Pressable>
           </View>
@@ -300,5 +468,4 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
-
 });

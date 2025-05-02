@@ -31,12 +31,12 @@ const DestinationScreen = ({ navigation }) => {
   const [localCountry, setLocalCountry] = useState(tripData.country || '');
   const [googleApiKey, setGoogleApiKey] = useState(null);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [initialDestination, setInitialDestination] = useState(tripData.destination || '');
 
   const currentStep = 1;
   const totalSteps = 7;
   const progress = currentStep / totalSteps;
 
-  // Fetch Google API key on component mount
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -57,7 +57,6 @@ const DestinationScreen = ({ navigation }) => {
     fetchApiKey();
   }, []);
 
-  // Load trip data if editing an existing trip
   useEffect(() => {
     if (!user?.uid) {
       console.warn('User UID is undefined');
@@ -73,10 +72,14 @@ const DestinationScreen = ({ navigation }) => {
         .get()
         .then(doc => {
           if (doc.exists) {
-            const { destination, country } = doc.data();
+            const { destination, country, region } = doc.data();
             setLocalDestination(destination || '');
             setLocalCountry(country || '');
+            setInitialDestination(destination || '');
             setIsValidDestination(!!destination);
+            if (region) {
+              setTripData({ region });
+            }
           }
         })
         .catch(error => {
@@ -92,11 +95,11 @@ const DestinationScreen = ({ navigation }) => {
     } else {
       setLocalDestination('');
       setLocalCountry('');
+      setInitialDestination('');
       setIsValidDestination(false);
     }
-  }, [tripId, user?.uid]);
+  }, [tripId, user?.uid, setTripData]);
 
-  // Fetch city suggestions using Google Places API
   const getCities = async (searchQuery) => {
     if (!googleApiKey) {
       console.error('Google API key not available');
@@ -110,11 +113,10 @@ const DestinationScreen = ({ navigation }) => {
       return;
     }
 
-    if (isLoadingSuggestions) return; // Prevent multiple simultaneous API calls
+    if (isLoadingSuggestions) return;
 
     setIsLoadingSuggestions(true);
     try {
-      // Fetch city suggestions from Google Places Autocomplete API
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
         {
@@ -122,7 +124,7 @@ const DestinationScreen = ({ navigation }) => {
             input: searchQuery,
             types: '(cities)',
             key: googleApiKey,
-            language: 'en', // Force English language for suggestions
+            language: 'en',
           },
         }
       );
@@ -130,20 +132,20 @@ const DestinationScreen = ({ navigation }) => {
       const predictions = response.data.predictions;
       const cities = await Promise.all(
         predictions.map(async (prediction) => {
-          // Fetch country details for each suggestion
           const detailsResponse = await axios.get(
             `https://maps.googleapis.com/maps/api/place/details/json`,
             {
               params: {
                 place_id: prediction.place_id,
-                fields: 'address_components',
+                fields: 'address_components,geometry',
                 key: googleApiKey,
-                language: 'en', // Force English language for details
+                language: 'en',
               },
             }
           );
 
           const addressComponents = detailsResponse.data.result.address_components;
+          const geometry = detailsResponse.data.result.geometry;
           let city = '';
           let country = '';
 
@@ -155,17 +157,22 @@ const DestinationScreen = ({ navigation }) => {
             }
           }
 
+          if (!geometry?.location?.lat || !geometry?.location?.lng) {
+            throw new Error(`No coordinates found for ${city}`);
+          }
+
           return {
             id: prediction.place_id,
             city: city || prediction.structured_formatting.main_text,
             country: country || 'Unknown',
             type: 'CITY',
+            latitude: geometry.location.lat,
+            longitude: geometry.location.lng,
           };
         })
       );
 
-      // Filter out invalid entries and limit to 5 results
-      const validCities = cities.filter(city => city.city && city.country !== 'Unknown').slice(0, 5);
+      const validCities = cities.filter(city => city.city && city.country !== 'Unknown' && city.latitude && city.longitude).slice(0, 5);
       setSuggestions(validCities);
     } catch (error) {
       console.error('Error fetching cities from Google Places API:', error);
@@ -173,7 +180,7 @@ const DestinationScreen = ({ navigation }) => {
       Toast.show({
         type: 'error',
         text1: 'Search Error',
-        text2: 'Unable to fetch city suggestions. Please try again.',
+        text2: 'Unable to fetch city suggestions or coordinates. Please try again.',
         position: 'top',
         visibilityTime: 3000,
       });
@@ -182,7 +189,6 @@ const DestinationScreen = ({ navigation }) => {
     }
   };
 
-  // Navigate back to Trip Details or Trips screen
   const handleClose = () => {
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     if (tripId) {
@@ -193,7 +199,6 @@ const DestinationScreen = ({ navigation }) => {
     }
   };
 
-  // Handle city selection from suggestions
   const handleCitySelect = (city) => {
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
     setLocalDestination(city.city);
@@ -201,13 +206,30 @@ const DestinationScreen = ({ navigation }) => {
     setIsValidDestination(true);
     setSuggestions([]);
     Keyboard.dismiss();
+
+    // Set region with latitude and longitude (mandatory)
+    setTripData({
+      region: {
+        latitude: city.latitude,
+        longitude: city.longitude,
+      },
+    });
   };
 
-  // Save destination to Firestore
   const handleSaveDestination = async () => {
-    if (!localDestination || !user?.uid) return;
+    if (!localDestination || !user?.uid || !tripData.region?.latitude || !tripData.region?.longitude) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Data',
+        text2: 'Destination or coordinates are missing. Please select a valid city.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
 
     try {
+      const needsRegeneration = localDestination !== initialDestination;
       await firestore()
         .collection('users')
         .doc(user.uid)
@@ -217,7 +239,16 @@ const DestinationScreen = ({ navigation }) => {
           {
             destination: localDestination,
             country: localCountry,
+            region: {
+              latitude: tripData.region.latitude,
+              longitude: tripData.region.longitude,
+            },
             updatedAt: firestore.FieldValue.serverTimestamp(),
+            attractions: [],
+            attractionsFetchedAt: needsRegeneration ? null : firestore.FieldValue.serverTimestamp(),
+            itinerary: [],
+            itineraryFetchedAt: needsRegeneration ? null : firestore.FieldValue.serverTimestamp(),
+            needsRegeneration: needsRegeneration,
           },
           { merge: true }
         );
@@ -241,9 +272,17 @@ const DestinationScreen = ({ navigation }) => {
     }
   };
 
-  // Navigate to the next screen (Dates)
   const handleNext = () => {
-    if (!isValidDestination) return;
+    if (!isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Data',
+        text2: 'Destination or coordinates are missing. Please select a valid city.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
     setTripData({
       destination: localDestination,
       country: localCountry,
@@ -252,7 +291,6 @@ const DestinationScreen = ({ navigation }) => {
     navigation.navigate(SCREEN.DATES, { tripId });
   };
 
-  // Handle input changes with debouncing
   const handleInputChange = (text) => {
     setLocalDestination(text);
     setLocalCountry('');
@@ -307,7 +345,6 @@ const DestinationScreen = ({ navigation }) => {
             </Pressable>
           </View>
 
-
           <Label style={styles.titleText}>{En.DestinationScreenTitle}</Label>
           <Label style={styles.subtitleText}>{En.DestinationScreenSubtitle}</Label>
 
@@ -350,18 +387,18 @@ const DestinationScreen = ({ navigation }) => {
               style={styles.saveButton}
               text={En.save}
               onPress={handleSaveDestination}
-              disabled={!localDestination || !isValidDestination}
+              disabled={!localDestination || !isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude}
             />
           )}
           <Button
             style={[
               styles.nextButton,
-              { backgroundColor: isValidDestination ? COLOR.primary : '#CCCCCC' },
+              { backgroundColor: isValidDestination && tripData.region?.latitude && tripData.region?.longitude ? COLOR.primary : '#CCCCCC' },
             ]}
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}
-            disabled={!isValidDestination}
+            disabled={!isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude}
           />
         </View>
       </View>

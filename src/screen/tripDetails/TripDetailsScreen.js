@@ -70,6 +70,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const optionFadeAnims = Array(5).fill().map(() => useFadeIn());
   const [weather, setWeather] = useState(null);
   const weatherFetchRef = useRef({ lat: null, lon: null, date: null });
+  const [loadingRegeneration, setLoadingRegeneration] = useState(false);
 
   const getDateString = timestamp => {
     if (!timestamp?.toDate) return '';
@@ -114,34 +115,19 @@ const TripDetailsScreen = ({ navigation }) => {
       .doc(tripId)
       .onSnapshot(doc => {
         if (doc.exists) {
-          setTrip(doc.data());
+
+          const tripData = doc.data();
+          console.log("📦 Trip Data from Firestore:", tripData);
+          setTrip(tripData);
+          // Load attractions and itinerary directly from Firestore
+          setAttractions(tripData.attractions || []);
+          setLoadingAttractions(false);
+          const allItems = (tripData.itinerary || []).flatMap(day => (day.items || []));
+          setItinerary(allItems);
+          setLoadingItinerary(false);
         }
       });
     return () => unsubscribe();
-  }, [user?.uid, tripId]);
-
-  // Load cached itinerary on mount
-  useEffect(() => {
-    const loadCachedItinerary = async () => {
-      if (!user?.uid || !tripId) return;
-      try {
-        const tripDoc = await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('trips')
-          .doc(tripId)
-          .get();
-        const tripData = tripDoc.data();
-        if (tripData?.itinerary && Array.isArray(tripData.itinerary)) {
-          console.log('✅ Loaded cached itinerary on mount');
-          const allItems = tripData.itinerary.flatMap(day => (day.items || []));
-          setItinerary(allItems);
-        }
-      } catch (error) {
-        console.error('❌ Error loading cached itinerary:', error.message);
-      }
-    };
-    loadCachedItinerary();
   }, [user?.uid, tripId]);
 
   useEffect(() => {
@@ -154,9 +140,24 @@ const TripDetailsScreen = ({ navigation }) => {
       getDateString(trip.startDate) !== getDateString(previousTrip.startDate) ||
       getDateString(trip.endDate) !== getDateString(previousTrip.endDate);
     if (criticalFieldsChanged) {
-      regenerateAiPlan();
-      // Regenerate itinerary if critical fields changed
-      regenerateItinerary();
+      console.log('🗑️ Critical fields changed, clearing attractions and itinerary');
+      // Clear attractions and itinerary in Firestore
+      firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .update({
+          attractions: [],
+          attractionsFetchedAt: null,
+          itinerary: [],
+          itineraryFetchedAt: null,
+        })
+        .then(() => {
+          setAttractions([]);
+          setItinerary([]);
+        })
+        .catch(error => console.error('❌ Error clearing cached data:', error.message));
     }
     setPreviousTrip(trip);
   }, [trip]);
@@ -200,51 +201,6 @@ const TripDetailsScreen = ({ navigation }) => {
     };
     if (user?.uid && tripId) fetchTripDetails();
   }, [user?.uid, tripId]);
-
-  const fetchAttractions = useCallback(
-    debounce(async () => {
-      setLoadingAttractions(true);
-
-      if (trip?.attractions?.length > 0) {
-        console.log('✅ Using attractions from Firestore');
-        setAttractions(trip.attractions.slice(0, 20));
-        setLoadingAttractions(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${region.latitude}&lng=${region.longitude}&targetAttractions=15`);
-
-        if (!response.ok) {
-          const text = await response.text();
-          console.error('❌ Places API error:', text);
-          throw new Error(`Places API failed with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        setAttractions(data.results.slice(0, 20));
-
-        await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('trips')
-          .doc(tripId)
-          .set({ attractions: data.results.slice(0, 20), attractionsFetchedAt: Date.now() }, { merge: true });
-      } catch (err) {
-        console.error('❌ Error fetching attractions:', err.message);
-        showToast('error', 'Failed to load attractions');
-      } finally {
-        setLoadingAttractions(false);
-      }
-    }, 2000),
-    [region, trip, user?.uid, tripId]
-  );
-
-  useEffect(() => {
-    if (region) {
-      fetchAttractions();
-    }
-  }, [region, fetchAttractions]);
 
   const fetchWeather = async (lat, lon, date) => {
     if (
@@ -318,158 +274,40 @@ const TripDetailsScreen = ({ navigation }) => {
     }
   }, [memoizedRegion, memoizedStartDate]);
 
-  const regenerateItinerary = useCallback(
-    debounce(async () => {
-      if (!trip || !region) {
-        setLoadingItinerary(false);
-        return;
-      }
-
-      setLoadingItinerary(true);
-      try {
-        // Check if itinerary is already cached in Firestore
-        const tripDoc = await firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('trips')
-          .doc(tripId)
-          .get();
-        const tripData = tripDoc.data();
-
-        // Check if itinerary exists and is valid
-        if (tripData?.itinerary && Array.isArray(tripData.itinerary)) {
-          const allItems = tripData.itinerary.flatMap(day => (day.items || []));
-          const validItems = allItems.filter(item =>
-            item &&
-            item.attraction &&
-            typeof item.attraction.lat === 'number' &&
-            typeof item.attraction.lng === 'number' &&
-            item.attraction.name &&
-            item.startTime &&
-            item.endTime
-          );
-
-          if (validItems.length > 0) {
-            console.log('✅ Using cached itinerary from Firestore');
-            setItinerary(allItems);
-            setLoadingItinerary(false);
-            return;
-          }
-        }
-
-        // If no valid itinerary exists, generate a new one
-        console.log('📡 No valid itinerary found, generating new one');
-        const url = `https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${region.latitude}&lng=${region.longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`;
-        console.log('📡 Generating new itinerary:', url);
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('📋 Itinerary response:', data);
-
-        if (data.itinerary && Array.isArray(data.itinerary)) {
-          const allItems = data.itinerary.flatMap(day => (day.items || []));
-          console.log('📋 All itinerary items before validation:', allItems);
-
-          // Validate items
-          const validItems = allItems.filter(item => {
-            const isValid = item &&
-              item.attraction &&
-              typeof item.attraction.lat === 'number' &&
-              typeof item.attraction.lng === 'number' &&
-              item.attraction.name &&
-              item.startTime &&
-              item.endTime;
-            if (!isValid) {
-              console.log('❌ Invalid itinerary item:', item);
-            }
-            return isValid;
-          });
-
-          if (validItems.length === 0) {
-            throw new Error('No valid itinerary items found after validation');
-          }
-
-          setItinerary(allItems);
-
-          // Cache the itinerary in Firestore
-          await firestore()
-            .collection('users')
-            .doc(user.uid)
-            .collection('trips')
-            .doc(tripId)
-            .set({ itinerary: data.itinerary, itineraryFetchedAt: Date.now() }, { merge: true });
-        } else {
-          throw new Error('Invalid itinerary data received');
-        }
-      } catch (error) {
-        console.error('❌ Error generating itinerary:', error.message);
-        showToast('error', 'Failed to generate itinerary', error.message);
-        setItinerary([]);
-      } finally {
-        setLoadingItinerary(false);
-      }
-    }, 2000),
-    [region, trip, user?.uid, tripId]
-  );
-
-  const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
-    const start = startDate.toDate();
-    const end = endDate.toDate();
-    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    if (duration <= maxDays) return { from: getDateString(startDate), to: getDateString(endDate) };
-    const limitedEnd = new Date(start.setDate(start.getDate() + maxDays - 1));
-    return { from: getDateString(startDate), to: getDateString({ toDate: () => limitedEnd }) };
-  };
-
-  const regenerateAiPlan = useCallback(
-    debounce(async () => {
-      if (!trip) return;
-
-      const tripDoc = await firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('trips')
-        .doc(tripId)
-        .get();
-      const tripData = tripDoc.data();
-      if (tripData?.funFacts?.length > 0 && tripData.funFactsFetchedAt) {
-        const age = Date.now() - tripData.funFactsFetchedAt;
-        const oneWeek = 1000 * 60 * 60 * 24 * 7;
-        if (age < oneWeek) {
-          console.log('✅ Using cached fun facts from Firestore');
-          setTrip(prev => ({ ...prev, funFacts: tripData.funFacts }));
-          return;
-        }
-      }
-
-      showToast('info', 'Let me create the best plan for you...');
-
-      await firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('trips')
-        .doc(tripId)
-        .update({ funFacts: [] });
+  useEffect(() => {
+    const triggerRegeneration = async () => {
+      if (!trip?.destination || !trip.startDate || !trip.endDate) return;
+      setLoadingRegeneration(true);
 
       try {
-        const [funFactsResponse] = await Promise.all([
-          callChatGptForResponse(getFunFactsPrompt(trip.destination), ''),
-        ]);
+        const { latitude, longitude } = trip.region;
+        const baseUrl = 'https://openai-proxy-gilt-three.vercel.app/api';
 
-        if (!funFactsResponse || typeof funFactsResponse !== 'string') {
-          throw new Error('Empty or invalid fun facts response');
+        // 1️⃣ Erst Attraktionen generieren, falls leer
+        if (!trip.attractions || trip.attractions.length === 0) {
+          console.log('🧭 No attractions found — triggering generate-attractions...');
+          const attrRes = await fetch(`${baseUrl}/generate-attractions?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${trip.startDate}&endDate=${trip.endDate}`);
+          const attrData = await attrRes.json();
+          console.log('✅ Attractions response:', attrData);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // kurz warten
         }
 
-        const funFacts = funFactsResponse
-          .split('\n')
-          .filter(fact => fact.trim().match(/^\d+\./));
+        // 2️⃣ Dann das Itinerary generieren
+        const itineraryRes = await fetch(`${baseUrl}/generate-itinerary?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${trip.startDate}&endDate=${trip.endDate}`);
+        const itineraryData = await itineraryRes.json();
 
-        if (!funFacts.length) {
-          throw new Error('No valid fun facts found');
+        const updateData = {
+          needsRegeneration: false,
+          attractionsFetchedAt: new Date(),
+          itineraryFetchedAt: new Date(),
+        };
+
+        if (Array.isArray(itineraryData.attractions)) {
+          updateData.attractions = itineraryData.attractions;
+        }
+
+        if (Array.isArray(itineraryData.itinerary)) {
+          updateData.itinerary = itineraryData.itinerary;
         }
 
         await firestore()
@@ -477,21 +315,49 @@ const TripDetailsScreen = ({ navigation }) => {
           .doc(user.uid)
           .collection('trips')
           .doc(tripId)
-          .update({ funFacts, funFactsFetchedAt: Date.now() });
+          .update(updateData);
 
-        setTrip(prev => ({ ...prev, funFacts }));
-      } catch (error) {
-        console.error('❌ Error generating fun facts:', error);
-        showToast('error', 'Could not generate fun facts for this destination');
+        // 🔁 Lokalen trip-State aktualisieren
+        setTrip(prev => ({
+          ...prev,
+          ...updateData,
+        }));
+
+      } catch (err) {
+        console.error('❌ Regeneration failed:', err.message);
+        showToast('error', 'Regeneration failed', err.message);
+      } finally {
+        setLoadingRegeneration(false);
       }
-    }, 2000),
-    [trip, user?.uid, tripId]
-  );
+    };
 
-  const formatDate = timestamp => {
-    if (!timestamp?.toDate) return '';
-    return timestamp.toDate().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    if (trip?.needsRegeneration) {
+      triggerRegeneration();
+    }
+  }, [trip?.needsRegeneration]);
+
+  const formatDate = (input) => {
+    let date;
+
+    if (!input) return '';
+
+    if (typeof input === 'string') {
+      date = new Date(input);
+    } else if (input.toDate) {
+      date = input.toDate();
+    } else if (input instanceof Date) {
+      date = input;
+    } else {
+      return '';
+    }
+
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   };
+
 
   const getCompanionEmoji = companion => {
     switch ((companion || '').toLowerCase()) {
@@ -547,7 +413,7 @@ const TripDetailsScreen = ({ navigation }) => {
       />
 
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {loadingWeather || !trip ? (
+        {!trip || (!trip.weather && loadingWeather) ? (
           <SkeletonPlaceholder borderRadius={10}>
             <View style={styles.infoCard}>
               <View style={{ width: 180, height: 25, marginBottom: 10 }} />
@@ -565,11 +431,11 @@ const TripDetailsScreen = ({ navigation }) => {
                 <Label style={styles.infoDate}>
                   {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
                 </Label>
-                {weather && (
+                {trip.weather && (
                   <View style={styles.infoRow}>
                     <Label style={styles.weatherIcon}>🌤</Label>
                     <Label style={styles.infoText}>
-                      {weather.condition} · {weather.temp}°C
+                      {trip.weather.description} · {trip.weather.temperature}°C
                     </Label>
                   </View>
                 )}
@@ -605,7 +471,7 @@ const TripDetailsScreen = ({ navigation }) => {
                 showsMyLocationButton
                 rotateEnabled>
                 <Marker coordinate={region} title={trip.destination} />
-                {attractions.map((place, index) => (
+                {attractions.slice(0, 10).map((place, index) => (
                   <Marker
                     key={index}
                     coordinate={{ latitude: place.geometry.location.lat, longitude: place.geometry.location.lng }}
@@ -749,11 +615,9 @@ const TripDetailsScreen = ({ navigation }) => {
                 icon: <SVG.Itinerary width={24} height={24} fill="#007AFF" />,
                 action: async () => {
                   if (loadingItinerary) {
-                    showToast('info', 'Generating itinerary...', 'Please wait a few seconds and try again.');
+                    showToast('info', 'Loading itinerary...', 'Please wait a few seconds and try again.');
                     return;
                   }
-
-                  await regenerateItinerary();
 
                   if (itinerary.length > 0) {
                     const groupedItinerary = itinerary.reduce((acc, item) => {
@@ -825,6 +689,14 @@ const TripDetailsScreen = ({ navigation }) => {
           </View>
         </LinearGradient>
       </RBSheet>
+
+      {loadingRegeneration && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color={COLOR.primary} />
+          <Text style={styles.overlayText}>Creating your personalized trip plan...</Text>
+        </View>
+      )}
+
     </View>
   );
 };
@@ -1043,4 +915,22 @@ export const styles = StyleSheet.create({
     color: COLOR.dark,
     marginTop: hp(2),
   },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  overlayText: {
+    marginTop: 12,
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
 });
