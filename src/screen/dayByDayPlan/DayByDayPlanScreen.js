@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp(1),
   },
   dayTab: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#d1d1d1',
     borderRadius: 20,
     paddingVertical: hp(1),
     paddingHorizontal: wp(4),
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   },
   dayTabText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: COLOR.primary,
     fontWeight: '600',
   },
   dayTabTextSelected: {
