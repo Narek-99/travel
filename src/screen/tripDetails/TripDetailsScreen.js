@@ -448,9 +448,7 @@ const TripDetailsScreen = ({ navigation }) => {
         <View style={styles.mapContainer}>
           {loadingMap ? (
             <SkeletonPlaceholder borderRadius={12}>
-              <View style={styles.mapSkeleton}>
-                <View style={styles.mapSkeletonInner} />
-              </View>
+              <View style={{ height: 250, marginBottom: hp(2) }} />
             </SkeletonPlaceholder>
           ) : region ? (
             <Animated.View style={{ opacity: mapFadeAnim }}>
@@ -768,17 +766,6 @@ export const styles = StyleSheet.create({
   map: {
     height: 250,
     borderRadius: 12,
-  },
-  mapSkeleton: {
-    height: 250,
-    marginHorizontal: wp(0),
-    marginBottom: hp(2),
-  },
-  mapSkeletonInner: {
-    width: '100%',
-    height: 250,
-    borderRadius: 12,
-    backgroundColor: COLOR.lightGray,
   },
   attractionsContainer: {
     paddingHorizontal: wp(5),
