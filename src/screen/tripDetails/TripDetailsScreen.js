@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator, Dimensions } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -448,7 +448,7 @@ const TripDetailsScreen = ({ navigation }) => {
         <View style={styles.mapContainer}>
           {loadingMap ? (
             <SkeletonPlaceholder borderRadius={12}>
-              <View style={{ height: 250, marginBottom: hp(2) }} />
+              <View style={{ height: Dimensions.get('window').height - hp(20), marginBottom: hp(2) }} />
             </SkeletonPlaceholder>
           ) : region ? (
             <Animated.View style={{ opacity: mapFadeAnim }}>
@@ -492,82 +492,84 @@ const TripDetailsScreen = ({ navigation }) => {
               </MapView>
             </Animated.View>
           ) : null}
-        </View>
 
-        {loadingAttractions ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
-            {[...Array(3)].map((_, index) => (
-              <SkeletonPlaceholder key={index} borderRadius={16}>
-                <View style={styles.attractionCard}>
-                  <View style={styles.attractionImage} />
-                  <View style={{ height: 16, width: '80%', marginTop: 8 }} />
-                  <View style={{ height: 14, width: '60%', marginTop: 6 }} />
-                  <View style={{ height: 14, width: '90%', marginTop: 6 }} />
-                </View>
-              </SkeletonPlaceholder>
-            ))}
-          </ScrollView>
-        ) : (
-          <Animated.View style={{ opacity: attractionsFadeAnim }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
-              {attractions.map((place, index) => (
-                <TouchableOpacity
-                  key={index}
-                  activeOpacity={1}
-                  onPress={() => {
-                    const loc = place.geometry.location;
-                    mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800);
-                  }}
-                  style={styles.attractionCard}>
-                  {place.photos?.[0]?.photo_reference ? (
-                    <View style={{ position: 'relative' }}>
-                      <FastImage
-                        source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }}
-                        style={styles.attractionImage}
-                        resizeMode={FastImage.resizeMode.cover}
-                        onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
-                        onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
-                      />
-                      {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}
+          <View style={styles.attractionsOverlay}>
+            {loadingAttractions ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
+                {[...Array(3)].map((_, index) => (
+                  <SkeletonPlaceholder key={index} borderRadius={16}>
+                    <View style={styles.attractionCard}>
+                      <View style={styles.attractionImage} />
+                      <View style={{ height: 16, width: '80%', marginTop: 8 }} />
+                      <View style={{ height: 14, width: '60%', marginTop: 6 }} />
+                      <View style={{ height: 14, width: '90%', marginTop: 6 }} />
                     </View>
-                  ) : (
-                    <View style={styles.noImageBox}>
-                      <Text style={styles.noImageText}>Kein Bild</Text>
-                    </View>
-                  )}
-                  <View style={styles.placeDetailsContainer}>
-                    <Text style={styles.attractionName}>{place.name}</Text>
-                    <Text style={styles.attractionRating}>
-                      {place.types?.[0] ? (() => {
-                        const type = place.types[0].replace('_', ' ');
-                        return type.charAt(0).toUpperCase() + type.slice(1);
-                      })() : 'Attraction'}
-                    </Text>
-                    <Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text>
+                  </SkeletonPlaceholder>
+                ))}
+              </ScrollView>
+            ) : (
+              <Animated.View style={{ opacity: attractionsFadeAnim }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
+                  {attractions.map((place, index) => (
                     <TouchableOpacity
-                      onLongPress={() => {
-                        Clipboard.setString(place.vicinity);
-                        ReactNativeHapticFeedback.trigger('impactLight');
-                        showToast('success', 'Address copied!');
-                      }}>
-                      <Text style={styles.attractionAddress}>📍 {place.vicinity}</Text>
+                      key={index}
+                      activeOpacity={1}
+                      onPress={() => {
+                        const loc = place.geometry.location;
+                        mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 800);
+                      }}
+                      style={styles.attractionCard}>
+                      {place.photos?.[0]?.photo_reference ? (
+                        <View style={{ position: 'relative' }}>
+                          <FastImage
+                            source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }}
+                            style={styles.attractionImage}
+                            resizeMode={FastImage.resizeMode.cover}
+                            onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
+                            onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
+                          />
+                          {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}
+                        </View>
+                      ) : (
+                        <View style={styles.noImageBox}>
+                          <Text style={styles.noImageText}>Kein Bild</Text>
+                        </View>
+                      )}
+                      <View style={styles.placeDetailsContainer}>
+                        <Text style={styles.attractionName}>{place.name}</Text>
+                        <Text style={styles.attractionRating}>
+                          {place.types?.[0] ? (() => {
+                            const type = place.types[0].replace('_', ' ');
+                            return type.charAt(0).toUpperCase() + type.slice(1);
+                          })() : 'Attraction'}
+                        </Text>
+                        <Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text>
+                        <TouchableOpacity
+                          onLongPress={() => {
+                            Clipboard.setString(place.vicinity);
+                            ReactNativeHapticFeedback.trigger('impactLight');
+                            showToast('success', 'Address copied!');
+                          }}>
+                          <Text style={styles.attractionAddress}>📍 {place.vicinity}</Text>
+                        </TouchableOpacity>
+                        {place.opening_hours?.open_now !== undefined && (
+                          <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>
+                            🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}
+                          </Text>
+                        )}
+                        <Text
+                          style={styles.attractionLink}
+                          onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
+                          🔗 See on Google Maps
+                        </Text>
+                      </View>
                     </TouchableOpacity>
-                    {place.opening_hours?.open_now !== undefined && (
-                      <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>
-                        🕒 {place.opening_hours.open_now ? 'Open' : 'Closed'}
-                      </Text>
-                    )}
-                    <Text
-                      style={styles.attractionLink}
-                      onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}>
-                      🔗 See on Google Maps
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        )}
+                  ))}
+                </ScrollView>
+              </Animated.View>
+            )}
+          </View>
+        </View>
       </ScrollView>
 
       <Animated.View style={[styles.fab, { transform: [{ scale: fabScale }] }]}>
@@ -686,7 +688,6 @@ const TripDetailsScreen = ({ navigation }) => {
           <Text style={styles.overlayText}>Creating your personalized trip plan...</Text>
         </View>
       )}
-
     </View>
   );
 };
@@ -762,10 +763,17 @@ export const styles = StyleSheet.create({
   },
   mapContainer: {
     marginBottom: hp(2),
+    position: 'relative',
   },
   map: {
-    height: 250,
+    height: Dimensions.get('window').height - hp(20),
     borderRadius: 12,
+  },
+  attractionsOverlay: {
+    position: 'absolute',
+    bottom: hp(2),
+    left: 0,
+    right: 0,
   },
   attractionsContainer: {
     paddingHorizontal: wp(5),
@@ -774,7 +782,7 @@ export const styles = StyleSheet.create({
   attractionCard: {
     width: wp(64),
     marginRight: wp(4),
-    backgroundColor: COLOR.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Semi-transparent white background for better readability
     borderRadius: 16,
     padding: wp(3),
     shadowColor: COLOR.primary,
