@@ -16,6 +16,8 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import { callChatGptForResponse } from '../../apis/ChatGptApi';
+import { getFunFactsPrompt } from '../../apis/Prompts';
 
 // Debounce utility function
 const debounce = (func, wait) => {
@@ -116,7 +118,6 @@ const TripDetailsScreen = ({ navigation }) => {
         if (doc.exists) {
           const tripData = doc.data();
           setTrip(tripData);
-          // Load attractions and itinerary directly from Firestore
           setAttractions(tripData.attractions || []);
           setLoadingAttractions(false);
           const allItems = (tripData.itinerary || []).flatMap(day => (day.items || []));
@@ -132,31 +133,35 @@ const TripDetailsScreen = ({ navigation }) => {
       setPreviousTrip(trip);
       return;
     }
-    const criticalFieldsChanged =
-      trip.destination !== previousTrip.destination ||
-      getDateString(trip.startDate) !== getDateString(previousTrip.startDate) ||
-      getDateString(trip.endDate) !== getDateString(previousTrip.endDate);
-    if (criticalFieldsChanged) {
-      // Clear attractions and itinerary in Firestore
+    if (trip.destination !== previousTrip.destination) {
       firestore()
         .collection('users')
         .doc(user.uid)
         .collection('trips')
         .doc(tripId)
-        .update({
-          attractions: [],
-          attractionsFetchedAt: null,
-          itinerary: [],
-          itineraryFetchedAt: null,
-        })
-        .then(() => {
-          setAttractions([]);
-          setItinerary([]);
-        })
-        .catch(error => console.error('❌ Error clearing cached data:', error.message));
+        .update({ funFacts: [] })
+        .then(() => regenerateFunFacts(trip.destination))
+        .catch(error => console.error('❌ Error updating fun facts:', error.message));
     }
     setPreviousTrip(trip);
   }, [trip]);
+
+  const regenerateFunFacts = async (dest) => {
+    try {
+      const funFactsResponse = await callChatGptForResponse(getFunFactsPrompt(dest), "");
+      const newFunFacts = funFactsResponse.split('\n').filter(fact => fact.trim().match(/^\d+\./));
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('trips')
+        .doc(tripId)
+        .update({ funFacts: newFunFacts });
+      showToast('success', 'Fun facts updated!');
+    } catch (err) {
+      console.error('❌ Error regenerating fun facts:', err);
+      showToast('error', 'Failed to update fun facts');
+    }
+  };
 
   useEffect(() => {
     const fetchApiKeyAndGeocode = async () => {
@@ -274,14 +279,12 @@ const TripDetailsScreen = ({ navigation }) => {
         const { latitude, longitude } = trip.region;
         const baseUrl = 'https://openai-proxy-gilt-three.vercel.app/api';
 
-        // 1️⃣ Erst Attraktionen generieren, falls leer
         if (!trip.attractions || trip.attractions.length === 0) {
           const attrRes = await fetch(`${baseUrl}/generate-attractions?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`);
           const attrData = await attrRes.json();
-          await new Promise(resolve => setTimeout(resolve, 2000)); // kurz warten
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
-        // 2️⃣ Dann das Itinerary generieren
         const itineraryRes = await fetch(`${baseUrl}/generate-itinerary?lat=${latitude}&lng=${longitude}&tripId=${tripId}&uid=${user.uid}&startDate=${getDateString(trip.startDate)}&endDate=${getDateString(trip.endDate)}`);
         const itineraryData = await itineraryRes.json();
 
@@ -306,7 +309,6 @@ const TripDetailsScreen = ({ navigation }) => {
           .doc(tripId)
           .update(updateData);
 
-        // 🔁 Lokalen trip-State aktualisieren
         setTrip(prev => ({
           ...prev,
           ...updateData,
@@ -922,5 +924,4 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-
 });
