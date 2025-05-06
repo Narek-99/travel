@@ -540,12 +540,6 @@ const TripDetailsScreen = ({ navigation }) => {
                       )}
                       <View style={styles.placeDetailsContainer}>
                         <Text style={styles.attractionName}>{place.name}</Text>
-                        <Text style={styles.attractionRating}>
-                          {place.types?.[0] ? (() => {
-                            const type = place.types[0].replace('_', ' ');
-                            return type.charAt(0).toUpperCase() + type.slice(1);
-                          })() : 'Attraction'}
-                        </Text>
                         <Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text>
                         <TouchableOpacity
                           onLongPress={() => {
@@ -718,8 +712,8 @@ export const styles = StyleSheet.create({
     height: hp(25),
     overflow: 'hidden',
     backgroundColor: COLOR.white,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
     shadowColor: COLOR.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -809,7 +803,8 @@ export const styles = StyleSheet.create({
     paddingBottom: hp(2),
   },
   attractionCard: {
-    width: wp(64),
+    width: wp(55),
+    // height: 300,
     marginRight: wp(4),
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 16,
@@ -819,6 +814,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 5,
     elevation: 2,
+    flexDirection: 'column',
   },
   attractionImage: {
     width: '100%',
@@ -864,8 +860,8 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
   placeDetailsContainer: {
-    paddingTop: hp(1),
-    gap: hp(0.5),
+    flex: 1,
+    justifyContent: 'space-between',
   },
   fab: {
     position: 'absolute',
