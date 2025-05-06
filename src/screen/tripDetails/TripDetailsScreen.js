@@ -400,7 +400,6 @@ const TripDetailsScreen = ({ navigation }) => {
       ) : (
         <View style={styles.infoContainer}>
           <FastImage source={{ uri: tripImageUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-          <LinearGradient colors={['rgba(0, 0, 0, 1)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFillObject} />
 
           <TouchableOpacity
             onPress={() => {
@@ -418,6 +417,12 @@ const TripDetailsScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           <View style={styles.infoContent}>
+            <LinearGradient
+              colors={['rgba(0,0,0,0.8)', 'transparent', 'rgba(0,0,0,0.8)']}
+              locations={[0, 0.1, 0.9]}
+              style={styles.infoGradientOverlay}
+              pointerEvents="none"
+            />
             <Animated.View style={[styles.infoText, { opacity: infoFadeAnim }]}>
               <Label style={styles.infoDestination}>{trip.destination}</Label>
               <Label style={styles.infoDate}>
@@ -713,8 +718,8 @@ export const styles = StyleSheet.create({
     height: hp(25),
     overflow: 'hidden',
     backgroundColor: COLOR.white,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
     shadowColor: COLOR.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -744,7 +749,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: hp(5),
+    paddingTop: hp(6),
   },
   infoText: {
     ...TEXT_STYLE.textSmall,
@@ -937,5 +942,13 @@ export const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  infoGradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 0,
   },
 });
