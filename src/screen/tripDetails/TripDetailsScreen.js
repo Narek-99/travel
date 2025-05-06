@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, Text, Linking, TouchableOpacity, Animated, ActivityIndicator, Dimensions } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
-import { Label, AppHeader } from '../../components';
+import { Label } from '../../components';
 import { COLOR, TEXT_STYLE, hp, wp } from '../../enums/StyleGuide';
 import { SCREEN } from '../../enums/AppEnums';
 import { SVG } from '../../assets/svgs';
@@ -389,66 +389,64 @@ const TripDetailsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView />
-      <AppHeader
-        leftComp={
+      {!trip || (!trip.weather && loadingWeather) ? (
+        <SkeletonPlaceholder borderRadius={10}>
+          <View style={styles.infoCard}>
+            <View style={{ width: 180, height: 25, marginBottom: 10 }} />
+            <View style={{ width: 120, height: 18, marginBottom: 8 }} />
+            <View style={{ width: 160, height: 18 }} />
+          </View>
+        </SkeletonPlaceholder>
+      ) : (
+        <View style={styles.infoContainer}>
+          <FastImage source={{ uri: tripImageUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+          <LinearGradient colors={['rgba(0, 0, 0, 1)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFillObject} />
+
           <TouchableOpacity
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
               navigation.navigate(SCREEN.TRIPS);
-            }}>
-            <SVG.BackIcon fill={COLOR.dark} />
-          </TouchableOpacity>
-        }
-        title="Trip Details"
-        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
-      />
-
-      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {!trip || (!trip.weather && loadingWeather) ? (
-          <SkeletonPlaceholder borderRadius={10}>
-            <View style={styles.infoCard}>
-              <View style={{ width: 180, height: 25, marginBottom: 10 }} />
-              <View style={{ width: 120, height: 18, marginBottom: 8 }} />
-              <View style={{ width: 160, height: 18 }} />
+            }}
+            style={styles.backButton}>
+            <View style={styles.backCircle}>
+              <SVG.BackIcon fill={COLOR.white} />
             </View>
-          </SkeletonPlaceholder>
-        ) : (
-          <View style={styles.infoCardWithImage}>
-            <FastImage source={{ uri: tripImageUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-            <LinearGradient colors={['rgba(0, 0, 0, 1)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFillObject} />
-            <View style={styles.infoContent}>
-              <Animated.View style={[styles.infoText, { opacity: infoFadeAnim }]}>
-                <Label style={styles.infoDestination}>{trip.destination}</Label>
-                <Label style={styles.infoDate}>
-                  {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
-                </Label>
-                {trip.weather && (
-                  <View style={styles.infoRow}>
-                    <Label style={styles.weatherIcon}>🌤</Label>
-                    <Label style={styles.infoText}>
-                      {trip.weather.description} · {trip.weather.temperature}°C
-                    </Label>
-                  </View>
-                )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.editButton} onPress={handleEditTripPress}>
+            <SVG.Edit fill={COLOR.white} width={20} height={20} />
+          </TouchableOpacity>
+
+          <View style={styles.infoContent}>
+            <Animated.View style={[styles.infoText, { opacity: infoFadeAnim }]}>
+              <Label style={styles.infoDestination}>{trip.destination}</Label>
+              <Label style={styles.infoDate}>
+                {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
+              </Label>
+              {trip.weather && (
                 <View style={styles.infoRow}>
-                  <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
+                  <Label style={styles.weatherIcon}>🌤</Label>
                   <Label style={styles.infoText}>
-                    {trip.companion} · {trip.numberOfPersons || '1'} person
+                    {trip.weather.description} · {trip.weather.temperature}°C
                   </Label>
                 </View>
-              </Animated.View>
-              <TouchableOpacity style={styles.editButton} onPress={handleEditTripPress}>
-                <SVG.Edit fill={COLOR.white} width={20} height={20} />
-              </TouchableOpacity>
-            </View>
+              )}
+              <View style={styles.infoRow}>
+                <Label style={styles.weatherIcon}>{getCompanionEmoji(trip.companion)}</Label>
+                <Label style={styles.infoText}>
+                  {trip.companion} · {trip.numberOfPersons || '1'} person
+                </Label>
+              </View>
+            </Animated.View>
           </View>
-        )}
+        </View>
+      )}
 
+      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.mapContainer}>
           {loadingMap ? (
             <SkeletonPlaceholder borderRadius={12}>
-              <View style={{ height: Dimensions.get('window').height - hp(20), marginBottom: hp(2) }} />
+              <View style={{ height: Dimensions.get('window').height - hp(25), marginBottom: hp(2) }} />
             </SkeletonPlaceholder>
           ) : region ? (
             <Animated.View style={{ opacity: mapFadeAnim }}>
@@ -711,8 +709,8 @@ export const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  infoCardWithImage: {
-    height: hp(20),
+  infoContainer: {
+    height: hp(25),
     overflow: 'hidden',
     backgroundColor: COLOR.white,
     borderBottomLeftRadius: 20,
@@ -723,50 +721,76 @@ export const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  backButton: {
+    position: 'absolute',
+    top: hp(8),
+    left: wp(4),
+    zIndex: 1,
+  },
+  backCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLOR.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: COLOR.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   infoContent: {
     flex: 1,
-    padding: wp(4),
-    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: hp(5),
   },
   infoText: {
     ...TEXT_STYLE.textSmall,
     color: COLOR.white,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   infoDestination: {
     ...TEXT_STYLE.title,
     color: COLOR.white,
-    marginBottom: hp(0.5),
+    marginBottom: hp(1),
+    textAlign: 'center',
   },
   infoDate: {
     ...TEXT_STYLE.textSmall,
     color: COLOR.white,
-    marginBottom: hp(0.5),
+    marginBottom: hp(1),
+    textAlign: 'center',
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: wp(2),
-    marginBottom: hp(0.3),
+    marginBottom: hp(0.5),
   },
   weatherIcon: {
     fontSize: 18,
   },
   editButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: hp(8),
+    right: wp(4),
     backgroundColor: COLOR.primary,
     padding: wp(2.5),
     borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   mapContainer: {
     marginBottom: hp(2),
     position: 'relative',
   },
   map: {
-    height: Dimensions.get('window').height - hp(20),
+    height: Dimensions.get('window').height - hp(25),
     borderRadius: 12,
   },
   attractionsOverlay: {
@@ -782,7 +806,7 @@ export const styles = StyleSheet.create({
   attractionCard: {
     width: wp(64),
     marginRight: wp(4),
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Semi-transparent white background for better readability
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 16,
     padding: wp(3),
     shadowColor: COLOR.primary,
@@ -896,11 +920,6 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLOR.primary,
-  },
-  loadingText: {
-    textAlign: 'center',
-    color: COLOR.dark,
-    marginTop: hp(2),
   },
   overlay: {
     position: 'absolute',
