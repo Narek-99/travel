@@ -543,7 +543,10 @@ const TripDetailsScreen = ({ navigation }) => {
                                 showToast('success', 'Address copied!');
                               }}>
                               <Text>📍</Text>
-                              <Text onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)} style={styles.attractionAddress}>{place.vicinity}</Text>
+                              <Text
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)} style={styles.attractionAddress}>{place.vicinity}</Text>
                             </TouchableOpacity>
                             {place.opening_hours?.open_now !== undefined && (
                               <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>
@@ -838,6 +841,7 @@ export const styles = StyleSheet.create({
     color: '#1E90FF',
     marginTop: 4,
     textDecorationLine: 'underline',
+    paddingRight: wp(6)
   },
   attractionLink: {
     fontSize: 13,
