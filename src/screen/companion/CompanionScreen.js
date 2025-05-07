@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Animated } from 'react-native';
+import { SafeAreaView, StyleSheet, View, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
@@ -148,81 +148,90 @@ const CompanionScreen = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.screenContainer}>
-        <View style={styles.contentContainer}>
-          <SafeAreaView />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.screenContainer}
+        keyboardVerticalOffset={0}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.contentContainer}>
+            <SafeAreaView />
 
-          <View style={styles.headlineContainer}>
-            <Pressable
-              style={styles.iconWrapper}
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-                navigation.goBack();
-              }}>
-              <SVG.BackIcon fill="black" />
-            </Pressable>
+            <View style={styles.headlineContainer}>
+              <Pressable
+                style={styles.iconWrapper}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                  navigation.goBack();
+                }}>
+                <SVG.BackIcon fill="black" />
+              </Pressable>
 
-            <View style={styles.centerWrapper}>
-              <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-              <ProgressBar
-                progress={progress}
-                width={wp(40)}
-                height={hp(0.5)}
-                color={COLOR.primary}
-                borderRadius={5}
-              />
+              <View style={styles.centerWrapper}>
+                <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+                <ProgressBar
+                  progress={progress}
+                  width={wp(40)}
+                  height={hp(0.5)}
+                  color={COLOR.primary}
+                  borderRadius={5}
+                />
+              </View>
+
+              <Pressable
+                style={styles.iconWrapper}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                  tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+                }}>
+                <SVG.Close fill="black" />
+              </Pressable>
             </View>
 
-            <Pressable
-              style={styles.iconWrapper}
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-                tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-              }}>
-              <SVG.Close fill="black" />
-            </Pressable>
+            <Label style={styles.titleText}>{En.companionTitle}</Label>
+            <Label style={styles.subtitleText}>{En.companionSubtitle}</Label>
+
+            <View style={styles.optionsContainer}>
+              {options.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => handleSelect(option.value)}
+                  activeOpacity={0.8}>
+                  <Animated.View
+                    style={[
+                      styles.optionButton,
+                      selectedOption === option.value && {
+                        backgroundColor: COLOR.lightBlue,
+                        transform: [{ scale: animatedValues[option.value].scale }],
+                      },
+                      {
+                        opacity: Animated.add(
+                          selectedOption === option.value ? animatedValues[option.value].opacity : 1,
+                          selectedOption === option.value ? 0 : 0.2
+                        ),
+                      },
+                    ]}>
+                    <Label style={styles.optionText}>{option.label}</Label>
+                  </Animated.View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {shouldShowInput && (
+              <TextInput
+                style={styles.input}
+                placeholder="Enter number of persons"
+                placeholderTextColor="#999"
+                keyboardType="number-pad"
+                value={numberOfPersons}
+                onChangeText={setNumberOfPersons}
+              />
+            )}
           </View>
-
-          <Label style={styles.titleText}>{En.companionTitle}</Label>
-          <Label style={styles.subtitleText}>{En.companionSubtitle}</Label>
-
-          <View style={styles.optionsContainer}>
-            {options.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                onPress={() => handleSelect(option.value)}
-                activeOpacity={0.8}>
-                <Animated.View
-                  style={[
-                    styles.optionButton,
-                    selectedOption === option.value && {
-                      backgroundColor: COLOR.lightBlue,
-                      transform: [{ scale: animatedValues[option.value].scale }],
-                    },
-                    {
-                      opacity: Animated.add(
-                        selectedOption === option.value ? animatedValues[option.value].opacity : 1,
-                        selectedOption === option.value ? 0 : 0.2
-                      ),
-                    },
-                  ]}>
-                  <Label style={styles.optionText}>{option.label}</Label>
-                </Animated.View>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {shouldShowInput && (
-            <TextInput
-              style={styles.input}
-              placeholder="Enter number of persons"
-              placeholderTextColor="#999"
-              keyboardType="number-pad"
-              value={numberOfPersons}
-              onChangeText={setNumberOfPersons}
-            />
-          )}
-        </View>
+        </ScrollView>
 
         <View style={styles.submitContainer}>
           {tripId && (
@@ -240,7 +249,7 @@ const CompanionScreen = ({ navigation }) => {
             disabled={!selectedOption || (shouldShowInput && !numberOfPersons)}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };
