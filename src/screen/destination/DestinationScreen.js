@@ -378,6 +378,7 @@ const DestinationScreen = ({ navigation }) => {
           {tripId && (
             <Button
               style={styles.saveButton}
+              textStyle={[{ color: COLOR.primary }]}
               text={En.save}
               onPress={handleSaveDestination}
               disabled={!localDestination || !isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude}
