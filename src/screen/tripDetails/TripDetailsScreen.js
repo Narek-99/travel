@@ -627,7 +627,7 @@ const TripDetailsScreen = ({ navigation }) => {
                 },
               },
               {
-                label: 'Cool Facts',
+                label: 'Fun Facts',
                 icon: <SVG.Light width={24} height={24} fill="#F59E0B" />,
                 action: () => {
                   navigation.navigate(SCREEN.FUNFACTS, { tripId });

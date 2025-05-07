@@ -191,7 +191,7 @@ const FunFactsScreen = ({ navigation }) => {
             <SVG.BackIcon fill={COLOR.dark} />
           </TouchableOpacity>
         }
-        title={`Cool Facts about ${destination}`}
+        title="Fun Facts"
         titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
       />
       <View style={styles.headerImageContainer}>
