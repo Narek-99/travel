@@ -1,1 +1,53 @@
-node_modules
+# macOS
+.DS_Store
+
+# node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# iOS build artifacts
+ios/build/
+ios/Pods/
+ios/Podfile.lock
+
+# Xcode project files
+*.xcworkspace
+*.xcuserdata
+*.xcuserstate
+*.xcscheme
+*.pbxuser
+*.mode1v3
+*.mode2v3
+
+# Xcode DerivedData
+~/Library/Developer/Xcode/DerivedData/
+
+# Prettier/Editor configs
+.prettiercache
+.vscode/
+.idea/
+
+# Env files
+.env
+.env.*
+.xcode.env
+.xcode.env.local
+
+# Metro / React Native cache
+.expo/
+.expo-shared/
+*.expo
+.expo-cache/
+metro-cache/
+react-native-packager-cache-*
+
+# Bundle outputs (optional)
+*.jsbundle
+*.map
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini

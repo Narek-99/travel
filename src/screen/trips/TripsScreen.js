@@ -186,7 +186,7 @@ const TripsScreen = ({ navigation }) => {
             setTrips(prev => prev.filter(trip => trip.id !== tripId));
             ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions);
           } catch (error) {
-            console.error('❌ Fehler beim Löschen:', error);
+            console.error('❌ Error deleting trip:', error);
           }
         }
       }
@@ -254,16 +254,19 @@ const TripsScreen = ({ navigation }) => {
         }
         centerComp={
           <View style={styles.headerActions}>
-            {isSubscriptionLoading ? (
+            {(isSubscriptionLoading || isProductListLoading) ? (
               <SkeletonPlaceholder borderRadius={hp(1)}>
                 <SkeletonPlaceholder.Item width={wp(30)} height={hp(4)} />
               </SkeletonPlaceholder>
+            ) : isSubscribed ? (
+              <View style={styles.gptPlusButton}>
+                <SVG.Flash fill="#3B82F6" />
+                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Premium</Label>
+              </View>
             ) : (
               <Pressable style={styles.gptPlusButton} onPress={handlePremiumPress}>
                 <SVG.Flash fill="#3B82F6" />
-                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>
-                  {isSubscribed || isProductListLoading ? "  Premium" : "  Get Premium"}
-                </Label>
+                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Get Premium</Label>
               </Pressable>
             )}
           </View>
@@ -356,7 +359,7 @@ const TripsScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
-            rightOpenValue={-110}
+            rightOpenValue={-100}
             previewRowKey={'0'}
             previewOpenDelay={3000}
           />
@@ -374,7 +377,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp(1),
     borderRadius: hp(1),
     flexDirection: 'row',
-    gap: wp(1),
+    gap: wp(2),
     alignItems: 'center',
   },
   headerActions: { flexDirection: 'col', alignItems: 'center', gap: wp(3) },
