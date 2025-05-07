@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View, TextInput, TouchableOpacity, Text, Keyboard, Pressable, TouchableWithoutFeedback, Animated } from 'react-native';
+import { SafeAreaView, StyleSheet, View, TextInput, TouchableOpacity, Text, Keyboard, Pressable, TouchableWithoutFeedback, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
@@ -146,80 +146,89 @@ const BudgetScreen = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.screenContainer}>
-        <View style={styles.contentContainer}>
-          <SafeAreaView />
-          <View style={styles.headlineContainer}>
-            <Pressable
-              style={styles.iconWrapper}
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-                navigation.goBack();
-              }}>
-              <SVG.BackIcon fill="black" />
-            </Pressable>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.screenContainer}
+        keyboardVerticalOffset={0}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.contentContainer}>
+            <SafeAreaView />
+            <View style={styles.headlineContainer}>
+              <Pressable
+                style={styles.iconWrapper}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                  navigation.goBack();
+                }}>
+                <SVG.BackIcon fill="black" />
+              </Pressable>
 
-            <View style={styles.centerWrapper}>
-              <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
-              <ProgressBar
-                progress={progress}
-                width={wp(40)}
-                height={hp(0.5)}
-                color={COLOR.primary}
-                borderRadius={5}
-              />
+              <View style={styles.centerWrapper}>
+                <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+                <ProgressBar
+                  progress={progress}
+                  width={wp(40)}
+                  height={hp(0.5)}
+                  color={COLOR.primary}
+                  borderRadius={5}
+                />
+              </View>
+
+              <Pressable
+                style={styles.iconWrapper}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+                  tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
+                }}>
+                <SVG.Close fill="black" />
+              </Pressable>
             </View>
 
-            <Pressable
-              style={styles.iconWrapper}
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-                tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-              }}>
-              <SVG.Close fill="black" />
-            </Pressable>
+            <Label style={styles.titleText}>{En.budgetTitle}</Label>
+            <Label style={styles.subtitleText}>{En.budgetSubtitle}</Label>
+
+            <View style={styles.optionsContainer}>
+              {budgetOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => handleSelect(option.value)}
+                  activeOpacity={0.8}>
+                  <Animated.View
+                    style={[
+                      styles.optionButton,
+                      selectedBudget === option.value && {
+                        backgroundColor: COLOR.lightBlue,
+                        transform: [{ scale: animatedValues[option.value].scale }],
+                      },
+                      {
+                        opacity: Animated.add(
+                          selectedBudget === option.value ? animatedValues[option.value].opacity : 1,
+                          selectedBudget === option.value ? 0 : 0.2
+                        ),
+                      },
+                    ]}>
+                    <Text style={styles.optionText}>{option.label}</Text>
+                  </Animated.View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {selectedBudget === 'custom' && (
+              <TextInput
+                style={styles.input}
+                placeholder="Enter amount (in U.S. Dollars)"
+                placeholderTextColor="#999"
+                keyboardType="number-pad"
+                value={customAmount}
+                onChangeText={(text) => setCustomAmount(text.replace(/[^0-9]/g, ''))}
+              />
+            )}
           </View>
-
-          <Label style={styles.titleText}>{En.budgetTitle}</Label>
-          <Label style={styles.subtitleText}>{En.budgetSubtitle}</Label>
-
-          <View style={styles.optionsContainer}>
-            {budgetOptions.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                onPress={() => handleSelect(option.value)}
-                activeOpacity={0.8}>
-                <Animated.View
-                  style={[
-                    styles.optionButton,
-                    selectedBudget === option.value && {
-                      backgroundColor: COLOR.lightBlue,
-                      transform: [{ scale: animatedValues[option.value].scale }],
-                    },
-                    {
-                      opacity: Animated.add(
-                        selectedBudget === option.value ? animatedValues[option.value].opacity : 1,
-                        selectedBudget === option.value ? 0 : 0.2
-                      ),
-                    },
-                  ]}>
-                  <Text style={styles.optionText}>{option.label}</Text>
-                </Animated.View>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {selectedBudget === 'custom' && (
-            <TextInput
-              style={styles.input}
-              placeholder="Enter amount (in U.S. Dollars)"
-              placeholderTextColor="#999"
-              keyboardType="number-pad"
-              value={customAmount}
-              onChangeText={(text) => setCustomAmount(text.replace(/[^0-9]/g, ''))}
-            />
-          )}
-        </View>
+        </ScrollView>
 
         <View style={styles.submitContainer}>
           {tripId && (
@@ -237,7 +246,7 @@ const BudgetScreen = ({ navigation }) => {
             disabled={!selectedBudget || (selectedBudget === 'custom' && !customAmount)}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };
