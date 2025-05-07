@@ -1,27 +1,34 @@
-import { StyleSheet, View, ActivityIndicator } from 'react-native'
-import React, { memo } from 'react'
-import If from '../if'
-import Label from '../label'
-import Pressable from '../pressable'
-import { COLOR, commonStyles, TEXT_STYLE, hp } from '../../../enums/StyleGuide'
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import React, { memo } from 'react';
+import If from '../if';
+import Label from '../label';
+import Pressable from '../pressable';
+import { COLOR, commonStyles, TEXT_STYLE, hp } from '../../../enums/StyleGuide';
 
-const Button = ({ text, textStyle, style, onPress, icon, isLoading, }) => {
+const Button = ({ text, textStyle, style, onPress, icon, isLoading, disabled }) => {
     return (
-        <Pressable onPress={() => { onPress && onPress() }} style={[styles.container, style]}>
-
+        <Pressable
+            onPress={() => {
+                if (!disabled && onPress) {
+                    onPress();
+                }
+            }}
+            style={[styles.container, style, disabled && styles.disabled]}
+            disabled={disabled}
+        >
             <If condition={!isLoading} elseComp={<ActivityIndicator size="small" color="white" />}>
                 <If condition={icon}>
                     <View style={{ marginRight: '2.5%' }}>
-                        {icon} ...
+                        {icon}
                     </View>
                 </If>
-                <Label style={[styles.titleStyle, textStyle]}>{text}</Label>
+                <Label style={[styles.titleStyle, textStyle, disabled && { color: COLOR.gray }]}>{text}</Label>
             </If>
         </Pressable>
-    )
-}
+    );
+};
 
-export default memo(Button)
+export default memo(Button);
 
 const styles = StyleSheet.create({
     container: {
@@ -30,11 +37,15 @@ const styles = StyleSheet.create({
         borderRadius: hp(2),
         ...commonStyles.horizontalView,
         ...commonStyles.center,
-        backgroundColor: COLOR.lightBlue,
+        backgroundColor: COLOR.primary,
         ...commonStyles.borderStyle,
     },
     titleStyle: {
         ...TEXT_STYLE.bigTextSemiBold,
         color: COLOR.darkBlue,
     },
-})
+    disabled: {
+        backgroundColor: '#CCCCCC',
+        opacity: 0.6,
+    },
+});

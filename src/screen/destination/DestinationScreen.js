@@ -384,10 +384,7 @@ const DestinationScreen = ({ navigation }) => {
             />
           )}
           <Button
-            style={[
-              styles.nextButton,
-              { backgroundColor: isValidDestination && tripData.region?.latitude && tripData.region?.longitude ? COLOR.primary : '#CCCCCC' },
-            ]}
+            style={styles.nextButton}
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}

@@ -233,15 +233,7 @@ const CompanionScreen = ({ navigation }) => {
             />
           )}
           <Button
-            style={[
-              styles.nextButton,
-              {
-                backgroundColor:
-                  !selectedOption || (shouldShowInput && !numberOfPersons)
-                    ? COLOR.lightGray
-                    : COLOR.primary,
-              },
-            ]}
+            style={styles.nextButton}
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}

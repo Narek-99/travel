@@ -230,15 +230,7 @@ const BudgetScreen = ({ navigation }) => {
             />
           )}
           <Button
-            style={[
-              styles.nextButton,
-              {
-                backgroundColor:
-                  !selectedBudget || (selectedBudget === 'custom' && !customAmount)
-                    ? COLOR.lightGray
-                    : COLOR.primary,
-              },
-            ]}
+            style={styles.nextButton}
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}
