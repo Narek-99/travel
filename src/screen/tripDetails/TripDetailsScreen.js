@@ -534,26 +534,43 @@ const TripDetailsScreen = ({ navigation }) => {
                           )}
                           <View style={styles.placeDetailsContainer}>
                             <Text style={styles.attractionName}>{place.name}</Text>
-                            <Text style={styles.attractionRating}>⭐ {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews</Text>
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp(1) }}>
+                              <Text style={styles.attractionRating}>⭐</Text>
+                              <Text style={styles.attractionRating}>
+                                {place.rating ?? '—'} – {place.user_ratings_total ?? 0} Reviews
+                              </Text>
+                            </View>
+
                             <TouchableOpacity
-                              style={[{ flexDirection: 'row', alignItems: 'center', gap: wp(1) }]}
+                              style={{ flexDirection: 'row', alignItems: 'center', gap: wp(1) }}
                               onLongPress={() => {
                                 Clipboard.setString(place.vicinity);
                                 ReactNativeHapticFeedback.trigger('impactLight');
                                 showToast('success', 'Address copied!');
-                              }}>
+                              }}
+                            >
                               <Text>📍</Text>
                               <Text
                                 numberOfLines={1}
                                 ellipsizeMode="tail"
-                                onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)} style={styles.attractionAddress}>{place.vicinity}</Text>
-                            </TouchableOpacity>
-                            {place.opening_hours?.open_now !== undefined && (
-                              <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>
-                                🕒  {place.opening_hours.open_now ? 'Open' : 'Closed'}
+                                onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}`)}
+                                style={styles.attractionAddress}
+                              >
+                                {place.vicinity}
                               </Text>
+                            </TouchableOpacity>
+
+                            {place.opening_hours?.open_now !== undefined && (
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp(1) }}>
+                                <Text>🕒</Text>
+                                <Text style={[styles.attractionStatus, { color: place.opening_hours.open_now ? 'green' : 'red' }]}>
+                                  {place.opening_hours.open_now ? 'Open' : 'Closed'}
+                                </Text>
+                              </View>
                             )}
                           </View>
+
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -796,12 +813,12 @@ export const styles = StyleSheet.create({
     paddingBottom: hp(2),
   },
   attractionCard: {
-    width: wp(55),
-    // height: 300,
+    width: wp(50),
+    minHeight: 250,
     marginRight: wp(4),
     backgroundColor: 'rgba(255, 255, 255, 1)',
     borderRadius: 16,
-    padding: wp(3),
+    padding: wp(2),
     shadowColor: COLOR.primary,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -811,7 +828,7 @@ export const styles = StyleSheet.create({
   },
   attractionImage: {
     width: '100%',
-    height: 140,
+    height: 120,
     borderRadius: 12,
   },
   noImageBox: {
@@ -832,7 +849,7 @@ export const styles = StyleSheet.create({
     color: COLOR.dark,
   },
   attractionRating: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLOR.mediumGray,
     marginTop: hp(0.5),
   },
@@ -857,6 +874,7 @@ export const styles = StyleSheet.create({
   placeDetailsContainer: {
     flex: 1,
     justifyContent: 'space-between',
+    gap: 4
   },
   fab: {
     position: 'absolute',
