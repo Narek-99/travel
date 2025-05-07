@@ -141,8 +141,8 @@ const BookingScreen = ({ navigation }) => {
               });
             }
             if (data.startDate && data.endDate) {
-              const start = new Date(data.startDate.seconds * 1000);
-              const end = new Date(data.endDate.seconds * 1000);
+              const start = new Date(data.startDate);
+              const end = new Date(data.endDate);
               setStartFlightDate(start);
               setReturnFlightDate(end);
             }

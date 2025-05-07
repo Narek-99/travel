@@ -806,7 +806,7 @@ export const styles = StyleSheet.create({
     width: wp(55),
     // height: 300,
     marginRight: wp(4),
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
     borderRadius: 16,
     padding: wp(3),
     shadowColor: COLOR.primary,
