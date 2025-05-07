@@ -288,7 +288,7 @@ const TripsScreen = ({ navigation }) => {
           >
             <View style={styles.companionRow}>
               <Text style={styles.destinationText}>{item.destination}, {item.country}</Text>
-              <Text style={styles.dateText}>{formatDateRange(item.startDate, item.endDate)}</Text>
+              <Text style={[{ marginTop: hp(1) }, styles.dateText]}>{formatDateRange(item.startDate, item.endDate)}</Text>
               <View style={[styles.infoRow, { marginTop: hp(0.5) }]}>
                 <Label style={styles.dateText}>{getCompanionEmoji(item.companion)}</Label>
                 <Label style={styles.dateText}>
