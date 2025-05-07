@@ -359,7 +359,11 @@ const TripsScreen = ({ navigation }) => {
                 <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Premium</Label>
               </View>
             ) : (
-              <Pressable style={styles.gptPlusButton} onPress={handlePremiumPress}>
+              <Pressable
+                style={styles.gptPlusButton}
+                onPress={handlePremiumPress}
+                disabled={isSubscriptionLoading}
+              >
                 <SVG.Flash fill="#3B82F6" />
                 <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Get Premium</Label>
               </Pressable>
