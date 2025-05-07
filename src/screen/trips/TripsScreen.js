@@ -6,7 +6,8 @@ import {
   Pressable,
   Text,
   TouchableOpacity,
-  Alert
+  Alert,
+  Animated,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { AppHeader, Label } from '../../components';
@@ -34,6 +35,7 @@ const TripsScreen = ({ navigation }) => {
   const hasShownRating = useRef(false);
   const { isSubscribed, isProductListLoading, getAvailablePurchase } = useSubscriptions();
   const { showRating } = useRating();
+  const translateAnims = useRef({}).current; // Store animation values for each trip
 
   useEffect(() => {
     if (!hasShownRating.current) {
@@ -76,11 +78,18 @@ const TripsScreen = ({ navigation }) => {
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter(trip => trip.destination);
 
+      // Initialize translate animation for each trip
+      data.forEach(trip => {
+        if (!translateAnims[trip.id]) {
+          translateAnims[trip.id] = new Animated.Value(0);
+        }
+      });
+
       setTrips(data);
     } catch (error) {
       console.error('❌ Fehler beim Laden der Trips:', error);
     }
-  }, [user.uid]);
+  }, [user.uid, translateAnims]);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -107,7 +116,7 @@ const TripsScreen = ({ navigation }) => {
         fetchTrips();
         getAvailablePurchase();
       }
-    }, [user?.uid])
+    }, [user?.uid, fetchTrips])
   );
 
   useEffect(() => {
@@ -176,17 +185,28 @@ const TripsScreen = ({ navigation }) => {
         style: "destructive",
         onPress: async () => {
           try {
-            await firestore()
-              .collection('users')
-              .doc(user.uid)
-              .collection('trips')
-              .doc(tripId)
-              .delete();
+            // Start slide-out animation
+            Animated.timing(translateAnims[tripId], {
+              toValue: -wp(100), // Slide out to the left
+              duration: 200, // Faster 200ms animation
+              useNativeDriver: true,
+            }).start(async () => {
+              // After animation, delete from Firestore and update state
+              await firestore()
+                .collection('users')
+                .doc(user.uid)
+                .collection('trips')
+                .doc(tripId)
+                .delete();
 
-            setTrips(prev => prev.filter(trip => trip.id !== tripId));
-            ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions);
+              setTrips(prev => prev.filter(trip => trip.id !== tripId));
+              delete translateAnims[tripId]; // Clean up animation reference
+              ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions);
+            });
           } catch (error) {
             console.error('❌ Error deleting trip:', error);
+            // Reset animation if deletion fails
+            translateAnims[tripId].setValue(0);
           }
         }
       }
@@ -240,6 +260,81 @@ const TripsScreen = ({ navigation }) => {
     navigation.navigate(SCREEN.DESTINATION, { tripId });
   };
 
+  const renderSwipeItem = ({ item }) => (
+    <Animated.View style={{ transform: [{ translateX: translateAnims[item.id] }] }}>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.card}
+        onPress={() => {
+          ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
+          navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
+        }}
+      >
+        <View style={styles.cardImageContainer}>
+          {loadingImages[item.id] || !tripImages[item.id] ? (
+            <ImageSkeleton />
+          ) : (
+            <FastImage
+              source={{ uri: tripImages[item.id], priority: FastImage.priority.high }}
+              style={styles.cardImage}
+            />
+          )}
+
+          <LinearGradient
+            colors={['rgba(0, 0, 0, 0.9)', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.overlay}
+          >
+            <View style={styles.companionRow}>
+              <Text style={styles.destinationText}>{item.destination}, {item.country}</Text>
+              <Text style={styles.dateText}>{formatDateRange(item.startDate, item.endDate)}</Text>
+              <View style={[styles.infoRow, { marginTop: hp(0.5) }]}>
+                <Label style={styles.dateText}>{getCompanionEmoji(item.companion)}</Label>
+                <Label style={styles.dateText}>
+                  {item.companion} · {item.numberOfPersons || '1'} person
+                </Label>
+              </View>
+              <View style={styles.infoRow}>
+                <Label style={styles.dateText}>{getBudgetDisplay(item.budget, item.customAmount)}</Label>
+              </View>
+            </View>
+          </LinearGradient>
+
+          <Pressable
+            style={styles.editButton}
+            onPress={() => handleEditTripPress(item.id)}
+          >
+            <SVG.Edit fill={COLOR.white} width={15} height={15} />
+          </Pressable>
+
+          <TouchableOpacity
+            style={styles.detailButton}
+            onPress={() => {
+              ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
+              navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
+            }}
+          >
+            <Text style={styles.detailButtonText}>Details →</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+
+  const renderHiddenItem = ({ item }) => (
+    <Animated.View style={{ transform: [{ translateX: translateAnims[item.id] }], flex: 1 }}>
+      <View style={styles.hiddenRow}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => deleteTrip(item.id)}
+        >
+          <Text style={styles.deleteText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+
   return (
     <View style={styles.container}>
       <SafeAreaView />
@@ -290,75 +385,8 @@ const TripsScreen = ({ navigation }) => {
             data={trips}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.card}
-                onPress={() => {
-                  ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
-                  navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
-                }}
-              >
-                <View style={styles.cardImageContainer}>
-                  {loadingImages[item.id] || !tripImages[item.id] ? (
-                    <ImageSkeleton />
-                  ) : (
-                    <FastImage
-                      source={{ uri: tripImages[item.id], priority: FastImage.priority.high }}
-                      style={styles.cardImage}
-                    />
-                  )}
-
-                  <LinearGradient
-                    colors={['rgba(0, 0, 0, 0.9)', 'transparent']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.overlay}
-                  >
-                    <View style={styles.companionRow}>
-                      <Text style={styles.destinationText}>{item.destination}, {item.country}</Text>
-                      <Text style={styles.dateText}>{formatDateRange(item.startDate, item.endDate)}</Text>
-                      <View style={[styles.infoRow, { marginTop: hp(0.5) }]}>
-                        <Label style={styles.dateText}>{getCompanionEmoji(item.companion)}</Label>
-                        <Label style={styles.dateText}>
-                          {item.companion} · {item.numberOfPersons || '1'} person
-                        </Label>
-                      </View>
-                      <View style={styles.infoRow}>
-                        <Label style={styles.dateText}>{getBudgetDisplay(item.budget, item.customAmount)}</Label>
-                      </View>
-                    </View>
-                  </LinearGradient>
-
-                  <Pressable
-                    style={styles.editButton}
-                    onPress={() => handleEditTripPress(item.id)}
-                  >
-                    <SVG.Edit fill={COLOR.white} width={15} height={15} />
-                  </Pressable>
-
-                  <TouchableOpacity
-                    style={styles.detailButton}
-                    onPress={() => {
-                      ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
-                      navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
-                    }}
-                  >
-                    <Text style={styles.detailButtonText}>Details →</Text>
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            )}
-            renderHiddenItem={({ item }) => (
-              <View style={styles.hiddenRow}>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => deleteTrip(item.id)}
-                >
-                  <Text style={styles.deleteText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            renderItem={renderSwipeItem}
+            renderHiddenItem={renderHiddenItem}
             rightOpenValue={-100}
             previewRowKey={'0'}
             previewOpenDelay={3000}
@@ -428,14 +456,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
   },
-  // deleteButton: {
-  //   backgroundColor: 'red',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   width: 80,
-  //   height: '100%',
-  //   borderRadius: 10,
-  // },
   deleteText: {
     color: 'white',
     fontSize: 16,
