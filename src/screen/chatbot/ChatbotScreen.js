@@ -68,10 +68,11 @@ const ChatbotScreen = ({ navigation }) => {
     ).start();
   }, [ringAnim]);
 
-  const handleQuestionSubmit = async () => {
-    if (!userQuery.trim()) return;
+  const handleQuestionSubmit = async (question) => {
+    const queryToUse = question || userQuery;
+    if (!queryToUse.trim()) return;
     Keyboard.dismiss();
-    const userMessage = { id: Date.now(), text: userQuery, sender: 'user' };
+    const userMessage = { id: Date.now(), text: queryToUse, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     scrollViewRef.current.scrollToEnd({ animated: true });
     setUserQuery('');
@@ -80,7 +81,7 @@ const ChatbotScreen = ({ navigation }) => {
 
     const botMessage = { id: Date.now() + 1, text: '', sender: 'bot' };
     const enrichedPrompt = `
-      User's Question: "${userQuery}"
+      User's Question: "${queryToUse}"
       Context: The user is planning a trip to ${trip.destination}, from ${getDateString(trip.startDate)} to ${getDateString(trip.endDate)}. They will be traveling with ${trip.companion}, and they are interested in ${trip.activities?.join(', ') || 'various activities'}. The user prefers staying in ${trip.accommodation || 'any type of accommodation'} and has a budget described as ${trip.budget || 'medium'}.
       Answer the question taking into account these details about their trip.
     `;
@@ -119,6 +120,11 @@ const ChatbotScreen = ({ navigation }) => {
     return timestamp.toDate().toISOString().split('T')[0];
   };
 
+  const handleDefaultQuestionPress = (question) => {
+    setUserQuery(question);
+    handleQuestionSubmit(question);
+  };
+
   const MessageBubble = React.memo(({ item }) => {
     const isUser = item.sender === 'user';
 
@@ -154,7 +160,11 @@ const ChatbotScreen = ({ navigation }) => {
     );
   });
 
-
+  const defaultQuestions = [
+    "Which famous people have historical connections to this city?",
+    "Are there any areas we should avoid for safety reasons?",
+    "What are the best shopping areas and markets here?",
+  ];
 
   return (
     <View style={styles.screenContainer}>
@@ -197,7 +207,17 @@ const ChatbotScreen = ({ navigation }) => {
           >
             {messages.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>Ask Travel AI about your trip!</Text>
+                <View style={styles.defaultQuestionsContainer}>
+                  {defaultQuestions.map((question, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.defaultQuestionButton}
+                      onPress={() => handleDefaultQuestionPress(question)}
+                    >
+                      <Text style={styles.defaultQuestionText}>{question}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             ) : (
               messages.map((item, index) => <MessageBubble key={item.id ?? index} item={item} />)
@@ -349,6 +369,28 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: COLOR.mediumGray,
+    textAlign: 'center',
+  },
+  defaultQuestionsContainer: {
+    alignItems: 'center',
+  },
+  defaultQuestionButton: {
+    backgroundColor: COLOR.white,
+    borderRadius: 15,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(4),
+    marginVertical: hp(1),
+    shadowColor: COLOR.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    width: '80%',
+    alignItems: 'center',
+  },
+  defaultQuestionText: {
+    fontSize: 16,
+    color: COLOR.dark,
     textAlign: 'center',
   },
 });
