@@ -581,7 +581,7 @@ const TripDetailsScreen = ({ navigation }) => {
           ) : null}
           <Animated.View style={[styles.fab, { transform: [{ scale: fabScale }] }]}>
             <TouchableOpacity onPress={handleOptionsPress} activeOpacity={0.8} style={styles.fabInner}>
-              <SVG.Eagle width={28} height={28} />
+              <SVG.Eagle width={40} height={40} />
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -895,7 +895,7 @@ export const styles = StyleSheet.create({
     width: 66,
     height: 66,
     borderRadius: 33,
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.lightBlue,
     justifyContent: 'center',
     alignItems: 'center',
   },
