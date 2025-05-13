@@ -372,7 +372,7 @@ const TripsScreen = ({ navigation }) => {
         }
         rightComp={
           <Pressable onPress={handleAddTripNavigation}>
-            <SVG.Plus fill="black" />
+            <SVG.Plus width="24" height="24" fill="black" />
           </Pressable>
         }
       />
