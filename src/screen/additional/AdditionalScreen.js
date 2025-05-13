@@ -1,5 +1,5 @@
-import { SafeAreaView, StyleSheet, View, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Alert } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, View, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Alert, Animated, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide';
@@ -31,6 +31,8 @@ const AdditionalScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const route = useRoute();
   const tripId = route.params?.tripId;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
   const getDateString = (timestamp) => {
     if (!timestamp?.toDate && !timestamp) return '';
@@ -82,6 +84,30 @@ const AdditionalScreen = ({ navigation }) => {
   useEffect(() => {
     setTripData({ additionalInfo });
   }, [additionalInfo, setTripData]);
+
+  useEffect(() => {
+    if (loading) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [loading]);
 
   const handleSaveAdditionalInformation = async () => {
     try {
@@ -146,7 +172,6 @@ const AdditionalScreen = ({ navigation }) => {
       const data = await response.json();
       let weatherData = null;
 
-      // Handle current or forecast structure from WeatherAPI
       if (data?.forecast?.forecastday?.[0]) {
         const day = data.forecast.forecastday[0].day;
         weatherData = {
@@ -169,11 +194,9 @@ const AdditionalScreen = ({ navigation }) => {
     }
   };
 
-
   const handleSaveTrip = async () => {
     setLoading(true);
 
-    // Strict validation for required fields
     if (!user?.uid || !tripData.destination) {
       Toast.show({
         type: 'error',
@@ -227,11 +250,23 @@ const AdditionalScreen = ({ navigation }) => {
       tripToSave.createdAt = new Date().toISOString();
     }
 
-    // Convert dates to Firestore Timestamps
     try {
       const limitedDates = getLimitedDateRange(tripData.startDate, tripData.endDate);
       tripToSave.startDate = firestore.Timestamp.fromDate(limitedDates.from);
       tripToSave.endDate = firestore.Timestamp.fromDate(limitedDates.to);
+
+      // Validate the date range
+      const startDateObj = tripToSave.startDate.toDate();
+      const endDateObj = tripToSave.endDate.toDate();
+      if (endDateObj < startDateObj) {
+        throw new Error('End date cannot be before start date.');
+      }
+
+      // Format dates for API
+      const startDateStr = startDateObj.toISOString().split('T')[0];
+      const endDateStr = endDateObj.toISOString().split('T')[0];
+      console.log('API Date Range:', { startDate: startDateStr, endDate: endDateStr });
+
     } catch (error) {
       console.error('Error processing dates:', error.message);
       Toast.show({
@@ -245,18 +280,15 @@ const AdditionalScreen = ({ navigation }) => {
       return;
     }
 
-    // Use user-provided coordinates
     const latitude = tripData.region.latitude;
     const longitude = tripData.region.longitude;
 
-    // Fetch destination image and weather data
     const destinationImage = await fetchDestinationImage(tripData.destination);
     const weatherData = await fetchWeatherData(latitude, longitude);
 
     tripToSave.destinationImage = destinationImage;
     tripToSave.weather = weatherData;
 
-    // Remove any undefined fields from tripToSave
     Object.keys(tripToSave).forEach(key => {
       if (tripToSave[key] === undefined) {
         console.warn(`Undefined field detected in tripToSave: ${key}`);
@@ -273,17 +305,13 @@ const AdditionalScreen = ({ navigation }) => {
       const tripDoc = await tripRef.get();
       const needsRegeneration = isNewTrip || (tripDoc.exists && tripDoc.data().needsRegeneration);
 
-      // Log the tripToSave object for debugging
       console.log('TripToSave:', tripToSave);
 
-      // Save trip to Firestore
       await tripRef.set(tripToSave, { merge: true });
 
       console.log('Lat/Lng:', latitude, longitude);
 
-      // Generate attractions and itinerary if needed
       if (needsRegeneration) {
-        // Fetch attractions
         const placesResponse = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${latitude}&lng=${longitude}&startDate=${tripToSave.startDate.toDate().toISOString().split('T')[0]}&endDate=${tripToSave.endDate.toDate().toISOString().split('T')[0]}&uid=${user.uid}&tripId=${effectiveTripId}`);
         if (!placesResponse.ok) {
           const errorText = await placesResponse.text();
@@ -292,10 +320,8 @@ const AdditionalScreen = ({ navigation }) => {
         const placesData = await placesResponse.json();
         const attractions = placesData.results || [];
 
-        // Save attractions to Firestore
         await tripRef.update({ attractions, attractionsFetchedAt: Date.now() });
 
-        // Generate itinerary
         const itineraryResponse = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/generate-itinerary?lat=${latitude}&lng=${longitude}&tripId=${effectiveTripId}&uid=${user.uid}&startDate=${tripToSave.startDate.toDate().toISOString().split('T')[0]}&endDate=${tripToSave.endDate.toDate().toISOString().split('T')[0]}`);
         if (!itineraryResponse.ok) {
           const errorText = await itineraryResponse.text();
@@ -309,10 +335,8 @@ const AdditionalScreen = ({ navigation }) => {
         console.log("✅ Trip final content after save:", savedTrip.data());
       }
 
-      // Generate fun facts in background
       generateAiPlanInBackground(tripToSave, effectiveTripId);
 
-      // Navigate
       resetTrip();
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId: effectiveTripId });
 
@@ -384,13 +408,19 @@ const AdditionalScreen = ({ navigation }) => {
               textStyle={styles.buttonText}
               onPress={tripId ? handleSaveAdditionalInformation : handleSaveTrip}
               disabled={loading}
-            >
-              {loading && (
-                <ActivityIndicator style={{ marginLeft: 10 }} color="#fff" />
-              )}
-            </Button>
+            />
           </View>
         </View>
+
+        {loading && (
+          <Animated.View style={[styles.loadingOverlay, { opacity: fadeAnim }]}>
+            <Animated.View style={[styles.loadingContent, { transform: [{ scale: scaleAnim }] }]}>
+              <ActivityIndicator size="large" color={COLOR.white} />
+              <Text style={styles.loadingText}>Generating Your Trip...</Text>
+              <Text style={styles.loadingSubText}>Please wait, we're crafting your perfect journey!</Text>
+            </Animated.View>
+          </Animated.View>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -467,5 +497,38 @@ const styles = StyleSheet.create({
   centerWrapper: {
     flex: 1,
     alignItems: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContent: {
+    backgroundColor: COLOR.primary,
+    padding: wp(6),
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  loadingText: {
+    color: COLOR.white,
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: hp(2),
+  },
+  loadingSubText: {
+    color: COLOR.white,
+    fontSize: 14,
+    marginTop: hp(1),
+    opacity: 0.8,
   },
 });
