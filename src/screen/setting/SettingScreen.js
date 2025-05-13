@@ -18,11 +18,11 @@ const SettingScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false)
 
   const openPrivacyPolicy = () => {
-    Linking.openURL('https://docs.google.com/document/d/1v0fMkViBl7NbAKbzsyYGJ3f7OUHcXkdsvqVBu2MW1Fk/edit?usp=drive_link');
+    Linking.openURL('https://docs.google.com/document/d/1xcSSKsrhrdHGS9gcfYEqIboULPlLyzpASzGJG7VAM8I/edit?usp=sharing');
   };
 
   const openTermsOfUse = () => {
-    Linking.openURL('https://docs.google.com/document/d/14djrKrMOClxo0Qz_2wDxJ-iCphE4vmnx7Kvs1Y0n8fo/edit?usp=sharing');
+    Linking.openURL('https://docs.google.com/document/d/1VWEJDIbVF-zyO6a0BfqVauAcyT2pvAaUMbkwQ9m4WJY/edit?usp=sharing');
   };
 
   const handleSupportPress = () => {
