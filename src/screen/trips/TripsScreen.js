@@ -365,7 +365,7 @@ const TripsScreen = ({ navigation }) => {
                 disabled={isSubscriptionLoading}
               >
                 <SVG.Flash fill="#3B82F6" />
-                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Get Premium</Label>
+                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Try For Free</Label>
               </Pressable>
             )}
           </View>
