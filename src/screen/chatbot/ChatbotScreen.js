@@ -181,7 +181,7 @@ const ChatbotScreen = ({ navigation }) => {
               <SVG.BackIcon fill={COLOR.dark} />
             </TouchableOpacity>
           }
-          title="Travel AI"
+          title="Tripsy"
           titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
         />
         <View style={styles.contentContainer}>
@@ -230,7 +230,7 @@ const ChatbotScreen = ({ navigation }) => {
               placeholderTextColor={COLOR.lightGray}
               value={userQuery}
               onChangeText={setUserQuery}
-              placeholder="Ask Travel AI..."
+              placeholder="Ask Tripsy..."
               onSubmitEditing={handleQuestionSubmit}
             />
             <TouchableOpacity
