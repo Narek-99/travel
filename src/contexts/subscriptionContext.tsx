@@ -29,9 +29,9 @@ interface SubscriptionContextType {
 export const SubscriptionContext = createContext<SubscriptionContextType>({
   isSubscribed: false,
   SUB_IDS: [
-    'com.travel.ai.yearly.2',
-    'com.travel.ai.monthly.2',
-    'com.travel.ai.lifetime2',
+    'com.travel.ai.yearly.3',
+    'com.travel.ai.monthly.3',
+    'com.travel.ai.lifetime3',
   ],
   setisSubscribed: () => {},
   subsciptionList: [],
@@ -49,9 +49,9 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(false);
 
   const SUB_IDS = [
-    'com.travel.ai.yearly.2',
-    'com.travel.ai.monthly.2',
-    'com.travel.ai.lifetime2',
+    'com.travel.ai.yearly.3',
+    'com.travel.ai.monthly.3',
+    'com.travel.ai.lifetime3',
   ];
 
   const getSubs = async () => {
@@ -115,7 +115,7 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
         throw new Error(`Product ${id} not found`);
       }
 
-      if (id === 'com.travel.ai.lifetime2') {
+      if (id === 'com.travel.ai.lifetime3') {
         await requestPurchase({ sku: selectedSub.productId });
       } else {
         await requestSubscription({ sku: selectedSub.productId });
@@ -132,7 +132,7 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
 
   const hasSubscription = (userPurchases: Purchase[], availableSubs: (Product | Subscription)[]) => {
     for (const purchase of userPurchases) {
-      if (purchase.productId === 'com.travel.ai.lifetime2' && purchase.transactionReceipt) {
+      if (purchase.productId === 'com.travel.ai.lifetime3' && purchase.transactionReceipt) {
         if (new Date() <= new Date('2025-05-30')) return true;
       }
 

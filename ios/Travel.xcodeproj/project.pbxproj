@@ -16,7 +16,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8325B2972C78C610003B16DA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8325B2962C78C610003B16DA /* GoogleService-Info.plist */; };
 		882A5A1E2CA31FD5000C95F0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 882A5A1D2CA31FD5000C95F0 /* StoreKit.framework */; };
-		8856B3452DDAA5C0000BDDBE /* Tripsy - Travel & Trip Planner.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 8856B3442DDAA5C0000BDDBE /* Tripsy - Travel & Trip Planner.storekit */; };
+		8856B3472DDAA9FD000BDDBE /* Tripsy - Travel & Trip Planner.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 8856B3462DDAA9FD000BDDBE /* Tripsy - Travel & Trip Planner.storekit */; };
 		88DE19482DA3E24700C1C4D7 /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 88DE19472DA3E24700C1C4D7 /* Config.xcconfig */; };
 		8E9DFB92912745BEB00F9690 /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BAE4B46427444503A5FFA89C /* Poppins-Bold.ttf */; };
 		B2671C2A2DD19444F00FF49A /* Pods_Travel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7BFC81BB01CF9EA8281A32B /* Pods_Travel.framework */; };
@@ -59,7 +59,7 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Travel/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8325B2962C78C610003B16DA /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		882A5A1D2CA31FD5000C95F0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		8856B3442DDAA5C0000BDDBE /* Tripsy - Travel & Trip Planner.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Tripsy - Travel & Trip Planner.storekit"; sourceTree = "<group>"; };
+		8856B3462DDAA9FD000BDDBE /* Tripsy - Travel & Trip Planner.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Tripsy - Travel & Trip Planner.storekit"; sourceTree = "<group>"; };
 		88DE19472DA3E24700C1C4D7 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		A7BFC81BB01CF9EA8281A32B /* Pods_Travel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Travel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAE4B46427444503A5FFA89C /* Poppins-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Bold.ttf"; path = "../src/assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
@@ -156,7 +156,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				8856B3442DDAA5C0000BDDBE /* Tripsy - Travel & Trip Planner.storekit */,
+				8856B3462DDAA9FD000BDDBE /* Tripsy - Travel & Trip Planner.storekit */,
 				8325B2962C78C610003B16DA /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* Travel */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -287,7 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
-				8856B3452DDAA5C0000BDDBE /* Tripsy - Travel & Trip Planner.storekit in Resources */,
+				8856B3472DDAA9FD000BDDBE /* Tripsy - Travel & Trip Planner.storekit in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				8E9DFB92912745BEB00F9690 /* Poppins-Bold.ttf in Resources */,
 				88DE19482DA3E24700C1C4D7 /* Config.xcconfig in Resources */,
