@@ -25,7 +25,9 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.travel.ai.lifetime",
+      "productID" : "com.travel.ai.lifetime2
+
+",
       "referenceName" : "Life Time Offer",
       "type" : "NonConsumable"
     }
@@ -112,7 +114,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.travel.ai.monthly.1",
+          "productID" : "com.travel.ai.monthly.2",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly_1",
           "subscriptionGroupID" : "21661027",
@@ -145,7 +147,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.travel.ai.weekly.1",
+          "productID" : "com.travel.ai.weekly.2",
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "Weekly_1",
           "subscriptionGroupID" : "21661027",
@@ -173,7 +175,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.travel.ai.yearly.1",
+          "productID" : "com.travel.ai.yearly.2",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Yearly_1",
           "subscriptionGroupID" : "21661027",

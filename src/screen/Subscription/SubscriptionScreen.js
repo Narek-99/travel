@@ -14,7 +14,7 @@ const options = {
 };
 
 // Configurable offer end date
-const OFFER_END_DATE = new Date('2025-05-18');
+const OFFER_END_DATE = new Date('2025-05-22');
 
 const SubscriptionScreen = (props) => {
   const { navigation, route } = props;
