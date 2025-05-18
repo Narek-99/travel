@@ -1,0 +1,187 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "DE9362F3",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.0",
+      "familyShareable" : false,
+      "internalID" : "6746103309",
+      "localizations" : [
+        {
+          "description" : "Free Unlimited Lifetime Access",
+          "displayName" : "Unlimited Lifetime Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.travel.ai.lifetime2",
+      "referenceName" : "Life Time Offer 2",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6743438080",
+    "_developerTeamID" : "BMZCWCDGYJ",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 769304009.15166497,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21661027",
+      "localizations" : [
+
+      ],
+      "name" : "Subscriptions",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 5,
+          "internalID" : "6746103372",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly Access",
+              "displayName" : "Monthly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.travel.ai.monthly.2",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly_2",
+          "subscriptionGroupID" : "21661027",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.99",
+          "familyShareable" : false,
+          "groupNumber" : 6,
+          "internalID" : "6746103296",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Weekly Access",
+              "displayName" : "Weekly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.travel.ai.weekly.2",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Weekly_2",
+          "subscriptionGroupID" : "21661027",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "49.99",
+          "familyShareable" : false,
+          "groupNumber" : 4,
+          "internalID" : "6746103366",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Yearly Access",
+              "displayName" : "Yearly Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.travel.ai.yearly.2",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly_2",
+          "subscriptionGroupID" : "21661027",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
