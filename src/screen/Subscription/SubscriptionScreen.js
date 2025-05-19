@@ -33,12 +33,12 @@ const SubscriptionScreen = (props) => {
   const updatedPlans = [
     {
       text: "Yearly",
-      price: "$79.99",
+      price: subsciptionList[0]?.localizedPrice,
       time: "Year",
     },
     {
       text: "Monthly",
-      price: "$12.99",
+      price: subsciptionList[1]?.localizedPrice || "$12.99",
       time: "Month",
     },
   ];
