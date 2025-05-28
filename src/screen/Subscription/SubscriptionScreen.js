@@ -13,23 +13,18 @@ const options = {
   enableVibrateFallback: true,
 };
 
-// Configurable offer end date
-const OFFER_END_DATE = new Date('2025-05-22');
-
 const SubscriptionScreen = (props) => {
   const { navigation, route } = props;
   const { SUB_IDS, handlePurchase, getAvailablePurchase, subsciptionList, isProductListLoading } = useSubscriptions();
+  // Configurable offer end date
+  const OFFER_END_DATE = new Date('2025-05-31');
+  const lifetimeProduct = subsciptionList.find((sub) => sub.productId === SUB_IDS[2]);
+  const LIFETIME_REGULAR_PRICE = lifetimeProduct?.localizedPrice || "$29.99";
+  const isOfferActive = new Date() <= OFFER_END_DATE;
   const { params } = route || {};
   const from = params?.from;
 
-  const currentDate = new Date();
-  const isOfferActive = currentDate <= OFFER_END_DATE;
-
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
-  const pulseAnimation = useRef(new Animated.Value(1)).current;
-  const countdownAnimation = useRef(new Animated.Value(1)).current;
-  const { showRating } = useRating();
-
   const updatedPlans = [
     {
       text: "Yearly",
@@ -49,10 +44,15 @@ const SubscriptionScreen = (props) => {
       price: "100% Free",
       time: `⏳ Ends in ${timeLeft.days} Day${timeLeft.days !== 1 ? 's' : ''} & ${timeLeft.hours} Hour${timeLeft.hours !== 1 ? 's' : ''}`,
       badge: "Limited Offer",
+      realPrice: LIFETIME_REGULAR_PRICE,
     });
   }
 
-  const defaultSelectedIndex = isOfferActive ? updatedPlans.findIndex(p => p.text === "Lifetime") : 0;
+  const pulseAnimation = useRef(new Animated.Value(1)).current;
+  const countdownAnimation = useRef(new Animated.Value(1)).current;
+  const { showRating } = useRating();
+
+  const defaultSelectedIndex = isOfferActive ? 2 : 0;
 
   const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex);
   const [expandedIndex, setExpandedIndex] = useState(defaultSelectedIndex);
@@ -239,9 +239,21 @@ const SubscriptionScreen = (props) => {
                   )}
                 </View>
                 <View>
-                  <Label style={[styles.planPrice, isLifetime && styles.lifetimePlanPrice]}>
-                    {item.price}{!isLifetime && `/${item.time}`}
-                  </Label>
+                  {isLifetime && isOfferActive ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Label style={[styles.planPrice, { textDecorationLine: 'line-through', color: COLOR.gray }]}>
+                        {LIFETIME_REGULAR_PRICE}
+                      </Label>
+                      <Label style={[styles.planPrice, styles.lifetimePlanPrice]}>
+                        $0.00
+                      </Label>
+                    </View>
+                  ) : (
+                    <Label style={[styles.planPrice, isLifetime && styles.lifetimePlanPrice]}>
+                      {item.price}{!isLifetime && `/${item.time}`}
+                    </Label>
+                  )}
+
                   {isLifetime && isOfferActive && (
                     <Animated.View style={{ transform: [{ scale: countdownAnimation }] }}>
                       <Label style={styles.countdownText}>
