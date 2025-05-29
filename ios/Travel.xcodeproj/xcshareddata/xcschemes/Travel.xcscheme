@@ -62,9 +62,6 @@
             ReferencedContainer = "container:Travel.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <StoreKitConfigurationFileReference
-         identifier = "../Tripsy - Travel &amp; Trip Planner.storekit">
-      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

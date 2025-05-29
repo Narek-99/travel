@@ -132,9 +132,9 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
 
   const hasSubscription = (userPurchases: Purchase[], availableSubs: (Product | Subscription)[]) => {
     for (const purchase of userPurchases) {
-      if (purchase.productId === 'com.travel.ai.lifetime4' && purchase.transactionReceipt) {
-        if (new Date() <= new Date('2025-05-30')) return true;
-      }
+    if (purchase.productId === 'com.travel.ai.lifetime4' && purchase.transactionReceipt) {
+      return true;
+    }
 
       if (
         availableSubs.some(

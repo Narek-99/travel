@@ -17,7 +17,7 @@ const SubscriptionScreen = (props) => {
   const { navigation, route } = props;
   const { SUB_IDS, handlePurchase, getAvailablePurchase, subsciptionList, isProductListLoading } = useSubscriptions();
   // Configurable offer end date
-  const OFFER_END_DATE = new Date('2025-05-31');
+  const OFFER_END_DATE = new Date('2025-06-02');
   const lifetimeProduct = subsciptionList.find((sub) => sub.productId === SUB_IDS[2]);
   const LIFETIME_REGULAR_PRICE = lifetimeProduct?.localizedPrice || "$99.99";
   const isOfferActive = new Date() <= OFFER_END_DATE;
@@ -149,7 +149,7 @@ const SubscriptionScreen = (props) => {
     "Unlimited Trips to Any City Worldwide",
     "Best Flight & Hotel Deals",
     "Personalized Weather-Based Recommendations & Attractions",
-    "Smart AI Tripsy Chatbot Assistant",
+    "Smart AI Triposo Chatbot Assistant",
     "Fun Facts & City Secrets",
   ];
 
