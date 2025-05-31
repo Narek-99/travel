@@ -68,8 +68,8 @@ const ChatbotScreen = ({ navigation }) => {
     ).start();
   }, [ringAnim]);
 
-  const handleQuestionSubmit = async (question) => {
-    const queryToUse = question || userQuery;
+  const handleQuestionSubmit = async (questionParam) => {
+    const queryToUse = typeof questionParam === 'string' ? questionParam : userQuery;
     if (!queryToUse.trim()) return;
     Keyboard.dismiss();
     const userMessage = { id: Date.now(), text: queryToUse, sender: 'user' };
@@ -231,7 +231,7 @@ const ChatbotScreen = ({ navigation }) => {
               value={userQuery}
               onChangeText={setUserQuery}
               placeholder="Ask Triposo..."
-              onSubmitEditing={handleQuestionSubmit}
+              onSubmitEditing={() => handleQuestionSubmit()}
             />
             <TouchableOpacity
               style={styles.sendButton}
