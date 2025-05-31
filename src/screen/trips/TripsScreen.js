@@ -381,14 +381,24 @@ const TripsScreen = ({ navigation }) => {
         {trips.length === 0 ? (
           <Pressable onPress={handleAddTripNavigation} style={styles.emptyContainer}>
             <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
-            <Text style={styles.emptyTitle}>No trips yet!</Text>
-            <Text style={styles.emptySubtitle}>Let’s plan your first trip!</Text>
-            <View style={{ marginTop: hp(4), gap: hp(1.5), paddingHorizontal: wp(6) }}>
-              <Text style={styles.benefitText}>💡 Get a personalized day-by-day travel plan</Text>
-              <Text style={styles.benefitText}>🤖 Ask Triposo AI anything about your trip</Text>
-              <Text style={styles.benefitText}>✈️ Find cheapest flights and hotel deals</Text>
-              <Text style={styles.benefitText}>🧭 Get tips based on your preferences & interests</Text>
-              <Text style={styles.benefitText}>📍 Discover hidden gems & local secrets</Text>
+            <Text style={styles.emptyTitle}>NO TRIPS YET!</Text>
+            <Text style={styles.emptySubtitle}>Let’s Craft Your First Journey!</Text>
+            <View style={styles.benefitsContainer}>
+              <View style={styles.benefitItem}>
+                <Text style={styles.benefitText}>💡 Plan Your Trip Day by Day</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Text style={styles.benefitText}>🤖 Get Smart Tips from Triposo AI</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Text style={styles.benefitText}>✈️ Find Great Deals on Flights & Hotels</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Text style={styles.benefitText}>🧭 Get Tips Just for Your Interests</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Text style={styles.benefitText}>📍 Discover Secret Spots & Local Gems</Text>
+              </View>
             </View>
           </Pressable>
         ) : (
@@ -428,26 +438,59 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: wp(5),
   },
   plusIcon: {
-    marginBottom: hp(2),
+    marginBottom: hp(3),
   },
   emptyTitle: {
-    color: COLOR.black,
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: '#1E3A8A',
+    fontSize: 32,
+    fontWeight: '800',
     textAlign: 'center',
-    marginBottom: hp(1),
+    marginBottom: hp(1.5),
+    letterSpacing: 1,
   },
   emptySubtitle: {
-    color: COLOR.accent, // #FEA300
-    fontSize: 18,
-    fontWeight: '500',
+    color: '#F59E0B',
+    fontSize: 20,
+    fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.5,
-    textShadowColor: 'rgba(0,0,0,0.08)',
+    marginBottom: hp(4),
+    textShadowColor: 'rgba(0,0,0,0.1)',
     textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1.5,
+    textShadowRadius: 2,
+  },
+  benefitsContainer: {
+    backgroundColor: '#E8F0FE',
+    padding: wp(5),
+    borderRadius: hp(3.5),
+    borderLeftWidth: 5,
+    borderLeftColor: '#3B82F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
+    marginTop: hp(2),
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(3),
+    backgroundColor: 'transparent',
+    borderRadius: hp(1.5),
+    marginVertical: hp(0.1),
+  },
+  benefitText: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
+    textAlign: 'left',
+    marginLeft: wp(2),
   },
   tripCard: {
     backgroundColor: COLOR.darkGrey,

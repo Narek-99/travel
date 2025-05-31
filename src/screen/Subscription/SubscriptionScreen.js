@@ -28,12 +28,12 @@ const SubscriptionScreen = (props) => {
   const updatedPlans = [
     {
       text: "Yearly",
-      price: subsciptionList[0]?.localizedPrice,
+      price: subsciptionList[1]?.localizedPrice || "$12.99",
       time: "Year",
     },
     {
       text: "Monthly",
-      price: subsciptionList[1]?.localizedPrice || "$12.99",
+      price: subsciptionList[0]?.localizedPrice || "$12.99",
       time: "Month",
     },
   ];
@@ -241,9 +241,22 @@ const SubscriptionScreen = (props) => {
                 <View>
                   {isLifetime && isOfferActive ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Label style={[styles.planPrice, { textDecorationLine: 'line-through', color: COLOR.gray }]}>
-                        {LIFETIME_REGULAR_PRICE}
-                      </Label>
+                      <View style={{
+                        backgroundColor: '#F87171',
+                        paddingHorizontal: wp(2),
+                        paddingVertical: hp(0.3),
+                        borderRadius: 6
+                      }}>
+                        <Label style={{
+                          color: 'white',
+                          textDecorationLine: 'line-through',
+                          fontWeight: '600',
+                          fontSize: 12
+                        }}>
+                          {LIFETIME_REGULAR_PRICE}
+                        </Label>
+                      </View>
+
                       <Label style={[styles.planPrice, styles.lifetimePlanPrice]}>
                         $0.00
                       </Label>
@@ -273,7 +286,7 @@ const SubscriptionScreen = (props) => {
             </Label>
           ) : selectedIndex === 1 ? (
             <Label style={styles.noPaymentText}>
-              No Payment Now
+              No Payment Now!
             </Label>
           ) : <Label style={styles.noPaymentText}>
             Cancel Anytime
