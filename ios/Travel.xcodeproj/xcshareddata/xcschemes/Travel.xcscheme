@@ -63,7 +63,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../Tripsy - Get Your Guide.storekit">
+         identifier = "../Triposo - Vacation Planner.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
