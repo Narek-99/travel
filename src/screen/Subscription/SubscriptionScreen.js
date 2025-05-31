@@ -17,7 +17,7 @@ const SubscriptionScreen = (props) => {
   const { navigation, route } = props;
   const { SUB_IDS, handlePurchase, getAvailablePurchase, subsciptionList, isProductListLoading } = useSubscriptions();
   // Configurable offer end date
-  const OFFER_END_DATE = new Date('2025-06-02');
+  const OFFER_END_DATE = new Date('2025-06-04');
   const lifetimeProduct = subsciptionList.find((sub) => sub.productId === SUB_IDS[2]);
   const LIFETIME_REGULAR_PRICE = lifetimeProduct?.localizedPrice || "$99.99";
   const isOfferActive = new Date() <= OFFER_END_DATE;

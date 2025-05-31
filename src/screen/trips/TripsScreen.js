@@ -383,6 +383,13 @@ const TripsScreen = ({ navigation }) => {
             <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
             <Text style={styles.emptyTitle}>No trips yet!</Text>
             <Text style={styles.emptySubtitle}>Let’s plan your first trip!</Text>
+            <View style={{ marginTop: hp(4), gap: hp(1.5), paddingHorizontal: wp(6) }}>
+              <Text style={styles.benefitText}>💡 Get a personalized day-by-day travel plan</Text>
+              <Text style={styles.benefitText}>🤖 Ask Triposo AI anything about your trip</Text>
+              <Text style={styles.benefitText}>✈️ Find cheapest flights and hotel deals</Text>
+              <Text style={styles.benefitText}>🧭 Get tips based on your preferences & interests</Text>
+              <Text style={styles.benefitText}>📍 Discover hidden gems & local secrets</Text>
+            </View>
           </Pressable>
         ) : (
           <SwipeListView
@@ -571,6 +578,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  benefitText: {
+    textAlign: 'center',
+    color: COLOR.dark,
+    fontSize: 15,
+    fontWeight: '500',
+    lineHeight: 22,
+  }
 });
 
 export default TripsScreen;
