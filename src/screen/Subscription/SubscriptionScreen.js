@@ -23,17 +23,18 @@ const SubscriptionScreen = (props) => {
   const isOfferActive = new Date() <= OFFER_END_DATE;
   const { params } = route || {};
   const from = params?.from;
+  console.log('subsciptionList :', subsciptionList);
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
   const updatedPlans = [
     {
       text: "Yearly",
-      price: subsciptionList[0]?.localizedPrice || "$12.99",
+      price: subsciptionList.find((sub) => sub.productId === SUB_IDS[0])?.localizedPrice || "$12.99",
       time: "Year",
     },
     {
       text: "Monthly",
-      price: subsciptionList[1]?.localizedPrice || "$12.99",
+      price: subsciptionList.find((sub) => sub.productId === SUB_IDS[1])?.localizedPrice || "$12.99",
       time: "Month",
     },
   ];
