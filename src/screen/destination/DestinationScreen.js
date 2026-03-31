@@ -1,4 +1,14 @@
-import { SafeAreaView, StyleSheet, View, TextInput, FlatList, TouchableOpacity, Pressable, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
@@ -40,7 +50,9 @@ const DestinationScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
-        const response = await fetch('https://openai-proxy-gilt-three.vercel.app/api/get-google-api-key');
+        const response = await fetch(
+          'https://openai-proxy-gilt-three.vercel.app/api/get-google-api-key'
+        );
         const { apiKey } = await response.json();
         setGoogleApiKey(apiKey);
       } catch (error) {
@@ -66,7 +78,7 @@ const DestinationScreen = ({ navigation }) => {
         .collection('trips')
         .doc(tripId)
         .get()
-        .then(doc => {
+        .then((doc) => {
           if (doc.exists) {
             const { destination, country, region } = doc.data();
             setLocalDestination(destination || '');
@@ -78,7 +90,7 @@ const DestinationScreen = ({ navigation }) => {
             }
           }
         })
-        .catch(error => {
+        .catch((error) => {
           Toast.show({
             type: 'error',
             text1: 'Load Error',
@@ -123,7 +135,7 @@ const DestinationScreen = ({ navigation }) => {
         }
       );
 
-      const predictions = response.data.predictions;
+      const predictions = response?.data?.predictions || [];
       const cities = await Promise.all(
         predictions.map(async (prediction) => {
           const detailsResponse = await axios.get(
@@ -138,8 +150,15 @@ const DestinationScreen = ({ navigation }) => {
             }
           );
 
-          const addressComponents = detailsResponse.data.result.address_components;
-          const geometry = detailsResponse.data.result.geometry;
+          const detailsStatus = detailsResponse?.data?.status;
+          const detailsResult = detailsResponse?.data?.result;
+
+          if (detailsStatus !== 'OK' || !detailsResult) {
+            return null;
+          }
+
+          const addressComponents = detailsResult.address_components || [];
+          const geometry = detailsResult.geometry;
           let city = '';
           let country = '';
 
@@ -151,22 +170,28 @@ const DestinationScreen = ({ navigation }) => {
             }
           }
 
-          if (!geometry?.location?.lat || !geometry?.location?.lng) {
-            throw new Error(`No coordinates found for ${city}`);
+          const latitude = geometry?.location?.lat;
+          const longitude = geometry?.location?.lng;
+
+          if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+            return null;
           }
 
           return {
             id: prediction.place_id,
-            city: city || prediction.structured_formatting.main_text,
+            city: city || prediction?.structured_formatting?.main_text,
             country: country || 'Unknown',
             type: 'CITY',
-            latitude: geometry.location.lat,
-            longitude: geometry.location.lng,
+            latitude,
+            longitude,
           };
         })
       );
 
-      const validCities = cities.filter(city => city.city && city.country !== 'Unknown' && city.latitude && city.longitude).slice(0, 5);
+      const validCities = cities
+        .filter((city) => city && city.city && city.latitude && city.longitude)
+        .slice(0, 5);
+
       setSuggestions(validCities);
     } catch (error) {
       setSuggestions([]);
@@ -209,7 +234,12 @@ const DestinationScreen = ({ navigation }) => {
   };
 
   const handleSaveDestination = async () => {
-    if (!localDestination || !user?.uid || !tripData.region?.latitude || !tripData.region?.longitude) {
+    if (
+      !localDestination ||
+      !user?.uid ||
+      !tripData.region?.latitude ||
+      !tripData.region?.longitude
+    ) {
       Toast.show({
         type: 'error',
         text1: 'Missing Data',
@@ -241,7 +271,6 @@ const DestinationScreen = ({ navigation }) => {
             itinerary: [],
             itineraryFetchedAt: needsRegeneration ? null : firestore.FieldValue.serverTimestamp(),
             needsRegeneration: needsRegeneration,
-            // Clear funFacts if destination has changed to trigger regeneration
             funFacts: needsRegeneration ? [] : firestore.FieldValue.delete(),
           },
           { merge: true }
@@ -318,12 +347,15 @@ const DestinationScreen = ({ navigation }) => {
                 resetTrip();
                 setIsValidDestination(false);
                 navigation.goBack();
-              }}>
+              }}
+            >
               <SVG.BackIcon fill="black" />
             </Pressable>
 
             <View style={styles.centerWrapper}>
-              <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+              <Label style={styles.stepText}>
+                Step {currentStep} of {totalSteps}
+              </Label>
               <ProgressBar
                 progress={progress}
                 width={wp(40)}
@@ -365,7 +397,9 @@ const DestinationScreen = ({ navigation }) => {
                       style={styles.dropdownItem}
                       onPress={() => handleCitySelect(item)}
                     >
-                      <Label style={styles.dropdownItemText}>{item.city}, {item.country}</Label>
+                      <Label style={styles.dropdownItemText}>
+                        {item.city}, {item.country}
+                      </Label>
                     </TouchableOpacity>
                   )}
                 />
@@ -381,7 +415,12 @@ const DestinationScreen = ({ navigation }) => {
               textStyle={[{ color: COLOR.primary }]}
               text={En.save}
               onPress={handleSaveDestination}
-              disabled={!localDestination || !isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude}
+              disabled={
+                !localDestination ||
+                !isValidDestination ||
+                !tripData.region?.latitude ||
+                !tripData.region?.longitude
+              }
             />
           )}
           <Button
@@ -389,7 +428,9 @@ const DestinationScreen = ({ navigation }) => {
             text={En.next}
             textStyle={styles.buttonText}
             onPress={handleNext}
-            disabled={!isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude}
+            disabled={
+              !isValidDestination || !tripData.region?.latitude || !tripData.region?.longitude
+            }
           />
         </View>
       </View>
@@ -482,7 +523,7 @@ const styles = StyleSheet.create({
   dropdownWrapper: {
     position: 'relative',
     zIndex: 10,
-    marginTop: hp(2)
+    marginTop: hp(2),
   },
   dropdown: {
     backgroundColor: '#fff',

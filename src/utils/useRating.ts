@@ -36,7 +36,6 @@ export default function useRating() {
       reviewAsked.current = true;
       await setItem(format(new Date(), 'MM/dd/yyyy'));
     } catch (error) {
-      console.log('Error showing rating prompt:', error);
       // If the prompt fails, we still mark it as asked to avoid repeated attempts
       // This aligns with the behavior of react-native-store-review
       reviewAsked.current = true;

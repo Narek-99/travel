@@ -23,7 +23,6 @@ const SubscriptionScreen = (props) => {
   const isOfferActive = new Date() <= OFFER_END_DATE;
   const { params } = route || {};
   const from = params?.from;
-  console.log('subsciptionList :', subsciptionList);
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
   const updatedPlans = [
@@ -136,8 +135,6 @@ const SubscriptionScreen = (props) => {
       if (purchaseSuccess) {
         navigation.navigate(SCREEN.TRIPS);
         setTimeout(() => showRating(true), 500);
-      } else {
-        console.log("Purchase was canceled or failed.");
       }
     } catch (error) {
       console.error('handlePurchaseError ----->', error);

@@ -23,7 +23,6 @@ export async function saveData(collection, doc, jsonObject, merge = true) {
         .catch(function (error) {
             console.error('Error writing document: ', error);
         });
-    console.log('Document successfully written!');
 }
 
 export const DeleteMessages = async (collection, userId) => {

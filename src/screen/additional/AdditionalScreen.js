@@ -265,7 +265,6 @@ const AdditionalScreen = ({ navigation }) => {
       // Format dates for API
       const startDateStr = startDateObj.toISOString().split('T')[0];
       const endDateStr = endDateObj.toISOString().split('T')[0];
-      console.log('API Date Range:', { startDate: startDateStr, endDate: endDateStr });
 
     } catch (error) {
       console.error('Error processing dates:', error.message);
@@ -305,11 +304,7 @@ const AdditionalScreen = ({ navigation }) => {
       const tripDoc = await tripRef.get();
       const needsRegeneration = isNewTrip || (tripDoc.exists && tripDoc.data().needsRegeneration);
 
-      console.log('TripToSave:', tripToSave);
-
       await tripRef.set(tripToSave, { merge: true });
-
-      console.log('Lat/Lng:', latitude, longitude);
 
       if (needsRegeneration) {
         const placesResponse = await fetch(`https://openai-proxy-gilt-three.vercel.app/api/places?lat=${latitude}&lng=${longitude}&startDate=${tripToSave.startDate.toDate().toISOString().split('T')[0]}&endDate=${tripToSave.endDate.toDate().toISOString().split('T')[0]}&uid=${user.uid}&tripId=${effectiveTripId}`);
@@ -332,7 +327,6 @@ const AdditionalScreen = ({ navigation }) => {
         await tripRef.update({ itinerary: itineraryData.itinerary, itineraryFetchedAt: Date.now() });
         await tripRef.update({ needsRegeneration: false });
         const savedTrip = await tripRef.get();
-        console.log("✅ Trip final content after save:", savedTrip.data());
       }
 
       generateAiPlanInBackground(tripToSave, effectiveTripId);
