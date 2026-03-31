@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '16'
+platform :ios, '16.0'
 
 prepare_react_native_project!
 
@@ -20,17 +20,17 @@ end
 target 'Travel' do
   rn_maps_path = '../node_modules/react-native-maps'
   pod 'react-native-google-maps', :path => rn_maps_path
-  
+
   config = use_native_modules!
 
   use_frameworks! :linkage => :static
+
   use_react_native!(
     :path => config[:reactNativePath],
     :app_path => "#{Pod::Config.instance.installation_root}/..",
     :hermes_enabled => true
   )
 
-  # Add react-native-config here
   pod 'react-native-config', :path => '../node_modules/react-native-config'
 
   # Firebase pods
@@ -48,7 +48,7 @@ target 'Travel' do
       target.build_configurations.each do |config|
         config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
         config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
       end
     end
 
@@ -71,5 +71,16 @@ target 'Travel' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    fmt_base = File.join(installer.sandbox.pod_dir('fmt'), 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      content = File.read(fmt_base)
+      patched = content.gsub(/^#\s*define FMT_USE_CONSTEVAL 1$/, '#define FMT_USE_CONSTEVAL 0')
+      if patched != content
+        File.chmod(0644, fmt_base)
+        File.write(fmt_base, patched)
+        puts "Patched fmt: FMT_USE_CONSTEVAL=0"
+      end
+    end
   end
 end
