@@ -35,7 +35,6 @@ const TripsScreen = ({ navigation }) => {
   const translateAnims = useRef({}).current; // Store animation values for each trip
 
   useEffect(() => {
-    console.log('user.uid :', user.uid);
     if (user?.uid && !hasShownRating.current) {
       showRating();
       hasShownRating.current = true;
