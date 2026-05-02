@@ -19,6 +19,16 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 import { callChatGptForResponse } from '../../apis/ChatGptApi';
 import { getFunFactsPrompt } from '../../apis/Prompts';
 
+const fallbackAttractionImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80';
+
+const getPlacePhotoUrl = photoReference => {
+  if (!photoReference) {
+    return null;
+  }
+
+  return `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${encodeURIComponent(photoReference)}`;
+};
+
 // Debounce utility function
 const debounce = (func, wait) => {
   let timeout;
@@ -61,6 +71,7 @@ const TripDetailsScreen = ({ navigation }) => {
   const mapFadeAnim = useFadeIn();
   const attractionsFadeAnim = useFadeIn();
   const [loadedImages, setLoadedImages] = useState({});
+  const [failedImages, setFailedImages] = useState({});
   const [tripImageUrl, setTripImageUrl] = useState(null);
   const bottomSheetRef = useRef(null);
   const fabScale = useRef(new Animated.Value(1)).current;
@@ -71,6 +82,13 @@ const TripDetailsScreen = ({ navigation }) => {
   const [weather, setWeather] = useState(null);
   const weatherFetchRef = useRef({ lat: null, lon: null, date: null });
   const [loadingRegeneration, setLoadingRegeneration] = useState(false);
+
+  const getAttractionImageSource = (photoReference, key) => {
+    const photoUrl = getPlacePhotoUrl(photoReference);
+    return {
+      uri: !failedImages[key] && photoUrl ? photoUrl : fallbackAttractionImage,
+    };
+  };
 
   const getDateString = timestamp => {
     if (!timestamp?.toDate && !timestamp) return '';
@@ -424,9 +442,10 @@ const TripDetailsScreen = ({ navigation }) => {
                       <View style={{ backgroundColor: 'white', paddingBottom: 10, width: 200, alignItems: 'center', borderRadius: 8 }}>
                         {place.photos?.[0]?.photo_reference ? (
                           <Image
-                            source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}` }}
+                            source={getAttractionImageSource(place.photos[0].photo_reference, `callout-${place.place_id}`)}
                             style={{ width: 200, height: 100, borderRadius: 8 }}
                             resizeMode="cover"
+                            onError={() => setFailedImages(prev => ({ ...prev, [`callout-${place.place_id}`]: true }))}
                           />
                         ) : (
                           <Text>No Image</Text>
@@ -518,12 +537,13 @@ const TripDetailsScreen = ({ navigation }) => {
                           style={styles.attractionCard}>
                           {place.photos?.[0]?.photo_reference ? (
                             <View style={{ position: 'relative' }}>
-                              <FastImage
-                                source={{ uri: `https://openai-proxy-gilt-three.vercel.app/api/photo?photoReference=${place.photos[0].photo_reference}`, priority: FastImage.priority.normal }}
+                              <Image
+                                source={getAttractionImageSource(place.photos[0].photo_reference, `card-${place.place_id}`)}
                                 style={styles.attractionImage}
-                                resizeMode={FastImage.resizeMode.cover}
+                                resizeMode="cover"
                                 onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
                                 onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
+                                onError={() => setFailedImages(prev => ({ ...prev, [`card-${place.place_id}`]: true }))}
                               />
                               {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.primary} />}
                             </View>
