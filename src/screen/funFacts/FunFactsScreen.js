@@ -178,7 +178,7 @@ const FunFactsScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient colors={['#FFFFFF', '#F1F5F9']} style={styles.screenContainer}>
+    <LinearGradient colors={['#002953', '#063D78', '#001B39']} style={styles.screenContainer}>
       <SafeAreaView />
       <AppHeader
         leftComp={
@@ -188,11 +188,11 @@ const FunFactsScreen = ({ navigation }) => {
               navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
             }}
           >
-            <SVG.BackIcon fill={COLOR.dark} />
+            <SVG.BackIcon fill={COLOR.white} />
           </TouchableOpacity>
         }
         title="Fun Facts"
-        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
+        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.white }}
       />
       <View style={styles.headerImageContainer}>
         {tripImageUrl ? (
@@ -214,7 +214,7 @@ const FunFactsScreen = ({ navigation }) => {
       </View>
       <View style={styles.contentContainer}>
         {loading ? (
-          <ActivityIndicator size="large" color={COLOR.dark} style={styles.loader} />
+          <ActivityIndicator size="large" color={COLOR.accent} style={styles.loader} />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : funFacts.length > 0 ? (
@@ -238,7 +238,7 @@ const FunFactsScreen = ({ navigation }) => {
                       onPress={() => handleCopyFact(fact, index)}
                       activeOpacity={0.8}
                     >
-                      <SVG.Copy width={20} height={20} fill={COLOR.dark} />
+                      <SVG.Copy width={20} height={20} fill={COLOR.primary} />
                     </TouchableOpacity>
                   </Animated.View>
                 </Animated.View>
@@ -258,14 +258,14 @@ export default FunFactsScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.background,
+    backgroundColor: COLOR.primary,
   },
   headerImageContainer: {
     height: hp(20),
     marginHorizontal: wp(5),
     marginTop: hp(1),
     marginBottom: hp(2),
-    borderRadius: 12,
+    borderRadius: hp(2),
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
@@ -293,8 +293,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: hp(2),
     padding: wp(4),
-    backgroundColor: COLOR.white,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: hp(1.8),
     ...commonStyles.shadow_3,
   },
   factContent: {
@@ -310,11 +310,11 @@ const styles = StyleSheet.create({
   },
   factTitle: {
     ...TEXT_STYLE.bigTextBold,
-    color: COLOR.black,
+    color: COLOR.primary,
   },
   factDescription: {
     ...TEXT_STYLE.text,
-    color: COLOR.gray,
+    color: '#4B5563',
     lineHeight: 20,
   },
   copyButton: {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   noFactsText: {
     ...TEXT_STYLE.text,
-    color: COLOR.gray,
+    color: '#DDEBFF',
     textAlign: 'center',
     marginTop: hp(2),
   },

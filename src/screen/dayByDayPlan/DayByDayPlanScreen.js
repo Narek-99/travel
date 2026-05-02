@@ -313,7 +313,7 @@ export default DayByDayPlanScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7FAFC',
+    backgroundColor: COLOR.primary,
   },
   mapContainer: {
     flex: 1,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     marginRight: wp(2),
   },
   dayTabSelected: {
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.accent,
   },
   dayTabText: {
     fontSize: 14,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   dayTabTextSelected: {
-    color: COLOR.white,
+    color: COLOR.primary,
   },
   dayTabSkeleton: {
     width: 120,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   card: {
     width: 200,
     backgroundColor: COLOR.white,
-    borderRadius: 14,
+    borderRadius: hp(2),
     marginRight: wp(2),
     padding: wp(3),
     shadowColor: '#000',
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   directionsButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: COLOR.accent,
     borderRadius: 6,
     paddingVertical: hp(0.5),
     paddingHorizontal: wp(2),
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   },
   directionsText: {
     fontSize: 12,
-    color: COLOR.white,
+    color: COLOR.primary,
     fontWeight: '600',
   },
   emptyText: {

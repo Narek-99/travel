@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { DeleteMessages } from '../../services/FirebaseMethods'
 import Toast from 'react-native-toast-message'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import LinearGradient from 'react-native-linear-gradient';
 
 const options = {
   enableVibrateFallback: true
@@ -49,28 +50,41 @@ const SettingScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#002953', '#063D78', '#001B39']}
+        locations={[0, 0.48, 1]}
+        style={styles.background}
+      />
+      <View style={styles.glowTop} />
       <SafeAreaView></SafeAreaView>
       <AppHeader
+        style={styles.header}
         leftComp={
           <Pressable onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', options);
             navigation.navigate(SCREEN.TRIPS);
 
-          }}>
-            <SVG.BackIcon fill="black" />
+          }} style={styles.headerIconButton}>
+            <SVG.BackIcon fill={COLOR.white} />
           </Pressable>
         }
         title={"Settings"}
-        titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.black }}
+        titleStyle={styles.headerTitle}
       />
       <View style={styles.innerContainer}>
+        <View style={styles.heroCard}>
+          <Label style={styles.heroEyebrow}>Triposo</Label>
+          <Label style={styles.heroTitle}>App settings</Label>
+          <Label style={styles.heroText}>Manage your access, support, and travel history.</Label>
+        </View>
+
         <Pressable style={styles.pressBtn} onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', options);
           handleDeleteChats();
         }}>
           {
             loading ?
-              <ActivityIndicator size={'small'} color={COLOR.lightBlue} />
+              <ActivityIndicator size={'small'} color={COLOR.accent} />
               :
               <Label style={styles.pressBtnText}>Clear History</Label>
           }
@@ -121,21 +135,74 @@ export default SettingScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOR.white
+    backgroundColor: COLOR.primary
+  },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  glowTop: {
+    position: 'absolute',
+    top: hp(9),
+    right: -wp(20),
+    width: wp(58),
+    height: wp(58),
+    borderRadius: wp(29),
+    backgroundColor: 'rgba(254, 163, 0, 0.16)',
+  },
+  header: {
+    paddingHorizontal: wp(5),
+  },
+  headerIconButton: {
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    ...TEXT_STYLE.smallTitleBold,
+    color: COLOR.white,
   },
   innerContainer: {
-    marginTop: hp(2),
-    paddingHorizontal: wp(4)
+    marginTop: hp(1),
+    paddingHorizontal: wp(5)
+  },
+  heroCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    borderWidth: 1,
+    borderRadius: hp(2),
+    padding: wp(5),
+    marginBottom: hp(2),
+  },
+  heroEyebrow: {
+    ...TEXT_STYLE.smallTextSemiBold,
+    color: '#FFE0A6',
+    marginBottom: hp(0.5),
+  },
+  heroTitle: {
+    ...TEXT_STYLE.title,
+    color: COLOR.white,
+    fontWeight: '800',
+    marginBottom: hp(0.6),
+  },
+  heroText: {
+    ...TEXT_STYLE.textMedium,
+    color: '#DDEBFF',
+    lineHeight: 21,
   },
   pressBtn: {
-    marginVertical: hp(2),
-    paddingHorizontal: wp(2),
-    paddingBottom: hp(1),
-    borderBottomWidth: 0.2,
-    borderColor: COLOR.black,
+    marginBottom: hp(1.2),
+    paddingHorizontal: wp(4),
+    paddingVertical: hp(1.7),
+    borderRadius: hp(1.6),
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
   },
   pressBtnText: {
     ...TEXT_STYLE.textSemiBold,
-    color: COLOR.black
+    color: COLOR.white
   }
 })

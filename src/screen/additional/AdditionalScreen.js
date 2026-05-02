@@ -357,7 +357,7 @@ const AdditionalScreen = ({ navigation }) => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               navigation.goBack();
             }}>
-              <SVG.BackIcon fill="black" />
+              <SVG.BackIcon fill={COLOR.white} />
             </Pressable>
 
             <View style={styles.centerWrapper}>
@@ -366,7 +366,7 @@ const AdditionalScreen = ({ navigation }) => {
                 progress={progress}
                 width={wp(40)}
                 height={hp(0.5)}
-                color={COLOR.primary}
+                color={COLOR.accent}
                 borderRadius={5}
               />
             </View>
@@ -380,7 +380,7 @@ const AdditionalScreen = ({ navigation }) => {
                   : navigation.navigate(SCREEN.TRIPS);
               }}
             >
-              <SVG.Close fill="black" />
+              <SVG.Close fill={COLOR.white} />
             </Pressable>
           </View>
 
@@ -390,7 +390,7 @@ const AdditionalScreen = ({ navigation }) => {
             style={styles.textInput}
             onChangeText={(text) => setAdditionalInfo(text)}
             placeholder="Type additional information or special requests..."
-            placeholderTextColor={COLOR.lightGray}
+            placeholderTextColor={COLOR.gray}
             numberOfLines={4}
             value={additionalInfo}
             multiline
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: COLOR.primary,
   },
   contentContainer: {
     paddingTop: '8%',
@@ -442,22 +442,22 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 22,
-    color: COLOR.black,
+    color: COLOR.white,
     marginVertical: hp(2),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
     marginBottom: hp(2),
-    color: COLOR.gray
+    color: '#DDEBFF'
   },
   textInput: {
     height: hp(15),
-    backgroundColor: COLOR.darkGrey,
-    borderRadius: 8,
+    backgroundColor: COLOR.white,
+    borderRadius: hp(2),
     borderWidth: 0.5,
     borderColor: COLOR.lightGray,
     padding: wp(4),
-    color: 'black',
+    color: COLOR.primary,
     marginVertical: hp(3),
     textAlignVertical: 'top',
   },
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(1),
   },
   submitContainer: {
@@ -477,14 +477,18 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   nextButton: {
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.accent,
     marginHorizontal: wp(2),
   },
   buttonText: {
-    color: 'white',
+    color: COLOR.primary,
+    fontWeight: '800',
   },
   iconWrapper: {
-    width: 36,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },

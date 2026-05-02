@@ -1,4 +1,4 @@
-import { StyleSheet, View, Pressable, Linking, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, View, Pressable, Linking, SafeAreaView, ScrollView, Text } from 'react-native';
 import React from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
@@ -62,11 +62,18 @@ const AdvantageScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#002953', '#063D78', '#001B39']}
+        locations={[0, 0.48, 1]}
+        style={styles.background}
+      />
+      <View style={styles.glowTop} />
       <SafeAreaView />
       <AppHeader
+        style={styles.header}
         leftComp={
-          <Pressable onPress={goBack}>
-            <SVG.BackIcon fill={COLOR.primary} />
+          <Pressable onPress={goBack} style={styles.headerIconButton}>
+            <SVG.BackIcon fill={COLOR.white} />
           </Pressable>
         }
         title="Prime Access"
@@ -78,30 +85,32 @@ const AdvantageScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient
-          colors={['#002953', '#245AA8']}
+          colors={['rgba(255, 255, 255, 0.16)', 'rgba(255, 255, 255, 0.08)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
           <View style={styles.heroBadge}>
             <SVG.Done />
-            <Label style={styles.heroBadgeText}>Included with your app purchase</Label>
+            <Label style={styles.heroBadgeText} numberOfLines={1}>
+              Included with your app purchase
+            </Label>
           </View>
-          <Label style={styles.heroTitle}>Everything is unlocked.</Label>
-          <Label style={styles.heroText}>
-            You already have full access to Triposo AI planning, travel tools, and itinerary features.
-          </Label>
+          <View style={styles.heroCopy}>
+            <Text style={styles.heroTitle}>Full access is active.</Text>
+            <Text style={styles.heroText}>Purchased. All travel tools included.</Text>
+          </View>
         </LinearGradient>
 
         <View style={styles.summaryRow}>
           <View style={styles.summaryItem}>
             <Label style={styles.summaryValue}>No</Label>
-            <Label style={styles.summaryLabel}>subscriptions</Label>
+            <Label style={styles.summaryLabel}>subscription</Label>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
             <Label style={styles.summaryValue}>No</Label>
-            <Label style={styles.summaryLabel}>restore needed</Label>
+            <Label style={styles.summaryLabel}>restore</Label>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
@@ -129,7 +138,7 @@ const AdvantageScreen = ({ navigation, route }) => {
         </View>
 
         <LinearGradient
-          colors={['#002953', '#3B82F6']}
+          colors={['#FEA300', '#FFBE45']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.ctaButton}
@@ -171,11 +180,34 @@ export default AdvantageScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOR.background,
+    backgroundColor: COLOR.primary,
+  },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  glowTop: {
+    position: 'absolute',
+    top: hp(8),
+    right: -wp(20),
+    width: wp(58),
+    height: wp(58),
+    borderRadius: wp(29),
+    backgroundColor: 'rgba(254, 163, 0, 0.16)',
+  },
+  header: {
+    paddingHorizontal: wp(5),
+  },
+  headerIconButton: {
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     ...TEXT_STYLE.textBold,
-    color: COLOR.primary,
+    color: COLOR.white,
   },
   scrollContent: {
     paddingHorizontal: wp(5),
@@ -183,8 +215,12 @@ const styles = StyleSheet.create({
   },
   hero: {
     borderRadius: hp(2),
-    padding: wp(5),
+    paddingHorizontal: wp(4),
+    paddingVertical: hp(2.4),
+    minHeight: hp(21),
     marginBottom: hp(2),
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    borderWidth: 1,
   },
   heroBadge: {
     alignSelf: 'flex-start',
@@ -193,30 +229,40 @@ const styles = StyleSheet.create({
     gap: wp(2),
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: hp(3),
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(0.8),
+    paddingHorizontal: wp(2.8),
+    paddingVertical: hp(0.65),
     marginBottom: hp(2),
+    maxWidth: '100%',
   },
   heroBadgeText: {
     ...TEXT_STYLE.smallTextSemiBold,
     color: COLOR.white,
+    flexShrink: 1,
+  },
+  heroCopy: {
+    width: '100%',
+    paddingRight: wp(6),
   },
   heroTitle: {
-    ...TEXT_STYLE.title,
     color: COLOR.white,
     fontWeight: '800',
+    fontSize: 18,
+    lineHeight: 23,
     marginBottom: hp(1),
   },
   heroText: {
-    ...TEXT_STYLE.bigText,
     color: '#E8F0FE',
-    lineHeight: 25,
+    fontSize: 14,
+    lineHeight: 20,
+    width: '100%',
   },
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLOR.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
     borderRadius: hp(1.5),
     paddingVertical: hp(2),
     marginBottom: hp(2),
@@ -227,30 +273,32 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     ...TEXT_STYLE.bigTextBold,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(0.4),
   },
   summaryLabel: {
     ...TEXT_STYLE.smallTextMedium,
-    color: COLOR.gray,
+    color: '#DDEBFF',
     textAlign: 'center',
   },
   summaryDivider: {
     width: 1,
     height: hp(4),
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
   },
   section: {
     marginBottom: hp(2),
   },
   sectionTitle: {
     ...TEXT_STYLE.smallTitleBold,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(1.2),
   },
   benefitItem: {
     flexDirection: 'row',
-    backgroundColor: COLOR.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
     borderRadius: hp(1.4),
     padding: wp(4),
     marginBottom: hp(1),
@@ -259,7 +307,7 @@ const styles = StyleSheet.create({
     width: wp(11),
     height: wp(11),
     borderRadius: wp(5.5),
-    backgroundColor: '#E8F0FE',
+    backgroundColor: 'rgba(254, 163, 0, 0.16)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: wp(3),
@@ -269,17 +317,18 @@ const styles = StyleSheet.create({
   },
   benefitTitle: {
     ...TEXT_STYLE.textBold,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(0.4),
   },
   benefitText: {
     ...TEXT_STYLE.text,
-    color: '#4B5563',
+    color: '#DDEBFF',
     lineHeight: 21,
   },
   ctaButton: {
     borderRadius: hp(3),
     marginTop: hp(1),
+    backgroundColor: COLOR.accent,
   },
   transparentButton: {
     backgroundColor: 'transparent',
@@ -287,8 +336,8 @@ const styles = StyleSheet.create({
     marginVertical: 0,
   },
   ctaText: {
-    color: COLOR.white,
-    fontWeight: '700',
+    color: COLOR.primary,
+    fontWeight: '800',
   },
   legalLinks: {
     flexDirection: 'row',
@@ -298,7 +347,7 @@ const styles = StyleSheet.create({
   },
   legalText: {
     ...TEXT_STYLE.smallText,
-    color: COLOR.gray,
+    color: '#DDEBFF',
     textDecorationLine: 'underline',
   },
   legalSeparator: {

@@ -439,7 +439,7 @@ const BookingScreen = ({ navigation }) => {
           triggerHaptic();
           navigation.goBack();
         }}>
-          <SVG.BackIcon />
+          <SVG.BackIcon fill={COLOR.white} />
         </Pressable>
         <Text style={styles.headerTitle}>Book Your Trip</Text>
         <View style={{ width: 24 }} />
@@ -553,10 +553,10 @@ export default BookingScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: COLOR.primary,
   },
   safeArea: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.primary,
   },
   header: {
     flexDirection: 'row',
@@ -564,12 +564,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: wp(4),
     paddingVertical: hp(2),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.primary,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: COLOR.Charcoal,
+    color: COLOR.white,
   },
   contentContainer: {
     paddingHorizontal: wp(4),
@@ -578,12 +578,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: COLOR.Charcoal,
+    color: COLOR.white,
     marginBottom: hp(2),
   },
   inputCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: hp(2),
     padding: wp(4),
     marginBottom: hp(2),
     shadowColor: '#000',
@@ -593,8 +593,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   dateContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: hp(2),
     padding: wp(4),
     marginBottom: hp(2),
     shadowColor: '#000',
@@ -611,14 +611,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: '#DDEBFF',
     marginBottom: hp(1),
   },
   datePickerButton: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F7F7F7',
+    backgroundColor: COLOR.white,
     borderRadius: 10,
     padding: wp(3),
     borderWidth: 1,
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   toggleReturnText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: COLOR.accent,
     marginLeft: wp(2),
   },
   buttonRow: {
@@ -649,8 +649,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(30, 58, 138, 1)',
-    borderRadius: 10,
+    backgroundColor: COLOR.accent,
+    borderRadius: hp(1.6),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -663,9 +663,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.white,
     paddingVertical: hp(1.5),
-    borderRadius: 10,
+    borderRadius: hp(1.6),
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLOR.primary,
   },
   resetButtonText: {
     fontSize: 16,
@@ -686,8 +686,8 @@ const styles = StyleSheet.create({
     marginTop: hp(3),
   },
   flightCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: hp(1.8),
     padding: wp(4),
     marginBottom: hp(2),
     shadowColor: '#000',
@@ -730,9 +730,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#007AFF',
+    backgroundColor: COLOR.accent,
     paddingVertical: hp(1.5),
-    borderRadius: 10,
+    borderRadius: hp(1.6),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -751,7 +751,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: wp(5),
@@ -792,9 +792,9 @@ const styles = StyleSheet.create({
     color: '#34C759',
   },
   modalButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: COLOR.accent,
     paddingVertical: hp(1.5),
-    borderRadius: 10,
+    borderRadius: hp(1.6),
     alignItems: 'center',
     marginTop: hp(2),
     marginBottom: hp(1),
@@ -807,11 +807,11 @@ const styles = StyleSheet.create({
   modalButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLOR.primary,
   },
   modalCloseText: {
     fontSize: 16,
-    color: '#007AFF',
+    color: COLOR.primary,
     textAlign: 'center',
     marginTop: hp(1),
     marginBottom: hp(2),

@@ -306,14 +306,21 @@ const TripsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#002953', '#063D78', '#001B39']}
+        locations={[0, 0.45, 1]}
+        style={styles.background}
+      />
+      <View style={styles.glowTop} />
       <SafeAreaView />
       <AppHeader
+        style={styles.header}
         leftComp={
           <Pressable onPress={() => {
             navigation.navigate(SCREEN.SETTINGS);
             ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-          }}>
-            <SVG.Settings fill="black" />
+          }} style={styles.headerIconButton}>
+            <SVG.Settings fill={COLOR.white} />
           </Pressable>
         }
         centerComp={
@@ -322,39 +329,47 @@ const TripsScreen = ({ navigation }) => {
               style={styles.gptPlusButton}
               onPress={handleAccessPress}
             >
-              <SVG.Flash fill="#3B82F6" />
+              <SVG.Flash fill={COLOR.accent} />
               <Label style={styles.accessText}>Prime Access</Label>
             </Pressable>
           </View>
         }
         rightComp={
-          <Pressable onPress={handleAddTripNavigation}>
-            <SVG.Plus width="24" height="24" fill="black" />
+          <Pressable onPress={handleAddTripNavigation} style={styles.headerIconButton}>
+            <SVG.Plus width="22" height="22" fill={COLOR.white} />
           </Pressable>
         }
       />
 
+      <View style={styles.titleBlock}>
+        <Label style={styles.screenEyebrow}>Triposo Planner</Label>
+        <Label style={styles.screenTitle}>Your trips</Label>
+      </View>
+
       <Pressable style={styles.contentContainer}>
         {trips.length === 0 ? (
           <Pressable onPress={handleAddTripNavigation} style={styles.emptyContainer}>
-            <SVG.Plus fill={'#3B82F6'} width={wp(12)} height={wp(12)} style={styles.plusIcon} />
-            <Text style={styles.emptyTitle}>NO TRIPS YET!</Text>
-            <Text style={styles.emptySubtitle}>Let’s Craft Your First Journey!</Text>
+            <View style={styles.emptyIcon}>
+              <SVG.Plus fill={COLOR.accent} width={wp(8)} height={wp(8)} />
+            </View>
+            <Text style={styles.emptyTitle}>No trips yet</Text>
+            <Text style={styles.emptySubtitle}>Create your first itinerary and let Triposo shape the journey.</Text>
             <View style={styles.benefitsContainer}>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitText}>💡 Plan Your Trip Day by Day</Text>
+                <View style={styles.benefitDot} />
+                <Text style={styles.benefitText}>Plan your trip day by day</Text>
               </View>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitText}>🤖 Get Smart Tips from Triposo AI</Text>
+                <View style={styles.benefitDot} />
+                <Text style={styles.benefitText}>Get smart tips from Triposo</Text>
               </View>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitText}>✈️ Find Great Deals on Flights & Hotels</Text>
+                <View style={styles.benefitDot} />
+                <Text style={styles.benefitText}>Find flights, hotels, and local gems</Text>
               </View>
               <View style={styles.benefitItem}>
-                <Text style={styles.benefitText}>🧭 Get Tips Just for Your Interests</Text>
-              </View>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitText}>📍 Discover Secret Spots & Local Gems</Text>
+                <View style={styles.benefitDot} />
+                <Text style={styles.benefitText}>Personalize every plan to your interests</Text>
               </View>
             </View>
           </Pressable>
@@ -376,86 +391,130 @@ const TripsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLOR.white, paddingBottom: 10 },
+  container: { flex: 1, backgroundColor: COLOR.primary, paddingBottom: 10 },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  glowTop: {
+    position: 'absolute',
+    top: hp(8),
+    right: -wp(20),
+    width: wp(58),
+    height: wp(58),
+    borderRadius: wp(29),
+    backgroundColor: 'rgba(254, 163, 0, 0.16)',
+  },
+  header: {
+    paddingHorizontal: wp(5),
+  },
+  headerIconButton: {
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   gptPlusButton: {
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
     paddingHorizontal: wp(4),
     paddingVertical: hp(1),
-    borderRadius: hp(1),
+    borderRadius: hp(3),
     flexDirection: 'row',
     gap: wp(2),
     alignItems: 'center',
   },
   accessText: {
-    color: '#3B82F6',
+    color: '#FFF4D6',
     fontWeight: '700',
     fontSize: 13,
   },
   headerActions: { flexDirection: 'col', alignItems: 'center', gap: wp(3) },
+  titleBlock: {
+    paddingHorizontal: wp(5),
+    marginBottom: hp(1),
+  },
+  screenEyebrow: {
+    ...TEXT_STYLE.smallTextSemiBold,
+    color: '#FFE0A6',
+    marginBottom: hp(0.4),
+  },
+  screenTitle: {
+    ...TEXT_STYLE.title,
+    color: COLOR.white,
+    fontWeight: '800',
+  },
   contentContainer: {
     flex: 1,
-    padding: "3%"
+    paddingHorizontal: wp(4),
+    paddingTop: hp(1),
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: wp(5),
-  },
-  plusIcon: {
-    marginBottom: hp(3),
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderRadius: hp(2.5),
+    marginBottom: hp(1),
   },
   emptyTitle: {
-    color: '#1E3A8A',
-    fontSize: 32,
+    color: COLOR.white,
+    fontSize: 30,
     fontWeight: '800',
     textAlign: 'center',
-    marginBottom: hp(1.5),
-    letterSpacing: 1,
+    marginBottom: hp(1),
   },
   emptySubtitle: {
-    color: '#F59E0B',
-    fontSize: 20,
+    color: '#DDEBFF',
+    fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: 0.5,
-    marginBottom: hp(4),
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    lineHeight: 23,
+    marginBottom: hp(2.4),
+  },
+  emptyIcon: {
+    width: wp(18),
+    height: wp(18),
+    borderRadius: wp(9),
+    backgroundColor: 'rgba(254, 163, 0, 0.16)',
+    borderColor: 'rgba(254, 163, 0, 0.34)',
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: hp(2),
   },
   benefitsContainer: {
-    backgroundColor: '#E8F0FE',
-    padding: wp(5),
-    borderRadius: hp(3.5),
-    borderLeftWidth: 5,
-    borderLeftColor: '#3B82F6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 5,
-    marginTop: hp(2),
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    padding: wp(4),
+    borderRadius: hp(2),
+    width: '100%',
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: hp(1.5),
-    paddingHorizontal: wp(3),
-    backgroundColor: 'transparent',
-    borderRadius: hp(1.5),
-    marginVertical: hp(0.1),
+    paddingVertical: hp(0.8),
   },
   benefitText: {
-    color: '#1F2937',
-    fontSize: 16,
-    fontWeight: '500',
-    lineHeight: 24,
-    textAlign: 'left',
-    marginLeft: wp(2),
+    color: COLOR.white,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 21,
+    flex: 1,
+  },
+  benefitDot: {
+    width: hp(0.8),
+    height: hp(0.8),
+    borderRadius: hp(0.4),
+    backgroundColor: COLOR.accent,
+    marginRight: wp(2.5),
   },
   tripCard: {
-    backgroundColor: COLOR.darkGrey,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     padding: 15,
     borderRadius: 10,
     marginVertical: 5,
@@ -479,12 +538,12 @@ const styles = StyleSheet.create({
   },
   infoDestination: {
     ...TEXT_STYLE.title,
-    color: COLOR.dark,
+    color: COLOR.primary,
     marginBottom: 4,
   },
   infoDate: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.mediumGray,
+    color: '#4B5563',
     marginBottom: 4,
   },
   infoRow: {
@@ -499,7 +558,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     width: 80,
     height: '90%',
-    backgroundColor: 'red',
+    backgroundColor: COLOR.danger,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -517,14 +576,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: hp(2),
+    marginBottom: hp(2),
     overflow: 'hidden',
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 6,
   },
   cardImageContainer: {
-    height: 200,
+    height: hp(24),
     position: 'relative', // Added to allow absolute positioning of the edit button
   },
   cardImage: {
@@ -537,14 +600,15 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     bottom: 0,
+    right: 0,
   },
   dateText: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'white',
     fontWeight: "500",
   },
   destinationText: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     color: 'white',
     marginBottom: hp(0.5)
@@ -563,33 +627,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 12,
-    backgroundColor: "#3B82F6",
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 16,
+    backgroundColor: COLOR.accent,
+    paddingVertical: hp(0.8),
+    paddingHorizontal: wp(4),
+    borderRadius: hp(2),
   },
   detailButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: COLOR.primary,
+    fontWeight: '800',
     fontSize: 14,
   },
   editButton: {
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: COLOR.primary,
+    backgroundColor: 'rgba(0, 41, 83, 0.78)',
     padding: wp(3),
     borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  benefitText: {
-    textAlign: 'center',
-    color: COLOR.dark,
-    fontSize: 15,
-    fontWeight: '500',
-    lineHeight: 22,
-  }
 });
 
 export default TripsScreen;

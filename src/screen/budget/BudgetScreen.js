@@ -151,10 +151,7 @@ const BudgetScreen = ({ navigation }) => {
         style={styles.screenContainer}
         keyboardVerticalOffset={0}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <View style={styles.contentContainer}>
             <SafeAreaView />
             <View style={styles.headlineContainer}>
@@ -163,17 +160,20 @@ const BudgetScreen = ({ navigation }) => {
                 onPress={() => {
                   ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
                   navigation.goBack();
-                }}>
-                <SVG.BackIcon fill="black" />
+                }}
+              >
+                <SVG.BackIcon fill={COLOR.white} />
               </Pressable>
 
               <View style={styles.centerWrapper}>
-                <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+                <Label style={styles.stepText}>
+                  Step {currentStep} of {totalSteps}
+                </Label>
                 <ProgressBar
                   progress={progress}
                   width={wp(40)}
                   height={hp(0.5)}
-                  color={COLOR.primary}
+                  color={COLOR.accent}
                   borderRadius={5}
                 />
               </View>
@@ -182,9 +182,12 @@ const BudgetScreen = ({ navigation }) => {
                 style={styles.iconWrapper}
                 onPress={() => {
                   ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-                  tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-                }}>
-                <SVG.Close fill="black" />
+                  tripId
+                    ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
+                    : navigation.navigate(SCREEN.TRIPS);
+                }}
+              >
+                <SVG.Close fill={COLOR.white} />
               </Pressable>
             </View>
 
@@ -196,7 +199,8 @@ const BudgetScreen = ({ navigation }) => {
                 <TouchableOpacity
                   key={option.value}
                   onPress={() => handleSelect(option.value)}
-                  activeOpacity={0.8}>
+                  activeOpacity={0.8}
+                >
                   <Animated.View
                     style={[
                       styles.optionButton,
@@ -206,11 +210,14 @@ const BudgetScreen = ({ navigation }) => {
                       },
                       {
                         opacity: Animated.add(
-                          selectedBudget === option.value ? animatedValues[option.value].opacity : 1,
+                          selectedBudget === option.value
+                            ? animatedValues[option.value].opacity
+                            : 1,
                           selectedBudget === option.value ? 0 : 0.2
                         ),
                       },
-                    ]}>
+                    ]}
+                  >
                     <Text style={styles.optionText}>{option.label}</Text>
                   </Animated.View>
                 </TouchableOpacity>
@@ -234,6 +241,7 @@ const BudgetScreen = ({ navigation }) => {
           {tripId && (
             <Button
               style={styles.saveButton}
+              textStyle={[{ color: COLOR.white }]}
               text={En.save}
               onPress={handleSaveBudget}
             />
@@ -267,13 +275,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 36,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: COLOR.primary,
   },
   contentContainer: {
     paddingTop: '8%',
@@ -281,40 +292,41 @@ const styles = StyleSheet.create({
   },
   titleText: {
     ...TEXT_STYLE.title,
-    color: COLOR.black,
+    color: COLOR.white,
     marginVertical: hp(2),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.gray,
+    color: '#DDEBFF',
   },
   optionsContainer: {
     marginVertical: hp(4),
   },
   optionButton: {
-    backgroundColor: COLOR.darkGrey,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: hp(1.6),
     marginVertical: 5,
     alignItems: 'center',
     borderWidth: 0.5,
-    borderColor: COLOR.lightBlue,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
   },
   optionText: {
-    color: 'black',
+    color: COLOR.white,
     ...TEXT_STYLE.textMedium,
   },
   input: {
-    backgroundColor: COLOR.lightGray,
-    color: COLOR.black,
+    backgroundColor: COLOR.white,
+    color: COLOR.primary,
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
     fontSize: 16,
   },
   buttonText: {
-    color: 'white',
+    color: COLOR.primary,
+    fontWeight: '800',
   },
   saveButton: {
     backgroundColor: 'transparent',
@@ -324,7 +336,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(1),
   },
   submitContainer: {
@@ -335,7 +347,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   nextButton: {
-    backgroundColor: '#002953',
+    backgroundColor: COLOR.accent,
     marginHorizontal: wp(2),
   },
 });

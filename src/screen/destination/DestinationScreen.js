@@ -349,7 +349,7 @@ const DestinationScreen = ({ navigation }) => {
                 navigation.goBack();
               }}
             >
-              <SVG.BackIcon fill="black" />
+              <SVG.BackIcon fill={COLOR.white} />
             </Pressable>
 
             <View style={styles.centerWrapper}>
@@ -360,13 +360,13 @@ const DestinationScreen = ({ navigation }) => {
                 progress={progress}
                 width={wp(40)}
                 height={hp(0.5)}
-                color={COLOR.primary}
+                color={COLOR.accent}
                 borderRadius={5}
               />
             </View>
 
             <Pressable style={styles.iconWrapper} onPress={handleClose}>
-              <SVG.Close fill="black" />
+              <SVG.Close fill={COLOR.white} />
             </Pressable>
           </View>
 
@@ -412,7 +412,7 @@ const DestinationScreen = ({ navigation }) => {
           {tripId && (
             <Button
               style={styles.saveButton}
-              textStyle={[{ color: COLOR.primary }]}
+              textStyle={[{ color: COLOR.white }]}
               text={En.save}
               onPress={handleSaveDestination}
               disabled={
@@ -443,7 +443,7 @@ export default DestinationScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: COLOR.primary,
   },
   contentContainer: {
     paddingTop: '8%',
@@ -451,19 +451,19 @@ const styles = StyleSheet.create({
   },
   titleText: {
     ...TEXT_STYLE.title,
-    color: COLOR.black,
+    color: COLOR.white,
     lineHeight: hp(5),
     marginVertical: hp(2),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.gray,
+    color: '#DDEBFF',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEEEF0',
-    borderRadius: wp(3),
+    backgroundColor: COLOR.white,
+    borderRadius: hp(2),
     marginVertical: hp(2),
     paddingHorizontal: wp(2.5),
   },
@@ -479,6 +479,8 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     marginHorizontal: wp(2),
+    backgroundColor: COLOR.accent,
+    borderColor: COLOR.accent,
   },
   saveButton: {
     backgroundColor: 'transparent',
@@ -487,14 +489,15 @@ const styles = StyleSheet.create({
     borderColor: COLOR.lightBlue,
   },
   buttonText: {
-    color: 'white',
+    color: COLOR.primary,
+    fontWeight: '800',
   },
   stepIndicatorContainer: {
     alignItems: 'center',
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.black,
+    color: COLOR.white,
     marginBottom: hp(1),
   },
   headlineContainer: {
@@ -509,7 +512,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 36,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },

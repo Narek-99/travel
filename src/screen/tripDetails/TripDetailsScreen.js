@@ -525,7 +525,7 @@ const TripDetailsScreen = ({ navigation }) => {
                                 onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
                                 onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
                               />
-                              {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.dark} />}
+                              {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.primary} />}
                             </View>
                           ) : (
                             <View style={styles.noImageBox}>
@@ -607,7 +607,7 @@ const TripDetailsScreen = ({ navigation }) => {
         }}
         customModalProps={{ animationType: 'slide', statusBarTranslucent: true }}
         customAvoidingViewProps={{ enabled: false }}>
-        <LinearGradient colors={['#FFFFFF', '#F1F5F9']} style={styles.sheetContent}>
+        <LinearGradient colors={['#002953', '#063D78', '#001B39']} style={styles.sheetContent}>
           <Text style={styles.sheetTitle}>Explore Your Trip</Text>
           <View style={styles.optionsContainer}>
             {[
@@ -706,7 +706,7 @@ export default TripDetailsScreen;
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOR.background,
+    backgroundColor: COLOR.primary,
   },
   infoCard: {
     backgroundColor: COLOR.white,
@@ -737,10 +737,12 @@ export const styles = StyleSheet.create({
     zIndex: 2,
   },
   backCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLOR.primary,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: COLOR.primary,
@@ -767,6 +769,7 @@ export const styles = StyleSheet.create({
     color: COLOR.white,
     marginBottom: hp(0.5),
     textAlign: 'center',
+    fontWeight: '800',
   },
   infoDate: {
     ...TEXT_STYLE.textSmall,
@@ -785,7 +788,9 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: hp(8),
     right: wp(4),
-    backgroundColor: COLOR.primary,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderWidth: 1,
     padding: wp(2.5),
     borderRadius: 999,
     justifyContent: 'center',
@@ -800,7 +805,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 0,
   },
   attractionsOverlay: {
     position: 'absolute',
@@ -816,14 +821,14 @@ export const styles = StyleSheet.create({
     width: wp(50),
     minHeight: 250,
     marginRight: wp(4),
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: hp(2),
     padding: wp(2),
     shadowColor: COLOR.primary,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 5,
-    elevation: 2,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 5,
     flexDirection: 'column',
   },
   attractionImage: {
@@ -840,22 +845,22 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noImageText: {
-    color: COLOR.mediumGray,
+    color: '#4B5563',
   },
   attractionName: {
     fontSize: 16,
     fontWeight: '600',
     marginTop: hp(1),
-    color: COLOR.dark,
+    color: COLOR.primary,
   },
   attractionRating: {
     fontSize: 13,
-    color: COLOR.mediumGray,
+    color: '#4B5563',
     marginTop: hp(0.5),
   },
   attractionAddress: {
     fontSize: 13,
-    color: '#1E90FF',
+    color: '#2563EB',
     marginTop: 4,
     textDecorationLine: 'underline',
     paddingRight: wp(6)
@@ -885,7 +890,7 @@ export const styles = StyleSheet.create({
     borderRadius: 33,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLOR.primary,
+    shadowColor: COLOR.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 5,
@@ -895,7 +900,7 @@ export const styles = StyleSheet.create({
     width: 66,
     height: 66,
     borderRadius: 33,
-    backgroundColor: COLOR.lightBlue,
+    backgroundColor: COLOR.accent,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -903,11 +908,12 @@ export const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    paddingTop: hp(2),
   },
   sheetTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: COLOR.dark,
+    color: COLOR.white,
     marginBottom: hp(2),
     textAlign: 'center',
   },
@@ -915,8 +921,10 @@ export const styles = StyleSheet.create({
     paddingHorizontal: wp(5),
   },
   optionCard: {
-    backgroundColor: COLOR.white,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderRadius: hp(1.6),
     marginVertical: hp(0.75),
     shadowColor: COLOR.primary,
     shadowOffset: { width: 0, height: 1 },
@@ -933,7 +941,7 @@ export const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     fontWeight: '600',
-    color: COLOR.primary,
+    color: COLOR.white,
   },
   overlay: {
     position: 'absolute',

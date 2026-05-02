@@ -157,17 +157,20 @@ const DatesScreen = ({ navigation }) => {
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               navigation.goBack();
-            }}>
-            <SVG.BackIcon fill="black" />
+            }}
+          >
+            <SVG.BackIcon fill={COLOR.white} />
           </Pressable>
 
           <View style={styles.centerWrapper}>
-            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+            <Label style={styles.stepText}>
+              Step {currentStep} of {totalSteps}
+            </Label>
             <ProgressBar
               progress={progress}
               width={wp(40)}
               height={hp(0.5)}
-              color={COLOR.primary}
+              color={COLOR.accent}
               borderRadius={5}
             />
           </View>
@@ -176,9 +179,12 @@ const DatesScreen = ({ navigation }) => {
             style={styles.iconWrapper}
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS)
-            }} >
-            <SVG.Close fill="black" />
+              tripId
+                ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
+                : navigation.navigate(SCREEN.TRIPS);
+            }}
+          >
+            <SVG.Close fill={COLOR.white} />
           </Pressable>
         </View>
 
@@ -191,18 +197,18 @@ const DatesScreen = ({ navigation }) => {
               value={startDate || new Date()} // Temporary display fallback for picker
               mode="date"
               onChange={onChangeStartDate}
-              themeVariant="light"
+              themeVariant="dark"
               minimumDate={new Date()}
             />
           </View>
 
-          <Label style={{ color: "black" }}>to</Label>
+          <Label style={styles.toText}>to</Label>
 
           <DateTimePicker
             value={endDate || new Date()} // Temporary display fallback for picker
             mode="date"
             onChange={onChangeEndDate}
-            themeVariant="light"
+            themeVariant="dark"
             minimumDate={startDate || new Date()}
           />
         </View>
@@ -212,6 +218,7 @@ const DatesScreen = ({ navigation }) => {
         {tripId && (
           <Button
             style={styles.saveButton}
+            textStyle={[{ color: COLOR.white }]}
             text={En.save}
             onPress={handleSaveDates}
             disabled={!startDate || !endDate}
@@ -220,7 +227,7 @@ const DatesScreen = ({ navigation }) => {
         <Button
           style={[
             styles.nextButton,
-            { backgroundColor: startDate && endDate ? COLOR.primary : '#CCCCCC' },
+            { backgroundColor: startDate && endDate ? COLOR.accent : '#CCCCCC' },
           ]}
           text={En.next}
           textStyle={styles.buttonText}
@@ -247,13 +254,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 36,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: COLOR.primary,
   },
   contentContainer: {
     paddingTop: '8%',
@@ -267,12 +277,12 @@ const styles = StyleSheet.create({
   },
   titleText: {
     ...TEXT_STYLE.title,
-    color: COLOR.black,
+    color: COLOR.white,
     marginVertical: hp(2),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.gray,
+    color: '#DDEBFF',
   },
   dateButton: {
     marginVertical: hp(2),
@@ -289,7 +299,8 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
   },
   buttonText: {
-    color: 'white',
+    color: COLOR.primary,
+    fontWeight: '800',
   },
   saveButton: {
     backgroundColor: 'transparent',
@@ -302,7 +313,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.black,
+    color: COLOR.white,
     marginBottom: hp(1),
   },
 
@@ -314,7 +325,11 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   nextButton: {
-    backgroundColor: '#002953',
+    backgroundColor: COLOR.accent,
     marginHorizontal: wp(2),
+  },
+  toText: {
+    color: COLOR.white,
+    ...TEXT_STYLE.textSemiBold,
   },
 });

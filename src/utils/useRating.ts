@@ -9,7 +9,7 @@ export default function useRating() {
   const reviewAsked = useRef(false);
   const { setItem, getItem } = useAsyncStorage(LAST_REVIEW_DATE);
 
-  const COOLDOWN_DAYS = 5; // Re-ask after 5 days if not forced
+  const COOLDOWN_DAYS = 7; // Re-ask weekly if not forced
 
   const showRating = async (forceShow = false) => {
     // Skip checks if forceShow is true

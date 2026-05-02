@@ -178,11 +178,11 @@ const ChatbotScreen = ({ navigation }) => {
                 navigation.goBack();
               }}
             >
-              <SVG.BackIcon fill={COLOR.dark} />
+              <SVG.BackIcon fill={COLOR.white} />
             </TouchableOpacity>
           }
           title="Triposo"
-          titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.dark }}
+          titleStyle={{ ...TEXT_STYLE.smallTitleBold, color: COLOR.white }}
         />
         <View style={styles.contentContainer}>
           {messages.length === 0 && (
@@ -255,7 +255,7 @@ export default ChatbotScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLOR.primary,
   },
   contentContainer: {
     flex: 1,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 4,
-    borderColor: COLOR.primary,
+    borderColor: COLOR.accent,
   },
   eagle: {
     zIndex: 2,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   botBubble: {
-    backgroundColor: COLOR.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     borderTopLeftRadius: 0,
     shadowColor: COLOR.black,
     shadowOffset: { width: 0, height: 1 },
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   messageText: {
-    color: COLOR.black,
+    color: COLOR.white,
     fontSize: 16,
   },
   inputContainer: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    color: COLOR.black,
+    color: COLOR.primary,
     borderRadius: 25,
     paddingHorizontal: wp(4),
     paddingVertical: hp(1.5),
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: wp(2),
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.accent,
     borderRadius: 25,
     padding: wp(2.5),
     shadowColor: COLOR.black,
@@ -368,15 +368,17 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: COLOR.mediumGray,
+    color: '#DDEBFF',
     textAlign: 'center',
   },
   defaultQuestionsContainer: {
     alignItems: 'center',
   },
   defaultQuestionButton: {
-    backgroundColor: COLOR.white,
-    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: hp(1.6),
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
     paddingVertical: hp(1.5),
     paddingHorizontal: wp(4),
     marginVertical: hp(1),
@@ -390,7 +392,7 @@ const styles = StyleSheet.create({
   },
   defaultQuestionText: {
     fontSize: 16,
-    color: COLOR.dark,
+    color: COLOR.white,
     textAlign: 'center',
   },
 });

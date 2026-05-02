@@ -204,17 +204,20 @@ const PreferencesScreen = ({ navigation }) => {
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               navigation.goBack();
-            }}>
-            <SVG.BackIcon fill="black" />
+            }}
+          >
+            <SVG.BackIcon fill={COLOR.white} />
           </Pressable>
 
           <View style={styles.centerWrapper}>
-            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+            <Label style={styles.stepText}>
+              Step {currentStep} of {totalSteps}
+            </Label>
             <ProgressBar
               progress={progress}
               width={wp(40)}
               height={hp(0.5)}
-              color={COLOR.primary}
+              color={COLOR.accent}
               borderRadius={5}
             />
           </View>
@@ -223,13 +226,15 @@ const PreferencesScreen = ({ navigation }) => {
             style={styles.iconWrapper}
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-            }}>
-            <SVG.Close fill="black" />
+              tripId
+                ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
+                : navigation.navigate(SCREEN.TRIPS);
+            }}
+          >
+            <SVG.Close fill={COLOR.white} />
           </Pressable>
         </View>
       </View>
-
 
       {/* Scrollable Content */}
       <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -241,41 +246,49 @@ const PreferencesScreen = ({ navigation }) => {
             <TouchableOpacity
               key={option.value}
               onPress={() => handleAccommodationSelect(option.value)}
-              activeOpacity={0.8}>
+              activeOpacity={0.8}
+            >
               <Animated.View
                 style={[
                   styles.optionButton,
                   {
-                    backgroundColor: selectedAccommodation === option.value
-                      ? COLOR.lightBlue
-                      : COLOR.darkGrey,
+                    backgroundColor:
+                      selectedAccommodation === option.value
+                        ? COLOR.lightBlue
+                        : 'rgba(255, 255, 255, 0.12)',
                     transform: [{ scale: accommodationAnimatedValues[option.value] }],
                   },
-                ]}>
+                ]}
+              >
                 <Text style={styles.optionText}>{option.label}</Text>
               </Animated.View>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Label style={styles.subtitleText}>2. Do you have a preference for location or atmosphere?</Label>
+        <Label style={styles.subtitleText}>
+          2. Do you have a preference for location or atmosphere?
+        </Label>
 
         <View style={styles.optionsContainer}>
           {locationPreferences.map((option) => (
             <TouchableOpacity
               key={option.value}
               onPress={() => handleLocationSelect(option.value)}
-              activeOpacity={0.8}>
+              activeOpacity={0.8}
+            >
               <Animated.View
                 style={[
                   styles.optionButton,
                   {
-                    backgroundColor: selectedLocation === option.value
-                      ? COLOR.lightBlue
-                      : COLOR.darkGrey,
+                    backgroundColor:
+                      selectedLocation === option.value
+                        ? COLOR.lightBlue
+                        : 'rgba(255, 255, 255, 0.12)',
                     transform: [{ scale: locationAnimatedValues[option.value] }],
                   },
-                ]}>
+                ]}
+              >
                 <Text style={styles.optionText}>{option.label}</Text>
               </Animated.View>
             </TouchableOpacity>
@@ -288,6 +301,7 @@ const PreferencesScreen = ({ navigation }) => {
         {tripId && (
           <Button
             style={styles.saveButton}
+            textStyle={[{ color: COLOR.white }]}
             text={En.save}
             onPress={handleSavePreferences}
           />
@@ -320,25 +334,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 36,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(1),
   },
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: COLOR.primary,
   },
   contentContainer: {
     paddingHorizontal: wp(4),
   },
   titleText: {
     ...TEXT_STYLE.title,
-    color: COLOR.black,
+    color: COLOR.white,
     marginVertical: hp(2),
   },
   optionsContainer: {
@@ -350,13 +367,13 @@ const styles = StyleSheet.create({
   optionButton: {
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: hp(1.6),
     marginVertical: 5,
     marginHorizontal: wp(2),
     alignItems: 'center',
   },
   optionText: {
-    color: 'black',
+    color: COLOR.white,
     ...TEXT_STYLE.textMedium,
   },
   continueButton: {
@@ -366,7 +383,8 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
   },
   buttonText: {
-    color: 'white',
+    color: COLOR.primary,
+    fontWeight: '800',
   },
   saveButton: {
     backgroundColor: 'transparent',
@@ -376,7 +394,7 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.gray,
+    color: '#DDEBFF',
   },
   stepIndicatorContainer: {
     alignItems: 'center',
@@ -389,7 +407,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   nextButton: {
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.accent,
     marginHorizontal: wp(2),
   },
 });

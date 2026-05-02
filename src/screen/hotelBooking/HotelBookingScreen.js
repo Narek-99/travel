@@ -227,22 +227,22 @@ const HotelBookingScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
-      <SafeAreaView style={{ backgroundColor: '#fff' }} />
+    <View style={{ flex: 1, backgroundColor: COLOR.primary }}>
+      <SafeAreaView style={{ backgroundColor: COLOR.primary }} />
 
       <View style={styles.header}>
         <Pressable onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
           navigation.goBack();
         }}>
-          <SVG.BackIcon />
+          <SVG.BackIcon fill={COLOR.white} />
         </Pressable>
         <Text style={styles.headerTitle}>Book a Hotel in {trip?.destination || ''}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: hp(10) }} />
+        <ActivityIndicator size="large" color={COLOR.accent} style={{ marginTop: hp(10) }} />
       ) : hotels.length === 0 ? (
         <Text style={styles.noHotelsText}>No hotels found. Try adjusting your preferences or dates.</Text>
       ) : (
@@ -342,20 +342,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: wp(4),
     paddingVertical: hp(2),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLOR.primary,
     borderBottomWidth: 1,
-    borderBottomColor: COLOR.white2,
+    borderBottomColor: 'rgba(255, 255, 255, 0.14)',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: COLOR.Charcoal,
+    color: COLOR.white,
   },
   hotelCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
     padding: wp(4),
     marginBottom: hp(2),
-    borderRadius: 10,
+    borderRadius: hp(1.8),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -407,20 +407,20 @@ const styles = StyleSheet.create({
     marginBottom: hp(1),
   },
   modalButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: COLOR.accent,
     padding: hp(1.5),
-    borderRadius: 10,
+    borderRadius: hp(1.6),
     alignItems: 'center',
     marginBottom: hp(2),
   },
   modalButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLOR.primary,
   },
   modalCloseText: {
     fontSize: 16,
-    color: '#007AFF',
+    color: COLOR.primary,
     textAlign: 'center',
     marginTop: hp(1),
   },

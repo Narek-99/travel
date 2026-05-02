@@ -46,8 +46,20 @@ const RootNavigation = () => {
         const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, newUserId);
         dispatch(setUser({ ...(user != null ? user : {}), ...userData }));
       } else {
-        const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, existingUserId);
-        dispatch(setUser({ ...(user != null ? user : {}), ...userData }));
+        let userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, existingUserId);
+        if (!userData?.uid) {
+          const newUserData = {
+            uid: existingUserId,
+            userStatus: USER_STATUS.NEW,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          };
+          await firestore().collection(FIREBASE_COLLECTIONS.USERS).doc(existingUserId).set(newUserData);
+          userData = {
+            uid: existingUserId,
+            userStatus: USER_STATUS.NEW,
+          };
+        }
+        dispatch(setUser({ ...(user != null ? user : {}), ...userData, uid: existingUserId }));
       }
     } catch (error) {
       console.error("Error saving User ID:", error);

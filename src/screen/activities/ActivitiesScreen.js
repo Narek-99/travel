@@ -161,17 +161,20 @@ const ActivitiesScreen = ({ navigation }) => {
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
               navigation.goBack();
-            }}>
-            <SVG.BackIcon fill="black" />
+            }}
+          >
+            <SVG.BackIcon fill={COLOR.white} />
           </Pressable>
 
           <View style={styles.centerWrapper}>
-            <Label style={styles.stepText}>Step {currentStep} of {totalSteps}</Label>
+            <Label style={styles.stepText}>
+              Step {currentStep} of {totalSteps}
+            </Label>
             <ProgressBar
               progress={progress}
               width={wp(40)}
               height={hp(0.5)}
-              color={COLOR.primary}
+              color={COLOR.accent}
               borderRadius={5}
             />
           </View>
@@ -180,9 +183,12 @@ const ActivitiesScreen = ({ navigation }) => {
             style={styles.iconWrapper}
             onPress={() => {
               ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-              tripId ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId }) : navigation.navigate(SCREEN.TRIPS);
-            }}>
-            <SVG.Close fill="black" />
+              tripId
+                ? navigation.navigate(SCREEN.TRIPDETAILS, { tripId })
+                : navigation.navigate(SCREEN.TRIPS);
+            }}
+          >
+            <SVG.Close fill={COLOR.white} />
           </Pressable>
         </View>
 
@@ -190,15 +196,14 @@ const ActivitiesScreen = ({ navigation }) => {
         <Label style={styles.subtitleText}>{En.activitiesSubtutle}</Label>
       </View>
 
-      <ScrollView
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.optionsContainer}>
           {activityOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
               onPress={() => handleActivitySelect(option.value)}
-              activeOpacity={0.8}>
+              activeOpacity={0.8}
+            >
               <Animated.View
                 style={[
                   styles.optionButton,
@@ -208,11 +213,14 @@ const ActivitiesScreen = ({ navigation }) => {
                   },
                   {
                     opacity: Animated.add(
-                      selectedActivities.includes(option.value) ? animatedValues[option.value].opacity : 1,
+                      selectedActivities.includes(option.value)
+                        ? animatedValues[option.value].opacity
+                        : 1,
                       selectedActivities.includes(option.value) ? 0 : 0.2
                     ),
                   },
-                ]}>
+                ]}
+              >
                 <Text style={styles.optionText}>{option.label}</Text>
               </Animated.View>
             </TouchableOpacity>
@@ -224,14 +232,13 @@ const ActivitiesScreen = ({ navigation }) => {
         {tripId && (
           <Button
             style={styles.saveButton}
+            textStyle={[{ color: COLOR.white }]}
             text={En.save}
             onPress={handleSaveActivities}
           />
         )}
         <Button
-          style={
-            styles.nextButton
-          }
+          style={styles.nextButton}
           text={En.next}
           textStyle={styles.buttonText}
           onPress={handleNext}
@@ -247,7 +254,7 @@ export default ActivitiesScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.white,
+    backgroundColor: COLOR.primary,
   },
   headerContainer: {
     paddingHorizontal: wp(4),
@@ -264,23 +271,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 36,
+    width: hp(4.8),
+    height: hp(4.8),
+    borderRadius: hp(2.4),
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepText: {
     ...TEXT_STYLE.textSmall,
-    color: COLOR.primary,
+    color: COLOR.white,
     marginBottom: hp(1),
   },
   titleText: {
     ...TEXT_STYLE.title,
-    color: COLOR.black,
+    color: COLOR.white,
     marginVertical: hp(2),
   },
   subtitleText: {
     ...TEXT_STYLE.textMedium,
-    color: COLOR.gray,
+    color: '#DDEBFF',
   },
   scrollContainer: {
     flex: 1,
@@ -290,21 +300,21 @@ const styles = StyleSheet.create({
     marginVertical: hp(4),
   },
   optionButton: {
-    backgroundColor: COLOR.darkGrey,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: hp(1.6),
     marginVertical: 5,
     alignItems: 'center',
     borderWidth: 0.5,
-    borderColor: COLOR.lightBlue,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
   },
   optionText: {
-    color: 'black',
+    color: COLOR.white,
     ...TEXT_STYLE.textMedium,
   },
   submitContainer: {
-    backgroundColor: COLOR.white,
+    backgroundColor: 'rgba(0, 27, 57, 0.94)',
     paddingVertical: hp(2),
     paddingHorizontal: wp(2),
     shadowColor: '#000',
@@ -320,10 +330,11 @@ const styles = StyleSheet.create({
     borderColor: COLOR.lightBlue,
   },
   nextButton: {
-    backgroundColor: '#002953',
+    backgroundColor: COLOR.accent,
     marginHorizontal: wp(2),
   },
   buttonText: {
-    color: COLOR.white,
+    color: COLOR.primary,
+    fontWeight: '800',
   }
 });

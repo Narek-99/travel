@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { useSelector } from 'react-redux';
 import { AppHeader, Label } from '../../components';
-import { COLOR, TEXT_STYLE } from '../../enums/StyleGuide';
+import { COLOR, TEXT_STYLE, hp } from '../../enums/StyleGuide';
 import Toast from 'react-native-toast-message';
 import { SVG } from '../../assets/svgs';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
@@ -84,8 +84,8 @@ const HistoryScreen = () => {
           </Pressable>
         }
         title="Dialogue History"
-        titleStyle={TEXT_STYLE.textMedium}
-        style={{ backgroundColor: COLOR.black }}
+        titleStyle={{ ...TEXT_STYLE.textMedium, color: COLOR.white }}
+        style={{ backgroundColor: COLOR.primary }}
       />
       <FlatList
         data={messageHistory}
@@ -104,16 +104,16 @@ export default HistoryScreen;
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: COLOR.black,
+    backgroundColor: COLOR.primary,
   },
   messageList: {
     paddingHorizontal: 15,
     paddingTop: 20,
   },
   messageItem: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     padding: 15,
-    borderRadius: 8,
+    borderRadius: hp(1.6),
     marginVertical: 8,
   },
   messageText: {
@@ -121,12 +121,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   messageTimestamp: {
-    color: '#888',
+    color: '#DDEBFF',
     fontSize: 12,
     marginTop: 5,
   },
   emptyMessage: {
-    color: '#888',
+    color: '#DDEBFF',
     fontSize: 18,
     textAlign: 'center',
     marginTop: 50,
