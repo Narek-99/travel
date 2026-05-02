@@ -14,11 +14,10 @@ import { KEYS } from '../utils/Keys';
 import { generateUniqueId } from '../utils/MyUtils';
 import { getDocumentData } from '../services/FirebaseMethods';
 import { setUser } from '../redux/action/Action';
-import { useSubscriptions } from '../contexts/subscriptionContext';
 import {
   HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, ChatbotScreen,
   TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, ActivitiesScreen, DatesScreen, HelpScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen,
-  Onboarding1Screen, SettingScreen, SubscriptionScreen
+  Onboarding1Screen, SettingScreen, AdvantageScreen
 } from '../screen';
 
 const RootNavigation = () => {
@@ -26,15 +25,10 @@ const RootNavigation = () => {
   const dispatch = useDispatch();
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [loading, setLoading] = useState(true);
-  const { isSubscribed } = useSubscriptions();
 
   useEffect(() => {
     saveUserId();
   }, [user?.userStatus]);
-
-  useEffect(() => {
-    dispatch(setUser({ ...user, subscription: isSubscribed }));
-  }, [isSubscribed]);
 
   const saveUserId = async () => {
     try {
@@ -45,16 +39,15 @@ const RootNavigation = () => {
         await AsyncStorage.setItem(KEYS.USERID, newUserId);
         const data = {
           uid: newUserId,
-          subscription: false,
           userStatus: USER_STATUS.NEW,
           createdAt: firestore.FieldValue.serverTimestamp(),
         };
         await firestore().collection(FIREBASE_COLLECTIONS.USERS).doc(newUserId).set(data);
         const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, newUserId);
-        dispatch(setUser({ ...(user != null ? user : {}), ...userData, subscription: isSubscribed }));
+        dispatch(setUser({ ...(user != null ? user : {}), ...userData }));
       } else {
         const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, existingUserId);
-        dispatch(setUser({ ...(user != null ? user : {}), ...userData, subscription: isSubscribed }));
+        dispatch(setUser({ ...(user != null ? user : {}), ...userData }));
       }
     } catch (error) {
       console.error("Error saving User ID:", error);
@@ -88,7 +81,7 @@ const RootNavigation = () => {
                 <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
                 <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
                 <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
-                <Stack.Screen name={SCREEN.SUBSCRIPTION} component={SubscriptionScreen} />
+                <Stack.Screen name={SCREEN.ADVANTAGE} component={AdvantageScreen} />
                 <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
                 <Stack.Screen name={SCREEN.HOTELBOOKING} component={HotelBookingScreen} />
                 <Stack.Screen name={SCREEN.DAYBYDAY} component={DayByDayPlanScreen} />

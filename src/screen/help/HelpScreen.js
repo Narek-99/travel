@@ -3,7 +3,6 @@ import { Button, Photo } from '../../components';
 import { IMAGES } from '../../assets/images';
 import { COLOR, hp, wp } from '../../enums/StyleGuide';
 import { useSelector, useDispatch } from 'react-redux';
-import useRating from '../../utils/useRating';
 import { SVG } from '../../assets/svgs';
 import { FIREBASE_COLLECTIONS, USER_STATUS } from '../../enums/AppEnums';
 import { getDocumentData, saveData } from '../../services/FirebaseMethods';
@@ -17,7 +16,6 @@ const hapticOptions = { enableVibrateFallback: true };
 const HelpScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const dispatch = useDispatch();
-  const { showRating } = useRating();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -39,9 +37,6 @@ const HelpScreen = ({ navigation }) => {
 
   const handleUserStatusUpdate = async () => {
     try {
-      setTimeout(() => showRating(true), 100);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       const updatedData = { userStatus: USER_STATUS.OLD };
       await saveData(FIREBASE_COLLECTIONS.USERS, user?.uid, updatedData);
 

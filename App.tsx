@@ -5,7 +5,6 @@ import store from './src/redux/store/Store';
 import FlashMessage from 'react-native-flash-message';
 import BootSplash from 'react-native-bootsplash';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SubscriptionProvider } from './src/contexts/subscriptionContext';
 import Toast from 'react-native-toast-message';
 
 const App = () => {
@@ -20,11 +19,9 @@ const App = () => {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <SubscriptionProvider>
-          <RootNavigation />
-          <FlashMessage position="top" />
-          <Toast />
-        </SubscriptionProvider>
+        <RootNavigation />
+        <FlashMessage position="top" />
+        <Toast />
       </SafeAreaProvider>
     </Provider>
   );

@@ -1,5 +1,5 @@
 import DestinationScreen from "./destination";
-import SubscriptionScreen from "./Subscription";
+import AdvantageScreen from "./advantage";
 import CompanionScreen from "./companion";
 import BudgetScreen from "./budget";
 import AdditionalScreen from "./additional";
@@ -22,7 +22,7 @@ export {
     DatesScreen,
     Onboarding1Screen,
     DestinationScreen,
-    SubscriptionScreen,
+    AdvantageScreen,
     CompanionScreen,
     BudgetScreen,
     TripsScreen,

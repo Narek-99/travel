@@ -1,4 +1,4 @@
-import { ActivityIndicator, Linking, SafeAreaView, StyleSheet, View, Share } from 'react-native'
+import { ActivityIndicator, Linking, SafeAreaView, StyleSheet, View } from 'react-native'
 import React, { useState } from 'react'
 import { COLOR, hp, TEXT_STYLE, wp } from '../../enums/StyleGuide'
 import { AppHeader, Label, Pressable } from '../../components'
@@ -76,14 +76,12 @@ const SettingScreen = ({ navigation }) => {
           }
         </Pressable>
 
-        {!user?.subscription && (
-          <Pressable style={styles.pressBtn} onPress={() => {
-            ReactNativeHapticFeedback.trigger('impactLight', options);
-            navigation.navigate(SCREEN.SUBSCRIPTION, { from: 'settings' })
-          }}>
-            <Label style={styles.pressBtnText}>Subscribe</Label>
-          </Pressable>
-        )}
+        <Pressable style={styles.pressBtn} onPress={() => {
+          ReactNativeHapticFeedback.trigger('impactLight', options);
+          navigation.navigate(SCREEN.ADVANTAGE, { from: 'settings' })
+        }}>
+          <Label style={styles.pressBtnText}>Prime Access</Label>
+        </Pressable>
 
         {/* <Pressable style={styles.pressBtn} onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', options);

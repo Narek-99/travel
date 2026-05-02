@@ -11,7 +11,7 @@ export const KEYBOARD_TYPE = {
 export const SCREEN = {
   ONBOARDING1: "Onboarding1Screen",
   DESTINATION: "HomseScreen",
-  SUBSCRIPTION: "SubscriptionScreen",
+  ADVANTAGE: "AdvantageScreen",
   CHAT: "ChatScreen",
   HISTORY: "HistoryScreen",
   COMPANION: "CompanionScreen",

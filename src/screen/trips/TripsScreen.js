@@ -22,27 +22,25 @@ import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useRating from '../../utils/useRating';
-import { useSubscriptions } from '../../contexts/subscriptionContext';
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [trips, setTrips] = useState([]);
-  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
   const hapticOptions = { enableVibrateFallback: true };
   const [tripImages, setTripImages] = useState({});
   const [loadingImages, setLoadingImages] = useState({});
   const [lastFetchedDestinations, setLastFetchedDestinations] = useState({});
   const hasShownRating = useRef(false);
-  const { isSubscribed, isProductListLoading, getAvailablePurchase } = useSubscriptions();
   const { showRating } = useRating();
   const translateAnims = useRef({}).current; // Store animation values for each trip
 
   useEffect(() => {
-    if (!hasShownRating.current) {
+    console.log('user.uid :', user.uid);
+    if (user?.uid && !hasShownRating.current) {
       showRating();
       hasShownRating.current = true;
     }
-  }, [showRating]);
+  }, [showRating, user?.uid]);
 
   const fetchTripImage = async (destination, tripId) => {
     if (tripImages[tripId] && lastFetchedDestinations[tripId] === destination) return;
@@ -91,30 +89,10 @@ const TripsScreen = ({ navigation }) => {
     }
   }, [user.uid, translateAnims]);
 
-  useEffect(() => {
-    if (!user?.uid) return;
-
-    const unsubscribe = firestore()
-      .collection('users')
-      .doc(user.uid)
-      .onSnapshot(
-        doc => {
-          setIsSubscriptionLoading(false);
-        },
-        error => {
-          console.error('❌ Error fetching subscription:', error);
-          setIsSubscriptionLoading(false);
-        }
-      );
-
-    return () => unsubscribe();
-  }, [user?.uid]);
-
   useFocusEffect(
     useCallback(() => {
       if (user?.uid) {
         fetchTrips();
-        getAvailablePurchase();
       }
     }, [user?.uid, fetchTrips])
   );
@@ -238,21 +216,13 @@ const TripsScreen = ({ navigation }) => {
   };
 
   const handleAddTripNavigation = () => {
-    if (isSubscriptionLoading) return;
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    if (!isSubscribed && !isProductListLoading) {
-      navigation.navigate(SCREEN.SUBSCRIPTION);
-    } else {
-      navigation.navigate(SCREEN.DESTINATION);
-    }
+    navigation.navigate(SCREEN.DESTINATION);
   };
 
-  const handlePremiumPress = () => {
-    if (isSubscriptionLoading) return;
-    if (!user?.subscription) {
-      navigation.navigate(SCREEN.SUBSCRIPTION);
-      ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
-    }
+  const handleAccessPress = () => {
+    navigation.navigate(SCREEN.ADVANTAGE);
+    ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
   };
 
   const handleEditTripPress = (tripId) => {
@@ -349,25 +319,13 @@ const TripsScreen = ({ navigation }) => {
         }
         centerComp={
           <View style={styles.headerActions}>
-            {(isSubscriptionLoading || isProductListLoading) ? (
-              <SkeletonPlaceholder borderRadius={hp(1)}>
-                <SkeletonPlaceholder.Item width={wp(30)} height={hp(4)} />
-              </SkeletonPlaceholder>
-            ) : isSubscribed ? (
-              <View style={styles.gptPlusButton}>
-                <SVG.Flash fill="#3B82F6" />
-                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Premium</Label>
-              </View>
-            ) : (
-              <Pressable
-                style={styles.gptPlusButton}
-                onPress={handlePremiumPress}
-                disabled={isSubscriptionLoading}
-              >
-                <SVG.Flash fill="#3B82F6" />
-                <Label style={{ color: '#3B82F6', fontWeight: 700 }}>Try For Free</Label>
-              </Pressable>
-            )}
+            <Pressable
+              style={styles.gptPlusButton}
+              onPress={handleAccessPress}
+            >
+              <SVG.Flash fill="#3B82F6" />
+              <Label style={styles.accessText}>Prime Access</Label>
+            </Pressable>
           </View>
         }
         rightComp={
@@ -422,12 +380,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLOR.white, paddingBottom: 10 },
   gptPlusButton: {
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    paddingHorizontal: wp(6),
+    paddingHorizontal: wp(4),
     paddingVertical: hp(1),
     borderRadius: hp(1),
     flexDirection: 'row',
     gap: wp(2),
     alignItems: 'center',
+  },
+  accessText: {
+    color: '#3B82F6',
+    fontWeight: '700',
+    fontSize: 13,
   },
   headerActions: { flexDirection: 'col', alignItems: 'center', gap: wp(3) },
   contentContainer: {
