@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Pressable, Text, FlatList, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Pressable,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -41,20 +51,19 @@ const BookingScreen = ({ navigation }) => {
 
   const findBestAirport = (cityName, countryCode) => {
     const airportEntries = Object.values(airports);
-    const byCityAndCountry = airportEntries.find(airport =>
-      airport.city?.toLowerCase() === cityName?.toLowerCase() &&
-      airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
-      airport.iata
+    const byCityAndCountry = airportEntries.find(
+      (airport) =>
+        airport.city?.toLowerCase() === cityName?.toLowerCase() &&
+        airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
+        airport.iata
     );
     if (byCityAndCountry) return byCityAndCountry;
-    const byCity = airportEntries.find(airport =>
-      airport.city?.toLowerCase() === cityName?.toLowerCase() &&
-      airport.iata
+    const byCity = airportEntries.find(
+      (airport) => airport.city?.toLowerCase() === cityName?.toLowerCase() && airport.iata
     );
     if (byCity) return byCity;
-    const byCountry = airportEntries.find(airport =>
-      airport.country?.toLowerCase() === countryCode?.toLowerCase() &&
-      airport.iata
+    const byCountry = airportEntries.find(
+      (airport) => airport.country?.toLowerCase() === countryCode?.toLowerCase() && airport.iata
     );
     if (byCountry) return byCountry;
     return null;
@@ -127,7 +136,7 @@ const BookingScreen = ({ navigation }) => {
         .collection('trips')
         .doc(tripId)
         .get()
-        .then(snapshot => {
+        .then((snapshot) => {
           const data = snapshot.data();
           if (data) {
             setTrip(data);
@@ -148,7 +157,7 @@ const BookingScreen = ({ navigation }) => {
             }
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('❌ Error loading trip:', error);
         });
     }
@@ -176,49 +185,53 @@ const BookingScreen = ({ navigation }) => {
     // Loading Indicator
     ...(loading
       ? [
-        {
-          type: 'loader',
-        },
-      ]
+          {
+            type: 'loader',
+          },
+        ]
       : []),
     // Departure Flights
     ...(departureFlights.length > 0
       ? [
-        {
-          type: 'sectionTitle',
-          title: 'Departure Flights',
-          marginTop: hp(2),
-        },
-        ...departureFlights.map((flight, index) => ({
-          type: 'flightCard',
-          flight,
-          key: `dep-${index}`,
-          isDeparture: true,
-        })),
-      ]
+          {
+            type: 'sectionTitle',
+            title: 'Departure Flights',
+            marginTop: hp(2),
+          },
+          ...departureFlights.map((flight, index) => ({
+            type: 'flightCard',
+            flight,
+            key: `dep-${index}`,
+            isDeparture: true,
+          })),
+        ]
       : []),
     // Return Flights
     ...(returnFlights.length > 0
       ? [
-        {
-          type: 'sectionTitle',
-          title: 'Return Flights',
-          marginTop: hp(2),
-        },
-        ...returnFlights.map((flight, index) => ({
-          type: 'flightCard',
-          flight,
-          key: `ret-${index}`,
-          isDeparture: false,
-        })),
-      ]
+          {
+            type: 'sectionTitle',
+            title: 'Return Flights',
+            marginTop: hp(2),
+          },
+          ...returnFlights.map((flight, index) => ({
+            type: 'flightCard',
+            flight,
+            key: `ret-${index}`,
+            isDeparture: false,
+          })),
+        ]
       : []),
   ];
 
   const renderItem = ({ item }) => {
     switch (item.type) {
       case 'sectionTitle':
-        return <Text style={[styles.sectionTitle, { marginTop: item.marginTop || hp(4) }]}>{item.title}</Text>;
+        return (
+          <Text style={[styles.sectionTitle, { marginTop: item.marginTop || hp(4) }]}>
+            {item.title}
+          </Text>
+        );
 
       case 'airportSelectors':
         return (
@@ -239,7 +252,12 @@ const BookingScreen = ({ navigation }) => {
       case 'datePickers':
         return (
           <View style={styles.dateContainer}>
-            <View style={{ flexDirection: "row", justifyContent: showReturnFlight ? "space-around" : "space-between" }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: showReturnFlight ? 'space-around' : 'space-between',
+              }}
+            >
               <View style={styles.datePickerWrapper}>
                 <Label style={styles.label}>Departure Date</Label>
                 <DateTimePicker
@@ -254,7 +272,7 @@ const BookingScreen = ({ navigation }) => {
                       }
                     }
                   }}
-                  themeVariant="light"
+                  themeVariant="dark"
                   minimumDate={new Date()}
                 />
               </View>
@@ -265,12 +283,12 @@ const BookingScreen = ({ navigation }) => {
                   <DateTimePicker
                     value={returnFlightDate}
                     mode="date"
-                    display="default"
+                    themeVariant="dark"
+                    display="defaul"
                     onChange={(event, selectedDate) => {
                       if (selectedDate) setReturnFlightDate(selectedDate);
                     }}
                     minimumDate={startFlightDate}
-                    themeVariant="light"
                   />
                 </View>
               )}
@@ -283,11 +301,14 @@ const BookingScreen = ({ navigation }) => {
                 setShowReturnFlight(!showReturnFlight);
               }}
             >
-              {showReturnFlight ? <SVG.Minus width="20" height="20" /> : <SVG.Plus width="20" height="20" fill="#007AFF" />}
-
+              {showReturnFlight ? (
+                <SVG.Minus width="20" height="20" />
+              ) : (
+                <SVG.Plus width="20" height="20" fill="#007AFF" />
+              )}
 
               <Text style={styles.toggleReturnText}>
-                {showReturnFlight ? "Remove Return Date" : "Add Return Date"}
+                {showReturnFlight ? 'Remove Return Date' : 'Add Return Date'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -333,13 +354,16 @@ const BookingScreen = ({ navigation }) => {
             <View style={styles.flightCardHeader}>
               <Pressable
                 onLongPress={() => {
-                  Clipboard.setString(`${item.flight.itineraries[0].segments[0].departure.iataCode} → ${item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}`);
+                  Clipboard.setString(
+                    `${item.flight.itineraries[0].segments[0].departure.iataCode} → ${item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}`
+                  );
                   triggerHaptic();
                   Toast.show({ type: 'success', text1: 'Route copied!' });
                 }}
               >
                 <Text style={styles.flightRoute}>
-                  {item.flight.itineraries[0].segments[0].departure.iataCode} → {item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                  {item.flight.itineraries[0].segments[0].departure.iataCode} →{' '}
+                  {item.flight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
                 </Text>
               </Pressable>
 
@@ -373,7 +397,9 @@ const BookingScreen = ({ navigation }) => {
               )}
               <Pressable
                 onLongPress={() => {
-                  Clipboard.setString(item.flight.itineraries[0].duration.replace('PT', '').toLowerCase());
+                  Clipboard.setString(
+                    item.flight.itineraries[0].duration.replace('PT', '').toLowerCase()
+                  );
                   triggerHaptic();
                   Toast.show({ type: 'success', text1: 'Duration copied!' });
                 }}
@@ -386,7 +412,9 @@ const BookingScreen = ({ navigation }) => {
               <Pressable
                 onLongPress={() => {
                   Clipboard.setString(
-                    new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', {
+                    new Date(
+                      item.flight.itineraries[0].segments[0].departure.at
+                    ).toLocaleDateString('en-US', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',
@@ -398,16 +426,19 @@ const BookingScreen = ({ navigation }) => {
                 style={styles.flightDetailRow}
               >
                 <Text style={styles.flightDetailText}>
-                  📅 Date: {new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
+                  📅 Date:{' '}
+                  {new Date(item.flight.itineraries[0].segments[0].departure.at).toLocaleDateString(
+                    'en-US',
+                    {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    }
+                  )}
                 </Text>
               </Pressable>
             </View>
           </TouchableOpacity>
-
         );
 
       case 'hotelButton':
@@ -435,10 +466,12 @@ const BookingScreen = ({ navigation }) => {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => {
-          triggerHaptic();
-          navigation.goBack();
-        }}>
+        <Pressable
+          onPress={() => {
+            triggerHaptic();
+            navigation.goBack();
+          }}
+        >
           <SVG.BackIcon fill={COLOR.white} />
         </Pressable>
         <Text style={styles.headerTitle}>Book Your Trip</Text>
@@ -469,29 +502,50 @@ const BookingScreen = ({ navigation }) => {
               <View style={styles.modalSection}>
                 <Text style={styles.modalSubTitle}>Route</Text>
                 <Text style={styles.modalText}>
-                  {selectedFlight.itineraries[0].segments[0].departure.iataCode} → {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
+                  {selectedFlight.itineraries[0].segments[0].departure.iataCode} →{' '}
+                  {selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
                 </Text>
               </View>
 
               <View style={styles.modalSection}>
                 <Text style={styles.modalSubTitle}>Departure</Text>
                 <Text style={styles.modalText}>
-                  {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
-                  {new Date(selectedFlight.itineraries[0].segments[0].departure.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(
+                    selectedFlight.itineraries[0].segments[0].departure.at
+                  ).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}{' '}
+                  •{' '}
+                  {new Date(
+                    selectedFlight.itineraries[0].segments[0].departure.at
+                  ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Text>
               </View>
 
               <View style={styles.modalSection}>
                 <Text style={styles.modalSubTitle}>Arrival</Text>
                 <Text style={styles.modalText}>
-                  {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} •{' '}
-                  {new Date(selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(
+                    selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at
+                  ).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}{' '}
+                  •{' '}
+                  {new Date(
+                    selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.at
+                  ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Text>
               </View>
 
               <View style={styles.modalSection}>
                 <Text style={styles.modalSubTitle}>Duration</Text>
-                <Text style={styles.modalText}>{selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}</Text>
+                <Text style={styles.modalText}>
+                  {selectedFlight.itineraries[0].duration.replace('PT', '').toLowerCase()}
+                </Text>
               </View>
 
               <View style={styles.modalSection}>
@@ -506,7 +560,9 @@ const BookingScreen = ({ navigation }) => {
               {selectedFlight.validatingAirlineCodes && (
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSubTitle}>Airline</Text>
-                  <Text style={styles.modalText}>{selectedFlight.validatingAirlineCodes.join(', ')}</Text>
+                  <Text style={styles.modalText}>
+                    {selectedFlight.validatingAirlineCodes.join(', ')}
+                  </Text>
                 </View>
               )}
 
@@ -522,15 +578,20 @@ const BookingScreen = ({ navigation }) => {
                 onPress={() => {
                   triggerHaptic();
                   const origin = selectedFlight.itineraries[0].segments[0].departure.iataCode;
-                  const destination = selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
-                  const departureDate = new Date(selectedFlight.itineraries[0].segments[0].departure.at)
+                  const destination =
+                    selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode;
+                  const departureDate = new Date(
+                    selectedFlight.itineraries[0].segments[0].departure.at
+                  )
                     .toISOString()
                     .split('T')[0]
                     .replace(/-/g, '');
 
                   const bookingUrl = `https://www.google.com/travel/flights?hl=en&gl=US&curr=USD&q=Flights+to+${destination}+from+${origin}+on+${departureDate}+one+way`;
 
-                  Linking.openURL(bookingUrl).catch(err => console.error('Failed to open URL:', err));
+                  Linking.openURL(bookingUrl).catch((err) =>
+                    console.error('Failed to open URL:', err)
+                  );
                   setIsModalVisible(false);
                 }}
               >
@@ -604,8 +665,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   datePickerWrapper: {
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
     marginBottom: hp(2),
   },
   label: {
@@ -656,7 +717,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
-    gap: wp(1)
+    gap: wp(1),
   },
   resetButton: {
     flex: 1,
@@ -714,7 +775,7 @@ const styles = StyleSheet.create({
   },
   flightDetails: {
     marginTop: hp(1),
-    marginLeft: wp(0)
+    marginLeft: wp(0),
   },
   flightDetailRow: {
     flexDirection: 'row',

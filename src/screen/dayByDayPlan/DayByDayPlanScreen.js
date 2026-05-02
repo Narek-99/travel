@@ -8,6 +8,23 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const { height } = Dimensions.get('window');
+const fallbackAttractionImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80';
+
+const normalizeImageUrl = url => {
+  if (!url || typeof url !== 'string') {
+    return null;
+  }
+
+  if (url.startsWith('//')) {
+    return `https:${url}`;
+  }
+
+  if (url.startsWith('http://')) {
+    return url.replace('http://', 'https://');
+  }
+
+  return url;
+};
 
 const DayByDayPlanScreen = ({ navigation }) => {
   const route = useRoute();
@@ -17,6 +34,7 @@ const DayByDayPlanScreen = ({ navigation }) => {
   const [region, setRegion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [failedImages, setFailedImages] = useState({});
   const mapFadeAnim = useRef(new Animated.Value(0)).current;
   const mapRef = useRef(null);
 
@@ -129,6 +147,17 @@ const DayByDayPlanScreen = ({ navigation }) => {
     </View>
   );
 
+  const getAttractionImageSource = (photo, key) => {
+    const imageUrl = normalizeImageUrl(photo);
+    return {
+      uri: !failedImages[key] && imageUrl ? imageUrl : fallbackAttractionImage,
+    };
+  };
+
+  const markImageFailed = key => {
+    setFailedImages(previous => ({ ...previous, [key]: true }));
+  };
+
   return (
     <View style={styles.container}>
       {loading ? (
@@ -172,33 +201,34 @@ const DayByDayPlanScreen = ({ navigation }) => {
                   </View>
                 </Callout>
               </Marker>
-              {dailyItineraries[selectedDayIndex].items.map((item, index) => (
-                <Marker
-                  key={index}
-                  coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
-                  title={item.attraction.name}>
-                  {renderCustomMarker(item.order)}
-                  <Callout tooltip>
-                    <View style={styles.calloutContainer}>
-                      {item.attraction.photo ? (
+              {dailyItineraries[selectedDayIndex].items.map((item, index) => {
+                const calloutImageKey = `callout-${selectedDayIndex}-${index}`;
+
+                return (
+                  <Marker
+                    key={index}
+                    coordinate={{ latitude: item.attraction.lat, longitude: item.attraction.lng }}
+                    title={item.attraction.name}>
+                    {renderCustomMarker(item.order)}
+                    <Callout tooltip>
+                      <View style={styles.calloutContainer}>
                         <Image
-                          source={{ uri: item.attraction.photo }}
+                          source={getAttractionImageSource(item.attraction.photo, calloutImageKey)}
                           style={styles.calloutImage}
                           resizeMode="cover"
+                          onError={() => markImageFailed(calloutImageKey)}
                         />
-                      ) : (
-                        <Text>No Image</Text>
-                      )}
-                      <Text style={styles.calloutTitle}>
-                        {item.attraction.name} {index === dailyItineraries[selectedDayIndex].items.length - 1 ? '(Ende)' : ''}
-                      </Text>
-                      <Text style={styles.calloutText}>
-                        ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
-                      </Text>
-                    </View>
-                  </Callout>
-                </Marker>
-              ))}
+                        <Text style={styles.calloutTitle}>
+                          {item.attraction.name} {index === dailyItineraries[selectedDayIndex].items.length - 1 ? '(Ende)' : ''}
+                        </Text>
+                        <Text style={styles.calloutText}>
+                          ⭐ {item.attraction.rating} ({item.attraction.reviews} reviews)
+                        </Text>
+                      </View>
+                    </Callout>
+                  </Marker>
+                );
+              })}
               <Polyline
                 coordinates={getRouteCoordinates()}
                 strokeColor={"#1E90FF"}
@@ -235,69 +265,74 @@ const DayByDayPlanScreen = ({ navigation }) => {
             </ScrollView>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.attractionsContainer}>
-              {dailyItineraries[selectedDayIndex].items.map((item, index) => (
-                <React.Fragment key={index}>
-                  {index > 0 && item.travelDistance && item.travelDuration && (
-                    <View style={styles.travelInfoContainer}>
-                      <View style={styles.travelContainer}>
-                        <Text>🚘</Text>
-                        <Text style={styles.travelText}>
-                          {item.travelDistance}
-                        </Text>
+              {dailyItineraries[selectedDayIndex].items.map((item, index) => {
+                const cardImageKey = `card-${selectedDayIndex}-${index}`;
+
+                return (
+                  <React.Fragment key={index}>
+                    {index > 0 && item.travelDistance && item.travelDuration && (
+                      <View style={styles.travelInfoContainer}>
+                        <View style={styles.travelContainer}>
+                          <Text>🚘</Text>
+                          <Text style={styles.travelText}>
+                            {item.travelDistance}
+                          </Text>
+                        </View>
+                        <View style={styles.travelContainer}>
+                          <Text>🕞</Text>
+                          <Text style={styles.travelText}>
+                            {item.travelDuration}
+                          </Text>
+                        </View>
                       </View>
-                      <View style={styles.travelContainer}>
-                        <Text>🕞</Text>
-                        <Text style={styles.travelText}>
-                          {item.travelDuration}
-                        </Text>
+                    )}
+                    <Pressable
+                      style={styles.card}
+                      onPress={() => {
+                        mapRef.current?.animateToRegion(
+                          {
+                            latitude: item.attraction.lat,
+                            longitude: item.attraction.lng,
+                            latitudeDelta: 0.01,
+                            longitudeDelta: 0.01,
+                          },
+                          800
+                        );
+                      }}>
+                      <View style={styles.orderContainer}>
+                        <Text style={styles.order}>#{item.order}</Text>
                       </View>
-                    </View>
-                  )}
-                  <Pressable
-                    style={styles.card}
-                    onPress={() => {
-                      mapRef.current?.animateToRegion(
-                        {
-                          latitude: item.attraction.lat,
-                          longitude: item.attraction.lng,
-                          latitudeDelta: 0.01,
-                          longitudeDelta: 0.01,
-                        },
-                        800
-                      );
-                    }}>
-                    <View style={styles.orderContainer}>
-                      <Text style={styles.order}>#{item.order}</Text>
-                    </View>
-                    <View style={styles.imageContainer}>
-                      <Image
-                        source={{ uri: item.attraction.photo || 'https://via.placeholder.com/80' }}
-                        style={styles.attractionImage}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View style={styles.details}>
-                      <Text style={styles.placeText}>{item.attraction.name}</Text>
-                      <View style={styles.reviewContainer}>
-                        <SVG.Star width={14} height={14} fill="#FBA047" />
-                        <Text style={styles.ratingText}>{item.attraction.rating} ({item.attraction.reviews} Reviews)</Text>
+                      <View style={styles.imageContainer}>
+                        <Image
+                          source={getAttractionImageSource(item.attraction.photo, cardImageKey)}
+                          style={styles.attractionImage}
+                          resizeMode="cover"
+                          onError={() => markImageFailed(cardImageKey)}
+                        />
                       </View>
-                      <View style={styles.timeContainer}>
-                        <SVG.Clock width={14} height={14} fill="#1E90FF" />
-                        <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+                      <View style={styles.details}>
+                        <Text style={styles.placeText}>{item.attraction.name}</Text>
+                        <View style={styles.reviewContainer}>
+                          <SVG.Star width={14} height={14} fill="#FBA047" />
+                          <Text style={styles.ratingText}>{item.attraction.rating} ({item.attraction.reviews} Reviews)</Text>
+                        </View>
+                        <View style={styles.timeContainer}>
+                          <SVG.Clock width={14} height={14} fill="#1E90FF" />
+                          <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+                        </View>
+                        <Pressable
+                          onPress={() => {
+                            ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
+                            Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`);
+                          }}
+                          style={styles.directionsButton}>
+                          <Text style={styles.directionsText}>Directions</Text>
+                        </Pressable>
                       </View>
-                      <Pressable
-                        onPress={() => {
-                          ReactNativeHapticFeedback.trigger('impactLight', { enableVibrateFallback: true });
-                          Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.attraction.lat},${item.attraction.lng}`);
-                        }}
-                        style={styles.directionsButton}>
-                        <Text style={styles.directionsText}>Directions</Text>
-                      </Pressable>
-                    </View>
-                  </Pressable>
-                </React.Fragment>
-              ))}
+                    </Pressable>
+                  </React.Fragment>
+                );
+              })}
             </ScrollView>
           </View>
         </>

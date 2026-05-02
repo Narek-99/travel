@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: hp(1),
-    color: COLOR.dark,
+    color: COLOR.white,
   },
   input: {
     backgroundColor: '#F3F4F6',

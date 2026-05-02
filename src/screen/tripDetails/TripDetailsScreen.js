@@ -593,9 +593,10 @@ const TripDetailsScreen = ({ navigation }) => {
         draggable
         height={hp(52)}
         customStyles={{
-          wrapper: { backgroundColor: 'transparent' },
-          draggableIcon: { backgroundColor: '#D1D5DB' },
+          wrapper: { backgroundColor: 'rgba(0, 0, 0, 0.18)' },
+          draggableIcon: { backgroundColor: 'rgba(255, 255, 255, 0.36)' },
           container: {
+            backgroundColor: COLOR.primary,
             shadowColor: COLOR.black,
             shadowOffset: { width: 0, height: -2 },
             shadowOpacity: 0.1,
@@ -603,6 +604,7 @@ const TripDetailsScreen = ({ navigation }) => {
             elevation: 12,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
+            overflow: 'hidden',
           },
         }}
         customModalProps={{ animationType: 'slide', statusBarTranslucent: true }}
@@ -906,6 +908,7 @@ export const styles = StyleSheet.create({
   },
   sheetContent: {
     flex: 1,
+    backgroundColor: COLOR.primary,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: hp(2),
@@ -921,8 +924,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: wp(5),
   },
   optionCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderColor: 'rgba(255, 255, 255, 0.14)',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     borderWidth: 1,
     borderRadius: hp(1.6),
     marginVertical: hp(0.75),
