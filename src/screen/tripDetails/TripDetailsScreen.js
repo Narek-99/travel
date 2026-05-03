@@ -613,7 +613,7 @@ const TripDetailsScreen = ({ navigation }) => {
         draggable
         height={hp(52)}
         customStyles={{
-          wrapper: { backgroundColor: 'rgba(0, 0, 0, 0.18)' },
+          wrapper: { backgroundColor: 'rgba(0, 0, 0, 0)' },
           draggableIcon: { backgroundColor: 'rgba(255, 255, 255, 0.36)' },
           container: {
             backgroundColor: COLOR.primary,
