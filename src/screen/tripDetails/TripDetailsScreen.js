@@ -542,10 +542,21 @@ const TripDetailsScreen = ({ navigation }) => {
                                 style={styles.attractionImage}
                                 resizeMode="cover"
                                 onLoadStart={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: false }))}
+                                onLoad={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
                                 onLoadEnd={() => setLoadedImages(prev => ({ ...prev, [place.place_id]: true }))}
-                                onError={() => setFailedImages(prev => ({ ...prev, [`card-${place.place_id}`]: true }))}
+                                onError={() => {
+                                  setFailedImages(prev => ({ ...prev, [`card-${place.place_id}`]: true }));
+                                  setLoadedImages(prev => ({ ...prev, [place.place_id]: true }));
+                                }}
                               />
-                              {!loadedImages[place.place_id] && <ActivityIndicator style={{ position: 'absolute', top: 60, alignSelf: 'center' }} size="small" color={COLOR.primary} />}
+                              {loadedImages[place.place_id] === false && (
+                                <ActivityIndicator
+                                  pointerEvents="none"
+                                  style={styles.attractionImageLoader}
+                                  size="small"
+                                  color={COLOR.primary}
+                                />
+                              )}
                             </View>
                           ) : (
                             <View style={styles.noImageBox}>
@@ -857,6 +868,15 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: 120,
     borderRadius: 12,
+  },
+  attractionImageLoader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   noImageBox: {
     width: '100%',
