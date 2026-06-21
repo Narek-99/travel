@@ -9,6 +9,7 @@ import { DeleteMessages } from '../../services/FirebaseMethods'
 import Toast from 'react-native-toast-message'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
+import { useAds } from '../../ads';
 
 const options = {
   enableVibrateFallback: true
@@ -17,6 +18,7 @@ const options = {
 const SettingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [loading, setLoading] = useState(false)
+  const { privacyOptionsRequired, showPrivacyOptions } = useAds();
 
   const openPrivacyPolicy = () => {
     Linking.openURL('https://docs.google.com/document/d/1xcSSKsrhrdHGS9gcfYEqIboULPlLyzpASzGJG7VAM8I/edit?usp=sharing');
@@ -111,6 +113,14 @@ const SettingScreen = ({ navigation }) => {
         }}>
           <Label style={styles.pressBtnText}>Contact</Label>
         </Pressable>
+        {privacyOptionsRequired ? (
+          <Pressable style={styles.pressBtn} onPress={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', options);
+            showPrivacyOptions();
+          }}>
+            <Label style={styles.pressBtnText}>Ad Privacy Choices</Label>
+          </Pressable>
+        ) : null}
         <Pressable style={styles.pressBtn} onPress={() => {
           openPrivacyPolicy();
           ReactNativeHapticFeedback.trigger('impactLight', options);

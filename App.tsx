@@ -6,6 +6,7 @@ import FlashMessage from 'react-native-flash-message';
 import BootSplash from 'react-native-bootsplash';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { AdProvider } from './src/ads';
 
 const App = () => {
   useEffect(() => {
@@ -19,9 +20,11 @@ const App = () => {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <RootNavigation />
-        <FlashMessage position="top" />
-        <Toast />
+        <AdProvider>
+          <RootNavigation />
+          <FlashMessage position="top" />
+          <Toast />
+        </AdProvider>
       </SafeAreaProvider>
     </Provider>
   );

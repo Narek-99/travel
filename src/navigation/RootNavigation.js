@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,6 +19,7 @@ import {
   TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, ActivitiesScreen, DatesScreen, HelpScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen,
   Onboarding1Screen, SettingScreen, AdvantageScreen
 } from '../screen';
+import { BottomBannerAd } from '../ads';
 
 const RootNavigation = () => {
   const Stack = createNativeStackNavigator();
@@ -78,39 +79,50 @@ const RootNavigation = () => {
         backgroundColor={COLOR.white}
         preload={true}
       >
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 ? (
-              <>
-                <Stack.Screen name={SCREEN.TRIPS} component={TripsScreen} />
-                <Stack.Screen name={SCREEN.TRIPDETAILS} component={TripDetailsScreen} />
-                <Stack.Screen name={SCREEN.DESTINATION} component={DestinationScreen} />
-                <Stack.Screen name={SCREEN.DATES} component={DatesScreen} />
-                <Stack.Screen name={SCREEN.COMPANION} component={CompanionScreen} />
-                <Stack.Screen name={SCREEN.BUDGET} component={BudgetScreen} />
-                <Stack.Screen name={SCREEN.ACTIVITIES} component={ActivitiesScreen} />
-                <Stack.Screen name={SCREEN.PREFERENCES} component={PreferencesScreen} />
-                <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
-                <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
-                <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
-                <Stack.Screen name={SCREEN.ADVANTAGE} component={AdvantageScreen} />
-                <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
-                <Stack.Screen name={SCREEN.HOTELBOOKING} component={HotelBookingScreen} />
-                <Stack.Screen name={SCREEN.DAYBYDAY} component={DayByDayPlanScreen} />
-                <Stack.Screen name={SCREEN.CHATBOT} component={ChatbotScreen} />
-                <Stack.Screen name={SCREEN.FUNFACTS} component={FunFactsScreen} />
-              </>
-            ) : (
-              <>
-                <Stack.Screen name={SCREEN.ONBOARDING1} component={Onboarding1Screen} />
-                <Stack.Screen name={SCREEN.HELP} component={HelpScreen} />
-              </>
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
+        <View style={styles.appContainer}>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 ? (
+                <>
+                  <Stack.Screen name={SCREEN.TRIPS} component={TripsScreen} />
+                  <Stack.Screen name={SCREEN.TRIPDETAILS} component={TripDetailsScreen} />
+                  <Stack.Screen name={SCREEN.DESTINATION} component={DestinationScreen} />
+                  <Stack.Screen name={SCREEN.DATES} component={DatesScreen} />
+                  <Stack.Screen name={SCREEN.COMPANION} component={CompanionScreen} />
+                  <Stack.Screen name={SCREEN.BUDGET} component={BudgetScreen} />
+                  <Stack.Screen name={SCREEN.ACTIVITIES} component={ActivitiesScreen} />
+                  <Stack.Screen name={SCREEN.PREFERENCES} component={PreferencesScreen} />
+                  <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
+                  <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
+                  <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
+                  <Stack.Screen name={SCREEN.ADVANTAGE} component={AdvantageScreen} />
+                  <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
+                  <Stack.Screen name={SCREEN.HOTELBOOKING} component={HotelBookingScreen} />
+                  <Stack.Screen name={SCREEN.DAYBYDAY} component={DayByDayPlanScreen} />
+                  <Stack.Screen name={SCREEN.CHATBOT} component={ChatbotScreen} />
+                  <Stack.Screen name={SCREEN.FUNFACTS} component={FunFactsScreen} />
+                </>
+              ) : (
+                <>
+                  <Stack.Screen name={SCREEN.ONBOARDING1} component={Onboarding1Screen} />
+                  <Stack.Screen name={SCREEN.HELP} component={HelpScreen} />
+                </>
+              )}
+            </Stack.Navigator>
+          </NavigationContainer>
+          {user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 ? (
+            <BottomBannerAd />
+          ) : null}
+        </View>
       </AnimatedSplash>
     </LinearGradient>
   );
 };
 
 export default RootNavigation;
+
+const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+  },
+});

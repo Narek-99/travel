@@ -1239,19 +1239,22 @@ PODS:
   - glog (0.3.5)
   - Google-Maps-iOS-Utils (5.0.0):
     - GoogleMaps (~> 8.0)
+  - Google-Mobile-Ads-SDK (12.2.0):
+    - GoogleUserMessagingPlatform (>= 1.1)
   - GoogleMaps (8.4.0):
     - GoogleMaps/Maps (= 8.4.0)
   - GoogleMaps/Base (8.4.0)
   - GoogleMaps/Maps (8.4.0):
     - GoogleMaps/Base
-  - GoogleUtilities/Environment (8.1.0):
+  - GoogleUserMessagingPlatform (2.7.0)
+  - GoogleUtilities/Environment (8.1.1):
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Logger (8.1.0):
+  - GoogleUtilities/Logger (8.1.1):
     - GoogleUtilities/Environment
     - GoogleUtilities/Privacy
-  - "GoogleUtilities/NSData+zlib (8.1.0)":
+  - "GoogleUtilities/NSData+zlib (8.1.1)":
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Privacy (8.1.0)
+  - GoogleUtilities/Privacy (8.1.1)
   - "gRPC-C++ (1.69.0)":
     - "gRPC-C++/Implementation (= 1.69.0)"
     - "gRPC-C++/Interface (= 1.69.0)"
@@ -2643,10 +2646,29 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-config (1.5.5):
-    - react-native-config/App (= 1.5.5)
-  - react-native-config/App (1.5.5):
+  - react-native-config (1.6.1):
+    - react-native-config/App (= 1.6.1)
+  - react-native-config/App (1.6.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-geolocation (3.4.0):
     - DoubleConversion
     - glog
@@ -3012,7 +3034,7 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
-  - RNBootSplash (6.3.4):
+  - RNBootSplash (6.3.12):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3054,7 +3076,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNCClipboard (1.16.2):
+  - RNCClipboard (1.16.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3075,9 +3097,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNCMaskedView (0.2.8):
+  - RNCMaskedView (0.2.9):
     - React-Core
-  - RNDateTimePicker (8.3.0):
+  - RNDateTimePicker (8.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3109,7 +3131,7 @@ PODS:
     - Firebase/Firestore (= 11.10.0)
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.25.0):
+  - RNGestureHandler (2.32.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3131,13 +3153,30 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNIap (12.16.2):
-    - RCT-Folly
+  - RNGoogleMobileAds (14.11.0):
+    - DoubleConversion
+    - glog
+    - Google-Mobile-Ads-SDK (= 12.2.0)
+    - GoogleUserMessagingPlatform (= 2.7.0)
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-  - RNReactNativeHapticFeedback (2.3.3):
+    - Yoga
+  - RNReactNativeHapticFeedback (2.3.4):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3343,7 +3382,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.11.2):
+  - RNSVG (15.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3363,9 +3402,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.11.2)
+    - RNSVG/common (= 15.4.0)
     - Yoga
-  - RNSVG/common (15.11.2):
+  - RNSVG/common (15.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3386,7 +3425,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNVectorIcons (10.2.0):
+  - RNVectorIcons (10.3.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3500,7 +3539,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
-  - RNIap (from `../node_modules/react-native-iap`)
+  - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -3522,7 +3561,9 @@ SPEC REPOS:
     - FirebaseFirestoreInternal
     - FirebaseSharedSwift
     - Google-Maps-iOS-Utils
+    - Google-Mobile-Ads-SDK
     - GoogleMaps
+    - GoogleUserMessagingPlatform
     - GoogleUtilities
     - "gRPC-C++"
     - gRPC-Core
@@ -3691,8 +3732,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/firestore"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
-  RNIap:
-    :path: "../node_modules/react-native-iap"
+  RNGoogleMobileAds:
+    :path: "../node_modules/react-native-google-mobile-ads"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
@@ -3727,8 +3768,10 @@ SPEC CHECKSUMS:
   fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   Google-Maps-iOS-Utils: 66d6de12be1ce6d3742a54661e7a79cb317a9321
+  Google-Mobile-Ads-SDK: 1dfb0c3cb46c7e2b00b0f4de74a1e06d9ea25d67
   GoogleMaps: 8939898920281c649150e0af74aa291c60f2e77d
-  GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
+  GoogleUserMessagingPlatform: a8b56893477f67212fbc8411c139e61d463349f5
+  GoogleUtilities: 4f2618a4a1e762a1ee134a1e2323bba9843e06da
   "gRPC-C++": cc207623316fb041a7a3e774c252cf68a058b9e8
   gRPC-Core: 860978b7db482de8b4f5e10677216309b5ff6330
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
@@ -3764,7 +3807,7 @@ SPEC CHECKSUMS:
   React-logger: dbca7bdfd4aa5ef69431362bde6b36d49403cb20
   React-Mapbuffer: 129fa9634f42d88a0c3761d2829db85175b985ee
   React-microtasksnativemodule: b5151a6d754fbf52292e758c4bb93b7c0d2f0b92
-  react-native-config: 3367df9c1f25bb96197007ec531c7087ed4554c3
+  react-native-config: b9d46ca857f9919207400d42915fdfd2ab908d28
   react-native-geolocation: 70a38223d02db79e0a84075e821df622b9fee3d0
   react-native-google-maps: 7cc1184afe41fbd15a3dffd53c924819f6587b69
   react-native-maps: ee1e65647460c3d41e778071be5eda10e3da6225
@@ -3796,27 +3839,27 @@ SPEC CHECKSUMS:
   React-utils: 52cb73e127a39fc2d9f02f503b2a7b3b0abd23dd
   ReactCodegen: 31fcff227d0035956575be0c013a2edcc687a53c
   ReactCommon: 78c49c7cf7df16983ebc3c646b4f47398437f2ec
-  RNBootSplash: 99c1f76feb569de651722af3f59c42266b6f7b8a
+  RNBootSplash: b922bd615160b3e8bb33289f565e7ee606386276
   RNCAsyncStorage: fa9b6834e454409d5656d58af10bcb495e0b4515
-  RNCClipboard: 2059d7a3024483ab358a2a9de83f9c72f5f86c48
-  RNCMaskedView: bc0170f389056201c82a55e242e5d90070e18e5a
-  RNDateTimePicker: 20b366c5eaa66d8f1c438025735ade083e850f60
+  RNCClipboard: 343c6099b418ed38a08b7352e463f75c78f9a107
+  RNCMaskedView: 949696f25ec596bfc697fc88e6f95cf0c79669b6
+  RNDateTimePicker: 40d647975fe71c23c26397383dd6911574af6cef
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFBApp: 9b353818307a942fd12025ec8963375649086f37
   RNFBFirestore: 73da57b8d901ee46ae46ff2c1eaa478aab1152c8
-  RNGestureHandler: c74975e16bc27971316465bde1a7523af5a6a256
-  RNIap: daac81aa70fe3ac6d6967c1c8da3dc4b415b73d6
-  RNReactNativeHapticFeedback: 2bd51b056c80544bee803447255d56d296f79f79
+  RNGestureHandler: 962ab88d10e4616329ef4c6d813af975469bbaec
+  RNGoogleMobileAds: 80de99a278758d919b41f484b798ab5914527692
+  RNReactNativeHapticFeedback: 8be27e9a86eaac875b7a301f0043b650322e5103
   RNReanimated: 3ccf2050e3592359fd85dc68a59972012bb2c2a6
   RNScreens: c143ba962ed7b1665b89b8896fb6044edf28291d
   RNStoreReview: 511462c128681702587e5ae5950be62146356438
-  RNSVG: e4920aaa2dd0e1c35467563a33e4717fc01b043d
-  RNVectorIcons: a4221a7b9121b3ebfc5674165e9ad1c43b82d860
+  RNSVG: a46b8e27779d1a992a9502b894c7302f5a6651d2
+  RNVectorIcons: d41ff24244573cd7104440e3099e134b387d5f6b
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: f6cff9b121dab0167ddd0600e72be34b7da5b025
+PODFILE CHECKSUM: 4e8afcf0c7fc1f5219d5f1e315aa4b99b214397e
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.14.3

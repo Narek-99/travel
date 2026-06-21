@@ -6,6 +6,10 @@
   ],
   "react-native-google-mobile-ads": {
     "android_app_id": "ca-app-pub-2989110544657173~3489287160",
-    "ios_app_id": "ca-app-pub-5225209299392557~5820872814"
+    "ios_app_id": "ca-app-pub-5225209299392557~3457251043",
+    "delay_app_measurement_init": true,
+    "sk_ad_network_items": [
+      "cstr6suwn9.skadnetwork"
+    ]
   }
 }

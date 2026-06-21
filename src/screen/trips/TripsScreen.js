@@ -22,6 +22,7 @@ import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useRating from '../../utils/useRating';
+import { useAds } from '../../ads';
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -32,6 +33,7 @@ const TripsScreen = ({ navigation }) => {
   const [lastFetchedDestinations, setLastFetchedDestinations] = useState({});
   const hasShownRating = useRef(false);
   const { showRating } = useRating();
+  const { runAfterInterstitial } = useAds();
   const translateAnims = useRef({}).current; // Store animation values for each trip
 
   useEffect(() => {
@@ -229,14 +231,20 @@ const TripsScreen = ({ navigation }) => {
     navigation.navigate(SCREEN.DESTINATION, { tripId });
   };
 
+  const openTripDetails = tripId => {
+    ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
+    runAfterInterstitial(() => {
+      navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
+    });
+  };
+
   const renderSwipeItem = ({ item }) => (
     <Animated.View style={{ transform: [{ translateX: translateAnims[item.id] }] }}>
       <TouchableOpacity
         activeOpacity={1}
         style={styles.card}
         onPress={() => {
-          ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
-          navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
+          openTripDetails(item.id);
         }}
       >
         <View style={styles.cardImageContainer}>
@@ -280,8 +288,7 @@ const TripsScreen = ({ navigation }) => {
           <TouchableOpacity
             style={styles.detailButton}
             onPress={() => {
-              ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
-              navigation.navigate(SCREEN.TRIPDETAILS, { tripId: item.id });
+              openTripDetails(item.id);
             }}
           >
             <Text style={styles.detailButtonText}>Details →</Text>

@@ -11,6 +11,8 @@ platform :ios, '16.0'
 
 prepare_react_native_project!
 
+$RNGoogleMobileAdsAsStaticFramework = true
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
