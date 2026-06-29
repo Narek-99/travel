@@ -76,6 +76,27 @@ export const AdProvider = ({ children }) => {
     loadInterstitial();
   }, [loadInterstitial]);
 
+  const applyConsentInfo = useCallback(
+    async consentInfo => {
+      if (!mountedRef.current) {
+        return;
+      }
+
+      const canRequest = Boolean(consentInfo?.canRequestAds);
+
+      setPrivacyOptionsRequired(
+        consentInfo?.privacyOptionsRequirementStatus ===
+          AdsConsentPrivacyOptionsRequirementStatus.REQUIRED,
+      );
+      setCanRequestAds(canRequest);
+
+      if (canRequest) {
+        await startAds();
+      }
+    },
+    [startAds],
+  );
+
   useEffect(() => {
     mountedRef.current = true;
 
@@ -88,22 +109,15 @@ export const AdProvider = ({ children }) => {
         }
 
         const consentInfo = await AdsConsent.gatherConsent();
-
-        if (!mountedRef.current) {
-          return;
-        }
-
-        setPrivacyOptionsRequired(
-          consentInfo.privacyOptionsRequirementStatus ===
-            AdsConsentPrivacyOptionsRequirementStatus.REQUIRED,
-        );
-        setCanRequestAds(consentInfo.canRequestAds);
-
-        if (consentInfo.canRequestAds) {
-          await startAds();
-        }
+        await applyConsentInfo(consentInfo);
       } catch (error) {
         console.warn('AdMob initialization failed:', error);
+        try {
+          const consentInfo = await AdsConsent.getConsentInfo();
+          await applyConsentInfo(consentInfo);
+        } catch (consentError) {
+          console.warn('Unable to read cached ad consent:', consentError);
+        }
       }
     };
 
@@ -113,7 +127,7 @@ export const AdProvider = ({ children }) => {
       mountedRef.current = false;
       clearInterstitialListeners();
     };
-  }, [clearInterstitialListeners, startAds]);
+  }, [applyConsentInfo, clearInterstitialListeners, startAds]);
 
   const runAfterInterstitial = useCallback(
     async action => {
@@ -172,18 +186,11 @@ export const AdProvider = ({ children }) => {
   const showPrivacyOptions = useCallback(async () => {
     try {
       const consentInfo = await AdsConsent.showPrivacyOptionsForm();
-      setPrivacyOptionsRequired(
-        consentInfo.privacyOptionsRequirementStatus ===
-          AdsConsentPrivacyOptionsRequirementStatus.REQUIRED,
-      );
-      setCanRequestAds(consentInfo.canRequestAds);
-      if (consentInfo.canRequestAds) {
-        await startAds();
-      }
+      await applyConsentInfo(consentInfo);
     } catch (error) {
       console.warn('Unable to show ad privacy options:', error);
     }
-  }, [startAds]);
+  }, [applyConsentInfo]);
 
   return (
     <AdContext.Provider
