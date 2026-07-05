@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAds } from '../../ads';
+import { useSubscriptions } from '../../contexts/subscriptionContext';
 
 const options = {
   enableVibrateFallback: true
@@ -19,6 +20,7 @@ const SettingScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [loading, setLoading] = useState(false)
   const { privacyOptionsRequired, showPrivacyOptions } = useAds();
+  const { isSubscribed } = useSubscriptions();
 
   const openPrivacyPolicy = () => {
     Linking.openURL('https://docs.google.com/document/d/1xcSSKsrhrdHGS9gcfYEqIboULPlLyzpASzGJG7VAM8I/edit?usp=sharing');
@@ -94,9 +96,9 @@ const SettingScreen = ({ navigation }) => {
 
         <Pressable style={styles.pressBtn} onPress={() => {
           ReactNativeHapticFeedback.trigger('impactLight', options);
-          navigation.navigate(SCREEN.ADVANTAGE, { from: 'settings' })
+          navigation.navigate(SCREEN.SUBSCRIPTION, { from: 'settings' })
         }}>
-          <Label style={styles.pressBtnText}>Prime Access</Label>
+          <Label style={styles.pressBtnText}>{isSubscribed ? 'Premium Active' : 'Subscription'}</Label>
         </Pressable>
 
         {/* <Pressable style={styles.pressBtn} onPress={() => {

@@ -23,6 +23,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useRating from '../../utils/useRating';
 import { useAds } from '../../ads';
+import { useSubscriptions } from '../../contexts/subscriptionContext';
 
 const TripsScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
@@ -34,6 +35,7 @@ const TripsScreen = ({ navigation }) => {
   const hasShownRating = useRef(false);
   const { showRating } = useRating();
   const { runAfterInterstitial } = useAds();
+  const { isSubscribed, isProductListLoading, getAvailablePurchase } = useSubscriptions();
   const translateAnims = useRef({}).current; // Store animation values for each trip
 
   useEffect(() => {
@@ -94,8 +96,9 @@ const TripsScreen = ({ navigation }) => {
     useCallback(() => {
       if (user?.uid) {
         fetchTrips();
+        getAvailablePurchase();
       }
-    }, [user?.uid, fetchTrips])
+    }, [user?.uid, fetchTrips, getAvailablePurchase])
   );
 
   useEffect(() => {
@@ -218,11 +221,15 @@ const TripsScreen = ({ navigation }) => {
 
   const handleAddTripNavigation = () => {
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+    if (!isSubscribed && !isProductListLoading) {
+      navigation.navigate(SCREEN.SUBSCRIPTION);
+      return;
+    }
     navigation.navigate(SCREEN.DESTINATION);
   };
 
   const handleAccessPress = () => {
-    navigation.navigate(SCREEN.ADVANTAGE);
+    navigation.navigate(SCREEN.SUBSCRIPTION);
     ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
   };
 
@@ -233,6 +240,14 @@ const TripsScreen = ({ navigation }) => {
 
   const openTripDetails = tripId => {
     ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
+    if (!isSubscribed && !isProductListLoading) {
+      navigation.navigate(SCREEN.SUBSCRIPTION);
+      return;
+    }
+    if (isSubscribed) {
+      navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
+      return;
+    }
     runAfterInterstitial(() => {
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId });
     });
@@ -337,7 +352,7 @@ const TripsScreen = ({ navigation }) => {
               onPress={handleAccessPress}
             >
               <SVG.Flash fill={COLOR.accent} />
-              <Label style={styles.accessText}>Prime Access</Label>
+              <Label style={styles.accessText}>{isSubscribed ? 'Premium' : 'Get Premium'}</Label>
             </Pressable>
           </View>
         }

@@ -6,6 +6,7 @@ import mobileAds, {
   AdsConsentPrivacyOptionsRequirementStatus,
   InterstitialAd,
 } from 'react-native-google-mobile-ads';
+import { useSubscriptions } from '../contexts/subscriptionContext';
 import {
   INTERSTITIAL_ACTION_INTERVAL,
   INTERSTITIAL_AD_UNIT_ID,
@@ -23,6 +24,7 @@ const AdContext = createContext({
 });
 
 export const AdProvider = ({ children }) => {
+  const { isSubscribed } = useSubscriptions();
   const [canRequestAds, setCanRequestAds] = useState(false);
   const [privacyOptionsRequired, setPrivacyOptionsRequired] = useState(false);
   const interstitialRef = useRef(null);
@@ -81,6 +83,12 @@ export const AdProvider = ({ children }) => {
 
     const initializeAds = async () => {
       try {
+        if (isSubscribed) {
+          setCanRequestAds(false);
+          clearInterstitialListeners();
+          return;
+        }
+
         if (__DEV__) {
           setCanRequestAds(true);
           await startAds();
@@ -113,7 +121,7 @@ export const AdProvider = ({ children }) => {
       mountedRef.current = false;
       clearInterstitialListeners();
     };
-  }, [clearInterstitialListeners, startAds]);
+  }, [clearInterstitialListeners, isSubscribed, startAds]);
 
   const runAfterInterstitial = useCallback(
     async action => {
@@ -133,7 +141,7 @@ export const AdProvider = ({ children }) => {
         continueAction();
       };
 
-      if (!canRequestAds) {
+      if (isSubscribed || !canRequestAds) {
         continueOnce();
         return;
       }
@@ -166,10 +174,14 @@ export const AdProvider = ({ children }) => {
         loadInterstitial();
       }
     },
-    [canRequestAds, loadInterstitial],
+    [canRequestAds, isSubscribed, loadInterstitial],
   );
 
   const showPrivacyOptions = useCallback(async () => {
+    if (isSubscribed) {
+      return;
+    }
+
     try {
       const consentInfo = await AdsConsent.showPrivacyOptionsForm();
       setPrivacyOptionsRequired(
@@ -183,7 +195,7 @@ export const AdProvider = ({ children }) => {
     } catch (error) {
       console.warn('Unable to show ad privacy options:', error);
     }
-  }, [startAds]);
+  }, [isSubscribed, startAds]);
 
   return (
     <AdContext.Provider

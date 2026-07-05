@@ -3176,6 +3176,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNIap (12.16.2):
+    - RCT-Folly
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - ReactCommon/turbomodule/core
   - RNReactNativeHapticFeedback (2.3.4):
     - DoubleConversion
     - glog
@@ -3540,6 +3546,7 @@ DEPENDENCIES:
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
+  - RNIap (from `../node_modules/react-native-iap`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -3734,6 +3741,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleMobileAds:
     :path: "../node_modules/react-native-google-mobile-ads"
+  RNIap:
+    :path: "../node_modules/react-native-iap"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
@@ -3849,6 +3858,7 @@ SPEC CHECKSUMS:
   RNFBFirestore: 73da57b8d901ee46ae46ff2c1eaa478aab1152c8
   RNGestureHandler: 962ab88d10e4616329ef4c6d813af975469bbaec
   RNGoogleMobileAds: 80de99a278758d919b41f484b798ab5914527692
+  RNIap: daac81aa70fe3ac6d6967c1c8da3dc4b415b73d6
   RNReactNativeHapticFeedback: 8be27e9a86eaac875b7a301f0043b650322e5103
   RNReanimated: 3ccf2050e3592359fd85dc68a59972012bb2c2a6
   RNScreens: c143ba962ed7b1665b89b8896fb6044edf28291d

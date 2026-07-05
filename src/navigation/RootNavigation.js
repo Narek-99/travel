@@ -17,19 +17,27 @@ import { setUser } from '../redux/action/Action';
 import {
   HistoryScreen, DestinationScreen, CompanionScreen, BudgetScreen, TripsScreen, ChatbotScreen,
   TripDetailsScreen, HotelBookingScreen, AdditionalScreen, PreferencesScreen, ActivitiesScreen, DatesScreen, HelpScreen, FunFactsScreen, DayByDayPlanScreen, BookingScreen,
-  Onboarding1Screen, SettingScreen, AdvantageScreen
+  Onboarding1Screen, SettingScreen, SubscriptionScreen
 } from '../screen';
 import { BottomBannerAd } from '../ads';
+import { useSubscriptions } from '../contexts/subscriptionContext';
 
 const RootNavigation = () => {
   const Stack = createNativeStackNavigator();
   const dispatch = useDispatch();
   const user = useSelector(({ appReducer }) => appReducer.user);
   const [loading, setLoading] = useState(true);
+  const { isSubscribed } = useSubscriptions();
 
   useEffect(() => {
     saveUserId();
   }, [user?.userStatus]);
+
+  useEffect(() => {
+    if (user?.uid) {
+      dispatch(setUser({ ...user, subscription: isSubscribed }));
+    }
+  }, [isSubscribed]);
 
   const saveUserId = async () => {
     try {
@@ -40,27 +48,30 @@ const RootNavigation = () => {
         await AsyncStorage.setItem(KEYS.USERID, newUserId);
         const data = {
           uid: newUserId,
+          subscription: false,
           userStatus: USER_STATUS.NEW,
           createdAt: firestore.FieldValue.serverTimestamp(),
         };
         await firestore().collection(FIREBASE_COLLECTIONS.USERS).doc(newUserId).set(data);
         const userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, newUserId);
-        dispatch(setUser({ ...(user != null ? user : {}), ...userData }));
+        dispatch(setUser({ ...(user != null ? user : {}), ...userData, subscription: isSubscribed }));
       } else {
         let userData = await getDocumentData(FIREBASE_COLLECTIONS.USERS, existingUserId);
         if (!userData?.uid) {
           const newUserData = {
             uid: existingUserId,
+            subscription: false,
             userStatus: USER_STATUS.NEW,
             createdAt: firestore.FieldValue.serverTimestamp(),
           };
           await firestore().collection(FIREBASE_COLLECTIONS.USERS).doc(existingUserId).set(newUserData);
           userData = {
             uid: existingUserId,
+            subscription: false,
             userStatus: USER_STATUS.NEW,
           };
         }
-        dispatch(setUser({ ...(user != null ? user : {}), ...userData, uid: existingUserId }));
+        dispatch(setUser({ ...(user != null ? user : {}), ...userData, uid: existingUserId, subscription: isSubscribed }));
       }
     } catch (error) {
       console.error("Error saving User ID:", error);
@@ -95,7 +106,7 @@ const RootNavigation = () => {
                   <Stack.Screen name={SCREEN.ADDITIONAL} component={AdditionalScreen} />
                   <Stack.Screen name={SCREEN.HISTORY} component={HistoryScreen} />
                   <Stack.Screen name={SCREEN.SETTINGS} component={SettingScreen} />
-                  <Stack.Screen name={SCREEN.ADVANTAGE} component={AdvantageScreen} />
+                  <Stack.Screen name={SCREEN.SUBSCRIPTION} component={SubscriptionScreen} />
                   <Stack.Screen name={SCREEN.BOOKING} component={BookingScreen} />
                   <Stack.Screen name={SCREEN.HOTELBOOKING} component={HotelBookingScreen} />
                   <Stack.Screen name={SCREEN.DAYBYDAY} component={DayByDayPlanScreen} />
@@ -110,7 +121,7 @@ const RootNavigation = () => {
               )}
             </Stack.Navigator>
           </NavigationContainer>
-          {user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 ? (
+          {user && user.userStatus === USER_STATUS.OLD && Object.keys(user).length > 0 && !isSubscribed ? (
             <BottomBannerAd />
           ) : null}
         </View>

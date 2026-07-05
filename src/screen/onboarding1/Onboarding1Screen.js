@@ -39,7 +39,7 @@ const Onboarding1Screen = ({ navigation }) => {
 
         <View style={styles.accessRow}>
           <View style={styles.accessDot} />
-          <Label style={styles.accessText}>Full access included with your app purchase</Label>
+          <Label style={styles.accessText}>Premium travel tools with a flexible subscription</Label>
         </View>
 
         <Button

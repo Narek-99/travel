@@ -17,10 +17,10 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8325B2972C78C610003B16DA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8325B2962C78C610003B16DA /* GoogleService-Info.plist */; };
 		882A5A1E2CA31FD5000C95F0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 882A5A1D2CA31FD5000C95F0 /* StoreKit.framework */; };
-		8837667E2DEB8A16002F2BC2 /* Triposo - Vacation Planner.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 8837667D2DEB8A16002F2BC2 /* Triposo - Vacation Planner.storekit */; };
 		88DE19482DA3E24700C1C4D7 /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 88DE19472DA3E24700C1C4D7 /* Config.xcconfig */; };
 		8E9DFB92912745BEB00F9690 /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BAE4B46427444503A5FFA89C /* Poppins-Bold.ttf */; };
 		B439B048011A46B4944D47E2 /* Poppins-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5FD203D5E2E04CDAA99091F5 /* Poppins-Medium.ttf */; };
+		CEE33A742FFAD14500DDA766 /* Triposo - Vacation Planner.storekit in Resources */ = {isa = PBXBuildFile; fileRef = CEE33A732FFAD14500DDA766 /* Triposo - Vacation Planner.storekit */; };
 		D65FE87F61034203A5C78CE3 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC7EDAD06D3A452EBB61A23B /* BootSplash.storyboard */; };
 		DFCD06BDC5714139B8424C61 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D35BD27656594078A7F587C1 /* Colors.xcassets */; };
 		E0EA16AE75887DD475FD3D48 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 426C59AC52398D4D590B0B34 /* PrivacyInfo.xcprivacy */; };
@@ -58,11 +58,11 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Travel/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8325B2962C78C610003B16DA /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		882A5A1D2CA31FD5000C95F0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		8837667D2DEB8A16002F2BC2 /* Triposo - Vacation Planner.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Triposo - Vacation Planner.storekit"; sourceTree = "<group>"; };
 		88DE19472DA3E24700C1C4D7 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		934B4F4EF8D5AEADC831F3C7 /* Pods-Travel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Travel.debug.xcconfig"; path = "Target Support Files/Pods-Travel/Pods-Travel.debug.xcconfig"; sourceTree = "<group>"; };
 		BAE4B46427444503A5FFA89C /* Poppins-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Bold.ttf"; path = "../src/assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
 		C8F80431E487E7D1B8FB49DF /* Pods-Travel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Travel.release.xcconfig"; path = "Target Support Files/Pods-Travel/Pods-Travel.release.xcconfig"; sourceTree = "<group>"; };
+		CEE33A732FFAD14500DDA766 /* Triposo - Vacation Planner.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Triposo - Vacation Planner.storekit"; sourceTree = "<group>"; };
 		CFBF3947713D4AC1EFB81A72 /* Pods_Travel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Travel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D35BD27656594078A7F587C1 /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = Travel/Colors.xcassets; sourceTree = "<group>"; };
 		EC7EDAD06D3A452EBB61A23B /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = Travel/BootSplash.storyboard; sourceTree = "<group>"; };
@@ -156,7 +156,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				8837667D2DEB8A16002F2BC2 /* Triposo - Vacation Planner.storekit */,
+				CEE33A732FFAD14500DDA766 /* Triposo - Vacation Planner.storekit */,
 				8325B2962C78C610003B16DA /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* Travel */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -295,7 +295,7 @@
 				1506770D685545908715EC2E /* Poppins-Regular.ttf in Resources */,
 				4836F10E6C0048EE9536BFCA /* Poppins-SemiBold.ttf in Resources */,
 				D65FE87F61034203A5C78CE3 /* BootSplash.storyboard in Resources */,
-				8837667E2DEB8A16002F2BC2 /* Triposo - Vacation Planner.storekit in Resources */,
+				CEE33A742FFAD14500DDA766 /* Triposo - Vacation Planner.storekit in Resources */,
 				8325B2972C78C610003B16DA /* GoogleService-Info.plist in Resources */,
 				DFCD06BDC5714139B8424C61 /* Colors.xcassets in Resources */,
 				E0EA16AE75887DD475FD3D48 /* PrivacyInfo.xcprivacy in Resources */,
