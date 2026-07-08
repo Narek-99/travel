@@ -11,7 +11,6 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KEYS } from '../../utils/Keys';
-import useRating from '../../utils/useRating';
 
 const hapticOptions = { enableVibrateFallback: true };
 
@@ -20,7 +19,6 @@ const HelpScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [loading, setLoading] = useState(false);
-  const { showRating } = useRating();
 
   useEffect(() => {
     Animated.loop(
@@ -49,9 +47,6 @@ const HelpScreen = ({ navigation }) => {
       if (!uid) {
         throw new Error('Missing user id during onboarding completion');
       }
-
-      await showRating(true);
-      await new Promise(resolve => setTimeout(resolve, 700));
 
       const updatedData = { uid, userStatus: USER_STATUS.OLD };
       dispatch(setUser({ ...(user || {}), ...updatedData }));

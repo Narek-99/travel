@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>6.0.0</string>
+	<string>7.0.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -37,6 +37,8 @@
 	<string>Triposo uses your location to display nearby attractions, restaurants, and landmarks, and to optimize your day-by-day travel itinerary based on your current position.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Triposo uses your location to display nearby attractions, restaurants, and landmarks, and to optimize your day-by-day travel itinerary based on your current position.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Triposo asks permission to use data for advertising, so ads can support the app for users without Premium.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires access to the camera to take photos of meals.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

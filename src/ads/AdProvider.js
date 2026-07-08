@@ -12,6 +12,7 @@ import {
   INTERSTITIAL_AD_UNIT_ID,
   INTERSTITIAL_TIME_INTERVAL_MS,
 } from './AdConfig';
+import { requestAppTrackingTransparency } from './TrackingTransparency';
 
 const ACTION_COUNT_KEY = '@triposo_ad_action_count';
 const LAST_INTERSTITIAL_KEY = '@triposo_last_interstitial';
@@ -91,10 +92,12 @@ export const AdProvider = ({ children }) => {
 
         if (__DEV__) {
           setCanRequestAds(true);
+          await requestAppTrackingTransparency();
           await startAds();
           return;
         }
 
+        await requestAppTrackingTransparency();
         const consentInfo = await AdsConsent.gatherConsent();
 
         if (!mountedRef.current) {

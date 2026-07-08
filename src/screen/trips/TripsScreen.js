@@ -21,7 +21,6 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import useRating from '../../utils/useRating';
 import { useAds } from '../../ads';
 import { useSubscriptions } from '../../contexts/subscriptionContext';
 
@@ -32,18 +31,9 @@ const TripsScreen = ({ navigation }) => {
   const [tripImages, setTripImages] = useState({});
   const [loadingImages, setLoadingImages] = useState({});
   const [lastFetchedDestinations, setLastFetchedDestinations] = useState({});
-  const hasShownRating = useRef(false);
-  const { showRating } = useRating();
   const { runAfterInterstitial } = useAds();
   const { isSubscribed, isProductListLoading, getAvailablePurchase } = useSubscriptions();
   const translateAnims = useRef({}).current; // Store animation values for each trip
-
-  useEffect(() => {
-    if (user?.uid && !hasShownRating.current) {
-      showRating();
-      hasShownRating.current = true;
-    }
-  }, [showRating, user?.uid]);
 
   const fetchTripImage = async (destination, tripId) => {
     if (tripImages[tripId] && lastFetchedDestinations[tripId] === destination) return;

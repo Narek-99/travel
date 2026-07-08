@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import {
   Purchase,
@@ -13,6 +13,7 @@ import {
   purchaseUpdatedListener,
   requestSubscription,
 } from 'react-native-iap';
+import useRating from '../utils/useRating';
 
 interface SubscriptionContextType {
   isSubscribed: boolean;
@@ -45,6 +46,12 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionList, setSubscriptionList] = useState<Subscription[]>([]);
   const [isProductListLoading, setIsProductListLoading] = useState(true);
+  const { showRating } = useRating();
+  const showRatingRef = useRef(showRating);
+
+  useEffect(() => {
+    showRatingRef.current = showRating;
+  }, [showRating]);
 
   const getSubs = useCallback(async () => {
     try {
@@ -125,6 +132,9 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
         try {
           await finishTransaction({ purchase, isConsumable: false });
           await getAvailablePurchase();
+          setTimeout(() => {
+            showRatingRef.current();
+          }, 900);
         } catch (error) {
           console.error('Transaction finish error:', error);
         }

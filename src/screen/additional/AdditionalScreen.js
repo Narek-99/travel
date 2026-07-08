@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Alert, Animated, Text } from 'react-native';
+import { SafeAreaView, StyleSheet, View, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, Animated, Text } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Label } from '../../components';
 import { En } from '../../locales/En';
@@ -15,6 +15,7 @@ import firestore from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
 import { getFunFactsPrompt } from '../../apis/Prompts';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import useRating from '../../utils/useRating';
 
 const currentStep = 7;
 const totalSteps = 7;
@@ -33,13 +34,7 @@ const AdditionalScreen = ({ navigation }) => {
   const tripId = route.params?.tripId;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
-
-  const getDateString = (timestamp) => {
-    if (!timestamp?.toDate && !timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toISOString().split('T')[0];
-  };
-
+  const { showRating } = useRating();
   const getLimitedDateRange = (startDate, endDate, maxDays = 7) => {
     if (!startDate || !endDate) {
       throw new Error('Start date and end date are required.');
@@ -333,6 +328,11 @@ const AdditionalScreen = ({ navigation }) => {
 
       resetTrip();
       navigation.navigate(SCREEN.TRIPDETAILS, { tripId: effectiveTripId });
+      if (isNewTrip) {
+        setTimeout(() => {
+          showRating();
+        }, 900);
+      }
 
     } catch (error) {
       console.error("❌ Error saving trip:", error.message);

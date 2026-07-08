@@ -2762,6 +2762,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-tracking-transparency (0.1.2):
+    - React
   - React-nativeconfig (0.76.9)
   - React-NativeModulesApple (0.76.9):
     - glog
@@ -3509,6 +3511,7 @@ DEPENDENCIES:
   - react-native-google-maps (from `../node_modules/react-native-maps`)
   - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-tracking-transparency (from `../node_modules/react-native-tracking-transparency`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -3667,6 +3670,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-maps"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-tracking-transparency:
+    :path: "../node_modules/react-native-tracking-transparency"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -3821,6 +3826,7 @@ SPEC CHECKSUMS:
   react-native-google-maps: 7cc1184afe41fbd15a3dffd53c924819f6587b69
   react-native-maps: ee1e65647460c3d41e778071be5eda10e3da6225
   react-native-safe-area-context: 276e89d3c4f33b07a982e97638d2f67590010af3
+  react-native-tracking-transparency: 25ff1ff866e338c137c818bdec20526bb05ffcc1
   React-nativeconfig: 415626a63057638759bcc75e0a96e2e07771a479
   React-NativeModulesApple: bffc60f55895c2723b1e5472fa40567fe3df4923
   React-perflogger: 9b4f13c0afe56bc7b4a0e93ec74b1150421ee22d
