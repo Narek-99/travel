@@ -97,7 +97,6 @@ export const AdProvider = ({ children }) => {
           return;
         }
 
-        await requestAppTrackingTransparency();
         const consentInfo = await AdsConsent.gatherConsent();
 
         if (!mountedRef.current) {
@@ -111,6 +110,7 @@ export const AdProvider = ({ children }) => {
         setCanRequestAds(consentInfo.canRequestAds);
 
         if (consentInfo.canRequestAds) {
+          await requestAppTrackingTransparency();
           await startAds();
         }
       } catch (error) {
