@@ -11,12 +11,14 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KEYS } from '../../utils/Keys';
+import useRating from '../../utils/useRating';
 
 const hapticOptions = { enableVibrateFallback: true };
 
 const HelpScreen = ({ navigation }) => {
   const user = useSelector(({ appReducer }) => appReducer.user);
   const dispatch = useDispatch();
+  const { showRating } = useRating();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [loading, setLoading] = useState(false);
 
@@ -106,16 +108,28 @@ const HelpScreen = ({ navigation }) => {
 
       <View style={styles.submitContainer}>
         <Button
-          isLoading={loading}
-          disabled={loading}
-          style={styles.nextButton}
-          text="Okay!"
-          textStyle={styles.buttonText}
+          style={styles.primaryButton}
+          text="Help us grow"
+          textStyle={styles.primaryButtonText}
           onPress={() => {
             ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+            showRating(true).catch(error => {
+              console.log('StoreReview error:', error);
+            });
             handleUserStatusUpdate();
           }}
         />
+        <Pressable
+          disabled={loading}
+          style={[styles.secondaryButton, loading && styles.secondaryButtonDisabled]}
+          onPress={() => {
+            ReactNativeHapticFeedback.trigger('impactLight', hapticOptions);
+            handleUserStatusUpdate();
+          }}>
+          <Label style={styles.secondaryButtonText}>
+            {loading ? 'One moment...' : 'Continue without rating'}
+          </Label>
+        </Pressable>
       </View>
     </View>
   );
@@ -244,7 +258,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(5),
     paddingBottom: hp(4),
   },
-  nextButton: {
+  primaryButton: {
     backgroundColor: COLOR.accent,
     borderColor: COLOR.accent,
     borderRadius: hp(3),
@@ -255,9 +269,23 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  buttonText: {
+  primaryButtonText: {
     color: COLOR.primary,
     fontSize: 17,
     fontWeight: '800',
+  },
+  secondaryButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: hp(5.6),
+    marginTop: hp(1.2),
+  },
+  secondaryButtonDisabled: {
+    opacity: 0.6,
+  },
+  secondaryButtonText: {
+    ...TEXT_STYLE.textSemiBold,
+    color: 'rgba(255, 255, 255, 0.72)',
+    textAlign: 'center',
   },
 });
